@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SQLITE_H
-#define SQLITE_H
+#ifndef SQLITESMART_H
+#define SQLITESMART_H
 
-#include <iostream>
 #include <memory>
 
-#include <sqlite3.h>
+typedef struct sqlite3 sqlite3;
+typedef struct sqlite3_stmt sqlite3_stmt;
 
 namespace SQL {
 
@@ -16,9 +16,7 @@ using SQLStmtUnique = std::unique_ptr<sqlite3_stmt, void (*)(sqlite3_stmt *)>;
 struct SQLHolder : public SQLUnique {
 	SQLHolder() : SQLHolder(nullptr) { }
 
-	SQLHolder(sqlite3 *sql) : SQLUnique(sql, [](sqlite3 *sql) {
-	      sqlite3_close(sql);
-	}) {}
+	SQLHolder(sqlite3 *sql);
 
 	operator sqlite3 *() { return get(); }
 };
@@ -26,23 +24,14 @@ struct SQLHolder : public SQLUnique {
 struct SQLStmtHolder : public SQLStmtUnique {
 	SQLStmtHolder() : SQLStmtHolder(nullptr) { }
 
-	SQLStmtHolder(sqlite3_stmt *stmt) : SQLStmtUnique(stmt, [](sqlite3_stmt *stmt) {
-	      sqlite3_finalize(stmt);
-	}) {}
+	SQLStmtHolder(sqlite3_stmt *stmt);
 
 	operator sqlite3_stmt *() { return get(); }
 };
 
 struct SQLStmtResetter {
 	SQLStmtResetter(sqlite3 *sql, sqlite3_stmt *stmt) : sql(sql), stmt(stmt) { }
-	~SQLStmtResetter() {
-		int ret = sqlite3_reset(stmt);
-		if (ret != SQLITE_OK && ret != SQLITE_CONSTRAINT) {
-		    std::cerr << "stmt reset failed (" << __LINE__ << "): " <<
-				sqlite3_errstr(ret) << " -> " <<
-				sqlite3_errmsg(sql) << "\n";
-		}
-	}
+	~SQLStmtResetter();
 private:
 	sqlite3 *sql;
 	sqlite3_stmt *stmt;

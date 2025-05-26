@@ -19,6 +19,7 @@ public_headers = [
 ]
 
 sqlite = library(meson.project_name(), [
+    'SQLiteSmart.cpp',
     'SQLConn.cpp',
     public_headers,
   ],

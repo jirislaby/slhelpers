@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <chrono>
+#include <iostream>
+#include <sqlite3.h>
 #include <thread>
 #include <typeindex>
 #include <vector>
