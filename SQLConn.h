@@ -20,6 +20,16 @@ enum open_flags {
 
 class SQLConn {
 public:
+	int open(const std::filesystem::path &dbFile, unsigned int flags = 0)
+	{
+		if (openDB(dbFile, flags) ||
+				createDB() ||
+				prepDB())
+			return -1;
+
+		return 0;
+	}
+
 	int openDB(const std::filesystem::path &dbFile, unsigned int flags = 0);
 	virtual int createDB() { return 0; }
 	virtual int prepDB() { return 0; }
