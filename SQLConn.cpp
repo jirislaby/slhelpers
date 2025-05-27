@@ -180,7 +180,7 @@ int SQLConn::end()
 	return 0;
 }
 
-int SQLConn::bind(SQLStmtHolder &ins, const std::string &key, const std::string &val)
+int SQLConn::bind(SQLStmtHolder &ins, const std::string &key, const BindVal &val)
 {
 	auto bindIdx = sqlite3_bind_parameter_index(ins, key.c_str());
 	if (!bindIdx) {
@@ -188,10 +188,23 @@ int SQLConn::bind(SQLStmtHolder &ins, const std::string &key, const std::string 
 		return -1;
 	}
 
-	int ret = sqlite3_bind_text(ins, bindIdx, val.data(), val.length(), SQLITE_STATIC);
+	int ret;
+	std::string valDesc { "null" };
+	if (std::holds_alternative<int>(val)) {
+		const auto &i = std::get<int>(val);
+		valDesc = std::to_string(i);
+		ret = sqlite3_bind_int(ins, bindIdx, i);
+	} else if (std::holds_alternative<std::string>(val)) {
+		const auto &text = std::get<std::string>(val);
+		valDesc = text;
+		ret = sqlite3_bind_text(ins, bindIdx, text.data(), text.length(), SQLITE_STATIC);
+	} else { /* std::monostate */
+		ret = sqlite3_bind_null(ins, bindIdx);
+	}
+
 	if (ret != SQLITE_OK) {
 		std::cerr << "db bind failed (" << __LINE__ << " key=\"" << key <<
-			     "\" val=\"" << val << "\"): " <<
+			     "\" val=\"" << valDesc << "\"): " <<
 			     sqlite3_errstr(ret) << " -> " <<
 			     sqlite3_errmsg(sqlHolder) << "\n";
 		return -1;

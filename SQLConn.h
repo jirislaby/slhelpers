@@ -44,7 +44,8 @@ protected:
 	using Indices = std::vector<std::pair<std::string, std::string>>;
 	using Views = Indices;
 
-	using Binding = std::vector<std::pair<std::string, std::string>>;
+	using BindVal = std::variant<std::monostate, int, std::string>;
+	using Binding = std::vector<std::pair<std::string, BindVal>>;
 	using ColumnTypes = std::vector<std::type_index>;
 	using Column = std::variant<int, std::string>;
 	using Row = std::vector<Column>;
@@ -56,7 +57,7 @@ protected:
 
 	int prepareStatement(const std::string &sql, SQLStmtHolder &stmt);
 
-	int bind(SQLStmtHolder &ins, const std::string &key, const std::string &val);
+	int bind(SQLStmtHolder &ins, const std::string &key, const BindVal &val);
 	int bind(SQLStmtHolder &ins, const Binding &binding);
 	int insert(SQLStmtHolder &ins, const Binding &binding);
 	int select(SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
