@@ -2,4 +2,5 @@
 
 subdir('curl')
 subdir('git')
+subdir('kerncvs')
 subdir('sqlite')
