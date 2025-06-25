@@ -8,7 +8,7 @@
 typedef struct sqlite3 sqlite3;
 typedef struct sqlite3_stmt sqlite3_stmt;
 
-namespace SQL {
+namespace SlSqlite {
 
 using SQLUnique = std::unique_ptr<sqlite3, void (*)(sqlite3 *)>;
 using SQLStmtUnique = std::unique_ptr<sqlite3_stmt, void (*)(sqlite3_stmt *)>;

@@ -3,9 +3,9 @@
 #include <iostream>
 #include <sqlite3.h>
 
-#include "SQLiteSmart.h"
+#include "sqlite/SQLiteSmart.h"
 
-using namespace SQL;
+using namespace SlSqlite;
 
 SQLHolder::SQLHolder(sqlite3 *sql) : SQLUnique(sql, [](sqlite3 *sql) {
 		sqlite3_close(sql);

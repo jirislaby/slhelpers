@@ -11,7 +11,7 @@
 
 #include "SQLiteSmart.h"
 
-namespace SQL {
+namespace SlSqlite {
 
 enum open_flags {
 	CREATE		= 1 << 0,

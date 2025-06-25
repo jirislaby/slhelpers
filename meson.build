@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-project('slsqlite++', 'cpp',
-  version: '1.0',
+project('slhelpers', 'cpp',
+  version: '2.0',
   default_options: [
     'optimization=2',
     'warning_level=2',
@@ -11,30 +11,12 @@ project('slsqlite++', 'cpp',
   ])
 
 cpp_compiler = meson.get_compiler('cpp')
-sqlite3_lib = cpp_compiler.find_library('sqlite3')
-
-public_headers = [
-    'SQLConn.h',
-    'SQLiteSmart.h',
-]
-
-sqlite = library(meson.project_name(), [
-    'SQLiteSmart.cpp',
-    'SQLConn.cpp',
-    public_headers,
-  ],
-  dependencies: sqlite3_lib,
-  install: true,
-  version: meson.project_version(),
-)
-
-install_headers(public_headers,
-  subdir: meson.project_name(),
-)
-
 pkg = import('pkgconfig')
-pkg.generate(sqlite,
-  description: meson.project_name() + ': c++ sqlite wrapper library',
-)
+global_inc = include_directories('include')
+public_headers = []
+
+subdir('src')
+
+subdir('include')
 
 #subdir('tests')

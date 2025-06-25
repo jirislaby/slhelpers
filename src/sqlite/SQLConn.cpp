@@ -7,9 +7,9 @@
 #include <typeindex>
 #include <vector>
 
-#include "SQLConn.h"
+#include "sqlite/SQLConn.h"
 
-using namespace SQL;
+using namespace SlSqlite;
 
 static int busy_handler(void *, int count)
 {
