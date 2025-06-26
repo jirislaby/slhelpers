@@ -1,6 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 git2_lib = cpp_compiler.find_library('git2')
+cpp_args = []
+
+if cpp_compiler.has_member('git_remote_callbacks', 'update_refs',
+    prefix : '#include <git2.h>')
+  cpp_args += '-DLIBGIT_HAS_UPDATE_REFS'
+endif
 
 public_headers += [
     'git/Git.h',
@@ -9,6 +15,7 @@ public_headers += [
 slgit = library('slgit++', [
     'Git.cpp',
   ],
+  cpp_args: cpp_args,
   include_directories : global_inc,
   dependencies: git2_lib,
   install: true,

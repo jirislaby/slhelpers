@@ -109,11 +109,13 @@ static int fetchTransferProgress(const git_indexer_progress *stats, void *payloa
 	return static_cast<FetchCallbacks *>(payload)->transferProgress(*stats);
 }
 
+#ifdef LIBGIT_HAS_UPDATE_REFS
 static int fetchUpdateRefs(const char *refname, const git_oid *a, const git_oid *b, git_refspec *refspec,
 		      void *payload)
 {
 	return static_cast<FetchCallbacks *>(payload)->updateRefs(refname, *a, *b, *refspec);
 }
+#endif
 
 int Repo::clone(const std::filesystem::path &path, const std::string &url,
 		const std::string &branch, const unsigned int &depth, bool tags)
@@ -129,7 +131,9 @@ int Repo::clone(const std::filesystem::path &path, const std::string &url,
 	opts.fetch_opts.callbacks.pack_progress = fetchPackProgress;
 	opts.fetch_opts.callbacks.sideband_progress = fetchSidebandProgress;
 	opts.fetch_opts.callbacks.transfer_progress = fetchTransferProgress;
+#ifdef LIBGIT_HAS_UPDATE_REFS
 	opts.fetch_opts.callbacks.update_refs = fetchUpdateRefs;
+#endif
 	return git_clone(&repo, url.c_str(), path.c_str(), &opts);
 }
 
@@ -216,7 +220,9 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, b
 	opts.callbacks.pack_progress = fetchPackProgress;
 	opts.callbacks.sideband_progress = fetchSidebandProgress;
 	opts.callbacks.transfer_progress = fetchTransferProgress;
+#ifdef LIBGIT_HAS_UPDATE_REFS
 	opts.callbacks.update_refs = fetchUpdateRefs;
+#endif
 	if (!tags)
 		opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE;
 	opts.depth = depth;
