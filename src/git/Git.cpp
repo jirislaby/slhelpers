@@ -4,6 +4,7 @@
 #include <git2.h>
 #include <optional>
 
+#include "helpers/Ratelimit.h"
 #include "helpers/SSH.h"
 #include "git/Git.h"
 
@@ -33,7 +34,7 @@ int Repo::init(const std::filesystem::path &path, bool bare, const std::string &
 
 class MyFetchCallbacks : public FetchCallbacks {
 public:
-	MyFetchCallbacks() : tried(0) { }
+	MyFetchCallbacks() : ratelimit(std::chrono::seconds(2)), tried(0) { }
 
 	virtual int credentials(git_credential **out, const std::string &url,
 				const std::optional<std::string> &username_from_url,
@@ -56,16 +57,23 @@ public:
 		return GIT_PASSTHROUGH;
 	}
 	virtual int packProgress(int stage, uint32_t current, uint32_t total) override {
+		if (!ratelimit.limit() && current != 0 && current != total)
+			return 0;
 		std::cerr << __func__ << ": stage=" << stage << " " << current << "/" << total << '\n';
 		return 0;
 	}
 	virtual int sidebandProgress(const std::string_view &str) override {
+		if (!ratelimit.limit())
+			return 0;
 		std::cerr << __func__ << ": " << str;
 		if (str.back() != '\n')
 			std::cerr << '\n';
 		return 0;
 	}
 	virtual int transferProgress(const git_indexer_progress &stats) override {
+		if (!ratelimit.limit() && stats.indexed_objects != 0 &&
+				stats.indexed_objects != stats.total_objects)
+			return 0;
 		std::cerr << std::fixed << std::setprecision(2) << __func__ <<
 			     ": deltas=" << stats.indexed_deltas << '/' << stats.total_deltas <<
 			     " objs=" << stats.indexed_objects << '/' << stats.total_objects <<
@@ -84,6 +92,7 @@ public:
 	}
 
 private:
+	SlHelpers::Ratelimit ratelimit;
 	unsigned int tried;
 };
 

@@ -3,6 +3,7 @@
 public_headers += [
   'helpers/HomeDir.h',
   'helpers/PushD.h',
+  'helpers/Ratelimit.h',
   'helpers/SSH.h',
 ]
 
