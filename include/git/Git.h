@@ -101,6 +101,11 @@ public:
 	}
 
 	const git_oid *getId() const { return git_commit_id(commit); }
+	std::string getIdStr() const {
+		char buf[GIT_OID_MAX_HEXSIZE + 1];
+		git_oid_tostr(buf, sizeof(buf), getId());
+		return buf;
+	}
 
 	operator git_commit *() const { return commit; }
 private:
