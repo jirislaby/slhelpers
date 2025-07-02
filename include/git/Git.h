@@ -100,6 +100,8 @@ public:
 		return git_revparse_single((git_object **)&commit, repo, rev.c_str());
 	}
 
+	const git_oid *getId() const { return git_commit_id(commit); }
+
 	operator git_commit *() const { return commit; }
 private:
 	git_commit *commit;
