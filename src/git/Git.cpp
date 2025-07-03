@@ -200,6 +200,16 @@ std::optional<std::string> Repo::catFile(const std::string &branch, const std::s
 	if (tree.ofCommit(commit))
 		return {};
 
+	unsigned int cnt = 0;
+	auto ret = tree.walk([&cnt](const std::string &root, const TreeEntry &entry) -> int {
+		      if (++cnt == 10)
+			      return -1000;
+		      std::cout << "walk: root=" << root << " E=" << entry.name() << '\n';
+		      return 0;
+	});
+	if (ret && ret != -1000)
+		return {};
+
 	TreeEntry treeEntry;
 	if (treeEntry.byPath(tree, file))
 		return {};
@@ -247,4 +257,17 @@ int Remote::fetchBranches(const std::vector<std::string> &branches, int depth, b
 		refspecs.push_back("refs/heads/" + b + ":refs/remotes/" + remote + "/" + b);
 
 	return fetchRefspecs(refspecs, depth, tags);
+}
+
+static int treeWalkCB(const char *root, const git_tree_entry *entry, void *payload)
+{
+	const auto CB = *static_cast<Tree::WalkCallback *>(payload);
+
+	TreeEntry treeEntry(entry);
+	return CB(root, treeEntry);
+}
+
+int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) {
+	return git_tree_walk(tree, mode, treeWalkCB,
+			     const_cast<void *>(static_cast<const void *>(&CB)));
 }
