@@ -186,8 +186,12 @@ public:
 		return git_blob_lookup(&blob, repo, tentry.id());
 	}
 
-	std::string content() { return std::string(static_cast<const char *>(rawcontent()),
-						   rawsize()); }
+	std::string content() const {
+		return std::string(static_cast<const char *>(rawcontent()), rawsize());
+	}
+	std::string_view contentView() const {
+		return std::string_view(static_cast<const char *>(rawcontent()), rawsize());
+	}
 
 	operator git_blob *() const { return blob; }
 private:
