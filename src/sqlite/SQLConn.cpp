@@ -224,7 +224,7 @@ int SQLConn::bind(SQLStmtHolder &ins, const Binding &binding)
 
 int SQLConn::insert(SQLStmtHolder &ins, const Binding &binding)
 {
-	SQLStmtResetter insSrcResetter(sqlHolder, ins);
+	SQLStmtResetter insResetter(sqlHolder, ins);
 	int ret;
 
 	if (bind(ins, binding))
@@ -244,6 +244,7 @@ int SQLConn::insert(SQLStmtHolder &ins, const Binding &binding)
 int SQLConn::select(SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
 		    SelectResult &result)
 {
+	SQLStmtResetter selResetter(sqlHolder, sel);
 	int ret;
 
 	if (bind(sel, binding))
