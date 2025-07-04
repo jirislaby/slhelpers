@@ -3,7 +3,9 @@
 #ifndef STRING_H
 #define STRING_H
 
+#include <cstring>
 #include <string>
+#include <vector>
 
 namespace SlHelpers {
 
@@ -20,6 +22,20 @@ public:
 		auto elen = endsWith.length();
 		return wlen >= elen && !what.compare(wlen - elen, std::string::npos, endsWith);
 	}
+
+	static std::vector<std::string> split(const std::string &str, const std::string &delim) {
+		std::vector<std::string> res;
+		std::string copy(str);
+
+		auto tok = ::strtok(copy.data(), delim.c_str());
+		while (tok) {
+			res.push_back(tok);
+			tok = ::strtok(nullptr, delim.c_str());
+		}
+
+		return res;
+	}
+
 };
 
 }
