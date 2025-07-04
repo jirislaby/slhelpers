@@ -4,6 +4,7 @@ public_headers += [
   'helpers/HomeDir.h',
   'helpers/PushD.h',
   'helpers/Ratelimit.h',
+  'helpers/String.h',
   'helpers/SSH.h',
 ]
 
