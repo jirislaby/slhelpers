@@ -13,12 +13,34 @@ namespace SlSSH {
 class Keys {
 public:
 	Keys() = delete;
-	static std::vector<std::string> get(const std::string &host) {
+
+	using Key = std::filesystem::path;
+	// public, private
+	using KeyPair = std::pair<Key, Key>;
+	using KeyPairs = std::vector<KeyPair>;
+
+	static KeyPairs get(const std::string &host) {
 		(void)host;
 		auto home = SlHelpers::HomeDir::get();
-		return { home };
+		auto sshDir = home / ".ssh";
+		KeyPairs res;
+
+		for (const auto &dirEntry : std::filesystem::directory_iterator { sshDir }) {
+			const auto &pub = dirEntry.path();
+
+			if (!dirEntry.is_regular_file() || pub.extension() != ".pub")
+				continue;
+
+			auto priv {pub};
+			priv.replace_extension();
+			if (std::filesystem::exists(priv))
+				res.push_back(std::make_pair(pub, std::move(priv)));
+		}
+
+		return res;
 	}
 };
+
 }
 
 #endif
