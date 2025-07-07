@@ -38,23 +38,23 @@ public:
 		tried(0), triedKey(0) { }
 
 	virtual int credentials(git_credential **out, const std::string &url,
-				const std::optional<std::string> &username_from_url,
-				unsigned int allowed_types) override {
+				const std::optional<std::string> &usernameFromUrl,
+				unsigned int allowedTypes) override {
 		std::cerr << __func__ << ": url=" << url << " user=" <<
-			     (username_from_url ? *username_from_url : "NULL") <<
-			     " types=" << std::bitset<8>{allowed_types} <<
+			     (usernameFromUrl ? *usernameFromUrl : "NULL") <<
+			     " types=" << std::bitset<8>{allowedTypes} <<
 			     " tried=" << std::bitset<8>{tried} <<
 			     " keys=" << keys.size() <<
 			     " triedKey=" << triedKey << '\n';
-		if (allowed_types & GIT_CREDENTIAL_SSH_KEY && !(tried & GIT_CREDENTIAL_SSH_KEY)) {
+		if (allowedTypes & GIT_CREDENTIAL_SSH_KEY && !(tried & GIT_CREDENTIAL_SSH_KEY)) {
 			if (triedKey >= keys.size()) {
 				tried |= GIT_CREDENTIAL_SSH_KEY;
 				return GIT_PASSTHROUGH;
 			}
 			const auto &keyPair = keys[triedKey++];
 			return git_credential_ssh_key_new(out,
-							  username_from_url ?
-								  username_from_url->c_str() :
+							  usernameFromUrl ?
+								  usernameFromUrl->c_str() :
 								  nullptr,
 							  keyPair.first.string().c_str(),
 							  keyPair.second.string().c_str(), nullptr);
