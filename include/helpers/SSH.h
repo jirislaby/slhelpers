@@ -23,6 +23,10 @@ public:
 		(void)host;
 		auto home = SlHelpers::HomeDir::get();
 		auto sshDir = home / ".ssh";
+
+		if (!std::filesystem::exists(sshDir))
+			return {};
+
 		KeyPairs res;
 
 		for (const auto &dirEntry : std::filesystem::directory_iterator { sshDir }) {
