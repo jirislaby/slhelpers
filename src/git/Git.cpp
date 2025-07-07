@@ -104,11 +104,14 @@ private:
 	unsigned int triedKey;
 };
 
-static int fetchCredentials(git_credential **out, const char *url, const char *username_from_url,
-		unsigned int allowed_types, void *payload)
+static int fetchCredentials(git_credential **out, const char *url, const char *usernameFromUrl,
+		unsigned int allowedTypes, void *payload)
 {
-	return static_cast<FetchCallbacks *>(payload)->credentials(out, url, username_from_url ? : "",
-							    allowed_types);
+	std::optional<std::string> username;
+	if (usernameFromUrl)
+		username = usernameFromUrl;
+	return static_cast<FetchCallbacks *>(payload)->credentials(out, url, username,
+								   allowedTypes);
 }
 
 static int fetchPackProgress(int stage, uint32_t current, uint32_t total, void *payload)
