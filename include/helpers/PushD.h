@@ -3,6 +3,8 @@
 #ifndef PUSHD_H
 #define PUSHD_H
 
+#include <filesystem>
+
 namespace SlHelpers {
 
 class PushD {
