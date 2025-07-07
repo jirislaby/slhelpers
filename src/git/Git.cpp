@@ -40,25 +40,28 @@ public:
 	virtual int credentials(git_credential **out, const std::string &url,
 				const std::optional<std::string> &usernameFromUrl,
 				unsigned int allowedTypes) override {
-		std::cerr << __func__ << ": url=" << url << " user=" <<
-			     (usernameFromUrl ? *usernameFromUrl : "NULL") <<
+		auto user = getUserName(usernameFromUrl);
+		std::cerr << __func__ << ": url=" << url << " user=" << user <<
 			     " types=" << std::bitset<8>{allowedTypes} <<
 			     " tried=" << std::bitset<8>{tried} <<
 			     " keys=" << keys.size() <<
 			     " triedKey=" << triedKey << '\n';
+
+		if (allowedTypes & GIT_CREDENTIAL_USERNAME)
+			return git_credential_username_new(out, user.c_str());
+
 		if (allowedTypes & GIT_CREDENTIAL_SSH_KEY && !(tried & GIT_CREDENTIAL_SSH_KEY)) {
 			if (triedKey >= keys.size()) {
 				tried |= GIT_CREDENTIAL_SSH_KEY;
 				return GIT_PASSTHROUGH;
 			}
 			const auto &keyPair = keys[triedKey++];
-			return git_credential_ssh_key_new(out,
-							  usernameFromUrl ?
-								  usernameFromUrl->c_str() :
-								  nullptr,
+			return git_credential_ssh_key_new(out, user.c_str(),
 							  keyPair.first.string().c_str(),
 							  keyPair.second.string().c_str(), nullptr);
 		}
+
+		std::cerr << "\tUNHANDLED!\n";
 
 		return GIT_PASSTHROUGH;
 	}
@@ -98,6 +101,17 @@ public:
 	}
 
 private:
+	std::string getUserName(const std::optional<std::string> &usernameFromUrl) {
+		if (!userName.empty())
+			return userName;
+
+		if (usernameFromUrl)
+			return userName = *usernameFromUrl;
+
+		return userName = ::getpwuid(::getuid())->pw_name;
+	}
+
+	std::string userName;
 	SlHelpers::Ratelimit ratelimit;
 	SlSSH::Keys::KeyPairs keys;
 	unsigned int tried;
