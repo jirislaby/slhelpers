@@ -34,7 +34,8 @@ int Repo::init(const std::filesystem::path &path, bool bare, const std::string &
 
 class MyFetchCallbacks : public FetchCallbacks {
 public:
-	MyFetchCallbacks() : ratelimit(std::chrono::seconds(2)), tried(0) { }
+	MyFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
+		tried(0), triedKey(0) { }
 
 	virtual int credentials(git_credential **out, const std::string &url,
 				const std::optional<std::string> &username_from_url,
@@ -42,16 +43,21 @@ public:
 		std::cerr << __func__ << ": url=" << url << " user=" <<
 			     (username_from_url ? *username_from_url : "NULL") <<
 			     " types=" << std::bitset<8>{allowed_types} <<
-			     " tried=" << std::bitset<8>{tried} << '\n';
+			     " tried=" << std::bitset<8>{tried} <<
+			     " keys=" << keys.size() <<
+			     " triedKey=" << triedKey << '\n';
 		if (allowed_types & GIT_CREDENTIAL_SSH_KEY && !(tried & GIT_CREDENTIAL_SSH_KEY)) {
-			tried |= GIT_CREDENTIAL_SSH_KEY;
-			SlSSH::Keys::get("");
+			if (triedKey >= keys.size()) {
+				tried |= GIT_CREDENTIAL_SSH_KEY;
+				return GIT_PASSTHROUGH;
+			}
+			const auto &keyPair = keys[triedKey++];
 			return git_credential_ssh_key_new(out,
 							  username_from_url ?
 								  username_from_url->c_str() :
 								  nullptr,
-							  "/home/xslaby/.ssh/id_rsa.pub",
-							  "/home/xslaby/.ssh/id_rsa", nullptr);
+							  keyPair.first.string().c_str(),
+							  keyPair.second.string().c_str(), nullptr);
 		}
 
 		return GIT_PASSTHROUGH;
@@ -93,7 +99,9 @@ public:
 
 private:
 	SlHelpers::Ratelimit ratelimit;
+	SlSSH::Keys::KeyPairs keys;
 	unsigned int tried;
+	unsigned int triedKey;
 };
 
 static int fetchCredentials(git_credential **out, const char *url, const char *username_from_url,
