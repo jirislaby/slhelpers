@@ -7,15 +7,11 @@
 
 using namespace SlKernCVS;
 
-std::optional<Branches::BranchesList> Branches::getBuildBranches()
+Branches::BranchesList Branches::getBuildBranches(const std::string &branchesConf)
 {
-	auto branchesConf = SlCurl::LibCurl::singleDownload("https://kerncvs.suse.de/branches.conf");
-	if (!branchesConf)
-		return {};
+	std::istringstream iss { branchesConf };
 
-	std::istringstream iss { *branchesConf };
-
-	std::regex branchesRegex { "^([^#].*):.*\\bbuild\\b" };
+	static std::regex branchesRegex { "^([^#].*):.*\\bbuild\\b" };
 	std::string line;
 	BranchesList branches;
 
@@ -31,6 +27,15 @@ std::optional<Branches::BranchesList> Branches::getBuildBranches()
 	}
 
 	return branches;
+}
+
+std::optional<Branches::BranchesList> Branches::getBuildBranches()
+{
+	auto branchesConf = SlCurl::LibCurl::singleDownload("https://kerncvs.suse.de/branches.conf");
+	if (!branchesConf)
+		return {};
+
+	return getBuildBranches(*branchesConf);
 }
 
 bool Branches::isExcluded(const std::string &branch)

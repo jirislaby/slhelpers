@@ -13,6 +13,7 @@ public:
 
 	Branches() = delete;
 
+	static BranchesList getBuildBranches(const std::string &branchesConf);
 	static std::optional<BranchesList> getBuildBranches();
 private:
 	static bool isExcluded(const std::string &branch);
