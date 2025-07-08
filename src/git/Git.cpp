@@ -221,19 +221,7 @@ std::optional<std::string> Repo::catFile(const std::string &branch, const std::s
 	if (commit.revparseSingle(*this, branch))
 		return {};
 
-	Tree tree;
-	if (tree.ofCommit(commit))
-		return {};
-
-	TreeEntry treeEntry;
-	if (treeEntry.byPath(tree, file))
-		return {};
-
-	Blob blob;
-	if (blob.lookup(*this, treeEntry))
-		return {};
-
-	return blob.content();
+	return commit.catFile(*this, file);
 }
 
 int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, bool tags)
@@ -285,4 +273,34 @@ static int treeWalkCB(const char *root, const git_tree_entry *entry, void *paylo
 int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) {
 	return git_tree_walk(tree, mode, treeWalkCB,
 			     const_cast<void *>(static_cast<const void *>(&CB)));
+}
+
+std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &file)
+{
+	TreeEntry treeEntry;
+	if (treeEntry.byPath(*this, file))
+		return {};
+
+	return treeEntry.catFile(repo);
+}
+
+std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &file)
+{
+	Tree tree;
+	if (tree.ofCommit(*this))
+		return {};
+
+	return tree.catFile(repo, file);
+}
+
+std::optional<std::string> TreeEntry::catFile(const Repo &repo)
+{
+	if (type() != GIT_OBJECT_BLOB)
+		return {};
+
+	Blob blob;
+	if (blob.lookup(repo, *this))
+		return {};
+
+	return blob.content();
 }

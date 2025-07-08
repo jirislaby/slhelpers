@@ -112,6 +112,8 @@ public:
 	const git_oid *id() const { return git_commit_id(commit); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
+	std::optional<std::string> catFile(const Repo &repo, const std::string &file);
+
 	operator git_commit *() const { return commit; }
 private:
 	git_commit *commit;
@@ -137,6 +139,8 @@ public:
 	size_t entryCount() { return git_tree_entrycount(tree); }
 
 	int walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE);
+
+	std::optional<std::string> catFile(const Repo &repo, const std::string &file);
 
 	operator git_tree *() const { return tree; }
 private:
@@ -166,6 +170,8 @@ public:
 	std::string name() const { return git_tree_entry_name(treeEntry); }
 	git_object_t type() const { return git_tree_entry_type(treeEntry); }
 	git_filemode_t filemode() const { return git_tree_entry_filemode(treeEntry); }
+
+	std::optional<std::string> catFile(const Repo &repo);
 
 	operator git_tree_entry *() const { return treeEntry; }
 private:
