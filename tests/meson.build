@@ -1,8 +1,11 @@
-test('string', executable('test_string', 'test_string.cpp',
-  include_directories: global_inc,
-))
+tests = {
+  'branches' : [ slkerncvs_lib ],
+  'string' : [],
+}
 
-test('branches', executable('test_branches', 'test_branches.cpp',
-  dependencies: [ slkerncvs_lib ],
-  include_directories: global_inc,
-))
+foreach t : tests.keys()
+  test(t, executable('test_' + t, 'test_' + t + '.cpp',
+    dependencies: tests[t],
+    include_directories: global_inc,
+  ))
+endforeach
