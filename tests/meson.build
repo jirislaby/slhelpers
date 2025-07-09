@@ -1,5 +1,6 @@
 tests = {
   'branches' : [ slkerncvs_lib ],
+  'ratelimit' : [],
   'string' : [],
 }
 
