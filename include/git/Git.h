@@ -56,7 +56,7 @@ public:
 	int open(const std::filesystem::path &path = ".");
 	int grepBranch(const std::string &branch, const std::regex &regex);
 	int checkout(const std::string &branch);
-	std::optional<std::string> catFile(const std::string &branch, const std::string &file);
+	std::optional<std::string> catFile(const std::string &branch, const std::string &file) const;
 
 	operator git_repository *() const { return repo; }
 private:
@@ -112,7 +112,7 @@ public:
 	const git_oid *id() const { return git_commit_id(commit); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
-	std::optional<std::string> catFile(const Repo &repo, const std::string &file);
+	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
 	operator git_commit *() const { return commit; }
 private:
@@ -140,7 +140,7 @@ public:
 
 	int walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE);
 
-	std::optional<std::string> catFile(const Repo &repo, const std::string &file);
+	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
 	operator git_tree *() const { return tree; }
 private:
@@ -171,7 +171,7 @@ public:
 	git_object_t type() const { return git_tree_entry_type(treeEntry); }
 	git_filemode_t filemode() const { return git_tree_entry_filemode(treeEntry); }
 
-	std::optional<std::string> catFile(const Repo &repo);
+	std::optional<std::string> catFile(const Repo &repo) const;
 
 	operator git_tree_entry *() const { return treeEntry; }
 private:

@@ -214,7 +214,7 @@ int Repo::checkout(const std::string &branch)
 	return 0;
 }
 
-std::optional<std::string> Repo::catFile(const std::string &branch, const std::string &file)
+std::optional<std::string> Repo::catFile(const std::string &branch, const std::string &file) const
 {
 	Commit commit;
 
@@ -275,7 +275,7 @@ int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) {
 			     const_cast<void *>(static_cast<const void *>(&CB)));
 }
 
-std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &file)
+std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &file) const
 {
 	TreeEntry treeEntry;
 	if (treeEntry.byPath(*this, file))
@@ -284,7 +284,7 @@ std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &fi
 	return treeEntry.catFile(repo);
 }
 
-std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &file)
+std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &file) const
 {
 	Tree tree;
 	if (tree.ofCommit(*this))
@@ -293,7 +293,7 @@ std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &
 	return tree.catFile(repo, file);
 }
 
-std::optional<std::string> TreeEntry::catFile(const Repo &repo)
+std::optional<std::string> TreeEntry::catFile(const Repo &repo) const
 {
 	if (type() != GIT_OBJECT_BLOB)
 		return {};
