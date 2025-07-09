@@ -1,36 +1,35 @@
-#include <cstring>
+#include <fnmatch.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
+#include "helpers/String.h"
 #include "kerncvs/SupportedConf.h"
 
 using namespace SlKernCVS;
 
-void SupportedConf::parseLine(std::string &line, SupportedConfMap &map)
+void SupportedConf::parseLine(std::string &line)
 {
-	static const char delim[] = " \t";
-	std::vector<std::string> vec;
-	auto tok = strtok(line.data(), delim);
-	while (tok) {
-		if (tok[0] == '#')
-			break;
-		vec.push_back(tok);
-		tok = strtok(nullptr, delim);
-	}
-
+	auto vec = SlHelpers::String::split(line, " \t", '#');
 	if (vec.empty())
 		return;
 
-	const auto &module = vec.back();
-	int supp = 0;
+	auto supp = SupportState::Unspecified;
 	if (vec.size() >= 2) {
-		switch (vec[0][0]) {
+		const auto &suppFlag = vec[0];
+		switch (suppFlag[0]) {
 		case '+':
-			supp = 1;
+			if (SlHelpers::String::endsWith(suppFlag, "-kmp"))
+				supp = SupportState::KMPSupported;
+			else if (suppFlag == "+external")
+				supp = SupportState::ExternallySupported;
+			else if (suppFlag == "+base")
+				supp = SupportState::BaseSupported;
+			else
+				supp = SupportState::Supported;
 			break;
 		case '-':
-			supp = -1;
+			supp = SupportState::Unsupported;
 			break;
 		default:
 			std::cerr << __func__ << ": bad vec from: " << line << "\n";
@@ -38,20 +37,25 @@ void SupportedConf::parseLine(std::string &line, SupportedConfMap &map)
 		}
 	}
 
-	map.insert({ module, supp });
+	const auto &module = vec.back();
+	entries.push_back({ module, supp });
 }
 
-SupportedConf::SupportedConfMap SupportedConf::parseSupportedConf(const std::string &conf)
+SupportedConf::SupportedConf(const std::string &conf)
 {
-	SupportedConf::SupportedConfMap map;
 	std::istringstream iss { conf };
 	std::string line;
 
-	while (std::getline(iss, line)) {
-		if (line.empty() || line[0] == '#')
-			continue;
-		parseLine(line, map);
-	}
+	while (std::getline(iss, line))
+		parseLine(line);
+}
 
-	return map;
+SupportedConf::SupportState SupportedConf::supportState(const std::string &module) const
+{
+	for (const auto &e : entries)
+		if (!::fnmatch(e.first.c_str(), module.c_str(), FNM_NOESCAPE | FNM_PERIOD))
+			return e.second;
+
+	return SupportState::Unsupported;
+
 }

@@ -1,20 +1,31 @@
 #ifndef SUPPORTEDCONF_H
 #define SUPPORTEDCONF_H
 
-#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace SlKernCVS {
 
 class SupportedConf {
 public:
-	using SupportedConfMap = std::map<std::string, int>;
+	enum SupportState {
+		Unsupported = -1,
+		Unspecified = 0,
+		Supported = 1,
+		BaseSupported = 2,
+		ExternallySupported = 3,
+		KMPSupported = 4,
+	};
 
 	SupportedConf() = delete;
+	SupportedConf(const std::string &conf);
 
-	static SupportedConfMap parseSupportedConf(const std::string &conf);
+	SupportState supportState(const std::string &module) const;
 private:
-	static void parseLine(std::string &line, SupportedConfMap &suppMap);
+	void parseLine(std::string &line);
+
+	std::vector<std::pair<std::string, SupportState>> entries;
 };
 
 }

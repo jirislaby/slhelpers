@@ -2,6 +2,7 @@ tests = {
   'branches' : [ slkerncvs_lib ],
   'ratelimit' : [],
   'string' : [],
+  'supported_conf' : [ slkerncvs_lib ],
 }
 
 foreach t : tests.keys()

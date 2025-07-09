@@ -4,6 +4,7 @@
 #define STRING_H
 
 #include <cstring>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -23,12 +24,15 @@ public:
 		return wlen >= elen && !what.compare(wlen - elen, std::string::npos, endsWith);
 	}
 
-	static std::vector<std::string> split(const std::string &str, const std::string &delim) {
+	static std::vector<std::string> split(const std::string &str, const std::string &delim,
+					      const std::optional<char> &comment = std::nullopt) {
 		std::vector<std::string> res;
 		std::string copy(str);
 
 		auto tok = ::strtok(copy.data(), delim.c_str());
 		while (tok) {
+			if (comment && tok[0] == *comment)
+				break;
 			res.push_back(tok);
 			tok = ::strtok(nullptr, delim.c_str());
 		}
