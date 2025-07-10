@@ -29,7 +29,10 @@ void SupportedConf::parseLine(std::string &line)
 				supp = SupportState::Supported;
 			break;
 		case '-':
-			supp = SupportState::Unsupported;
+			if (suppFlag == "-!optional")
+				supp = SupportState::UnsupportedOptional;
+			else
+				supp = SupportState::Unsupported;
 			break;
 		default:
 			std::cerr << __func__ << ": bad vec from: " << line << "\n";

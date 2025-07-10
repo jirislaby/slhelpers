@@ -16,6 +16,7 @@ int main()
 		"- drivers/mtd/*\n"
 		"+ocfs2-kmp      fs/ocfs2/ocfs2_stackglue\n"
 		"+base           drivers/net/ethernet/8390/8390\n"
+		"-!optional      drivers/ata/ahci_imx\n"
 		"+external       arch/powerpc/platforms/powernv/opal-prd\n"
 	};
 
@@ -30,6 +31,7 @@ int main()
 	assert(supp.supportState("drivers/mtd/something_else") == SupportedConf::Unsupported);
 	assert(supp.supportState("fs/ocfs2/ocfs2_stackglue") == SupportedConf::KMPSupported);
 	assert(supp.supportState("drivers/net/ethernet/8390/8390") == SupportedConf::BaseSupported);
+	assert(supp.supportState("drivers/ata/ahci_imx") == SupportedConf::UnsupportedOptional);
 	assert(supp.supportState("arch/powerpc/platforms/powernv/opal-prd") ==
 	       SupportedConf::ExternallySupported);
 
