@@ -24,7 +24,7 @@ int main()
 	/*for (const auto &e : map)
 		std::cout << "E=" << e.first << " -> " << e.second << '\n';*/
 
-	assert(supp.supportState("non_existing") == SupportedConf::Unsupported);
+	assert(supp.supportState("non_existing") == SupportedConf::NonPresent);
 
 	assert(supp.supportState("drivers/input/joystick/something.ko") == SupportedConf::Unsupported);
 	assert(supp.supportState("drivers/mtd/spi-nor/spi-nor") == SupportedConf::Unspecified);

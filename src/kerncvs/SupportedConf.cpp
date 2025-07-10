@@ -59,6 +59,6 @@ SupportedConf::SupportState SupportedConf::supportState(const std::string &modul
 		if (!::fnmatch(e.first.c_str(), module.c_str(), FNM_NOESCAPE | FNM_PERIOD))
 			return e.second;
 
-	return SupportState::Unsupported;
+	return SupportState::NonPresent;
 
 }

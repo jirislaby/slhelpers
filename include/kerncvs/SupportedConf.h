@@ -10,6 +10,7 @@ namespace SlKernCVS {
 class SupportedConf {
 public:
 	enum SupportState {
+		NonPresent = -3,
 		UnsupportedOptional = -2,
 		Unsupported = -1,
 		Unspecified = 0,
