@@ -2,15 +2,17 @@
 
 public_headers += [
   'kerncvs/Branches.h',
+  'kerncvs/PatchesAuthors.h',
   'kerncvs/SupportedConf.h',
 ]
 
 slkerncvs = library('slkerncvs++', [
     'Branches.cpp',
+    'PatchesAuthors.cpp',
     'SupportedConf.cpp',
   ],
   include_directories : global_inc,
-  dependencies: slcurl_lib,
+  dependencies: [ slcurl_lib, slgit_lib ],
   install: true,
   version: meson.project_version(),
 )
