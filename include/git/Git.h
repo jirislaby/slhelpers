@@ -142,6 +142,9 @@ public:
 
 	int walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE);
 
+	const git_oid *id() const { return git_tree_id(tree); }
+	std::string idStr() const { return Helpers::oidToStr(*id()); }
+
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
 	operator git_tree *() const { return tree; }
