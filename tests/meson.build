@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 tests = {
   'branches' : [ slkerncvs_lib ],
   'ratelimit' : [],

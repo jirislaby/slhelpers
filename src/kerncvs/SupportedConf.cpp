@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include <fnmatch.h>
 #include <iostream>
 #include <sstream>
