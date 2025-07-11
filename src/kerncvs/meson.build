@@ -2,12 +2,14 @@
 
 public_headers += [
   'kerncvs/Branches.h',
+  'kerncvs/CollectConfigs.h',
   'kerncvs/PatchesAuthors.h',
   'kerncvs/SupportedConf.h',
 ]
 
 slkerncvs = library('slkerncvs++', [
     'Branches.cpp',
+    'CollectConfigs.cpp',
     'PatchesAuthors.cpp',
     'SupportedConf.cpp',
   ],
