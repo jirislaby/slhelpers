@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef SUPPORTEDCONF_H
 #define SUPPORTEDCONF_H
 
