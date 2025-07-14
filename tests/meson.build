@@ -21,3 +21,13 @@ foreach t : tests.keys()
     include_directories: global_inc,
   ), args : tests[t].get('args', []))
 endforeach
+
+executable('cc', 'cc.cpp',
+    dependencies: [ slkerncvs_lib, slgit_lib ],
+    include_directories: global_inc,
+)
+
+executable('clone', 'clone.cpp',
+    dependencies: [ slgit_lib ],
+    include_directories: global_inc,
+)
