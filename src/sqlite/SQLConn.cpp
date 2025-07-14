@@ -235,6 +235,16 @@ int SQLConn::insert(SQLStmtHolder &ins, const Binding &binding)
 		std::cerr << "db step (INSERT) failed (" << __LINE__ << "): " <<
 			     sqlite3_errstr(ret) << " -> " <<
 			     sqlite3_errmsg(sqlHolder) << "\n";
+		for (const auto &b : binding) {
+			std::cerr << '\t' << b.first << '=';
+			if (std::holds_alternative<int>(b.second))
+				std::cerr << "I:" << std::get<int>(b.second);
+			else if (std::holds_alternative<std::string>(b.second))
+				std::cerr << "T:" << std::get<std::string>(b.second);
+			else
+				std::cerr << "NULL";
+			std::cerr << '\n';
+		}
 		return -1;
 	}
 
