@@ -13,8 +13,8 @@ class SupportedConf {
 public:
 	enum SupportState {
 		NonPresent = -3,
-		UnsupportedOptional = -2,
-		Unsupported = -1,
+		Unsupported = -2,
+		UnsupportedOptional = -1,
 		Unspecified = 0,
 		Supported = 1,
 		BaseSupported = 2,
