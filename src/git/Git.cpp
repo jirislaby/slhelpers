@@ -25,7 +25,7 @@ Repo::~Repo()
 
 int Repo::init(const std::filesystem::path &path, bool bare, const std::string &origin)
 {
-	git_repository_init_options opts = GIT_REPOSITORY_INIT_OPTIONS_INIT;
+	git_repository_init_options opts GIT_REPOSITORY_INIT_OPTIONS_INIT;
 	opts.flags |= GIT_REPOSITORY_INIT_MKPATH;
 	if (bare)
 		opts.flags |= GIT_REPOSITORY_INIT_BARE;
@@ -157,7 +157,7 @@ int Repo::clone(const std::filesystem::path &path, const std::string &url,
 		const std::string &branch, const unsigned int &depth, bool tags)
 {
 	MyFetchCallbacks fc;
-	git_clone_options opts = GIT_CLONE_OPTIONS_INIT;
+	git_clone_options opts GIT_CLONE_OPTIONS_INIT;
 	opts.checkout_branch = branch.empty() ? nullptr : branch.c_str();
 	opts.fetch_opts.depth = depth;
 	if (!tags)
@@ -203,7 +203,7 @@ int Repo::checkout(const std::string &branch)
 		return ret;
 
 	auto obj = reinterpret_cast<git_object *>(static_cast<git_tree *>(tree));
-	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
+	git_checkout_options opts GIT_CHECKOUT_OPTIONS_INIT;
 	opts.checkout_strategy = GIT_CHECKOUT_SAFE;
 	ret = git_checkout_tree(*this, obj, &opts);
 	if (ret)
@@ -237,7 +237,7 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, b
 		.strings = strings.data(),
 		.count = strings.size(),
 	};
-	git_fetch_options opts = GIT_FETCH_OPTIONS_INIT;
+	git_fetch_options opts GIT_FETCH_OPTIONS_INIT;
 	MyFetchCallbacks fc;
 	opts.callbacks.payload = &fc;
 	opts.callbacks.credentials = fetchCredentials;
