@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 git2_lib = cpp_compiler.find_library('git2')
-cpp_args = []
+# libgit's *_INIT produce those
+cpp_args = [ '-Wno-missing-field-initializers' ]
 
 if cpp_compiler.has_member('git_remote_callbacks', 'update_refs',
     prefix : '#include <git2.h>')
