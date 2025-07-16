@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-git2_lib = cpp_compiler.find_library('git2')
+git2_lib = dependency('libgit2')
 # libgit's *_INIT produce those
 cpp_args = [ '-Wno-missing-field-initializers' ]
 
@@ -29,5 +29,6 @@ slgit_lib = declare_dependency(
 )
 
 pkg.generate(slgit,
+  requires: git2_lib,
   description: slgit.name() + ': c++ git wrapper library',
 )

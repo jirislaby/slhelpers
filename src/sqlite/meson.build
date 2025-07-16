@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-sqlite3_lib = cpp_compiler.find_library('sqlite3')
+sqlite3_lib = dependency('sqlite3')
 
 public_headers += [
     'sqlite/SQLConn.h',
