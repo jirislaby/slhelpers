@@ -12,3 +12,8 @@ install_headers(public_headers,
   subdir: 'sl',
   preserve_path: true,
 )
+
+name = 'slhelpers++'
+pkg.generate(name: name,
+  description: name + ': c++ helpers library',
+)
