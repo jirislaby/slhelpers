@@ -257,7 +257,7 @@ int Remote::fetchBranches(const std::vector<std::string> &branches, int depth, b
 	return fetchRefspecs(refspecs, depth, tags);
 }
 
-static int treeWalkCB(const char *root, const git_tree_entry *entry, void *payload)
+int Tree::walkCB(const char *root, const git_tree_entry *entry, void *payload)
 {
 	const auto CB = *static_cast<Tree::WalkCallback *>(payload);
 
@@ -266,7 +266,7 @@ static int treeWalkCB(const char *root, const git_tree_entry *entry, void *paylo
 }
 
 int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) {
-	return git_tree_walk(m_tree, mode, treeWalkCB,
+	return git_tree_walk(m_tree, mode, walkCB,
 			     const_cast<void *>(static_cast<const void *>(&CB)));
 }
 

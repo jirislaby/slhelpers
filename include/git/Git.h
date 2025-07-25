@@ -171,6 +171,7 @@ public:
 	git_tree *tree() const { return m_tree; }
 	operator git_tree *() const { return m_tree; }
 private:
+	static int walkCB(const char *root, const git_tree_entry *entry, void *payload);
 	git_tree *m_tree;
 };
 
