@@ -299,3 +299,28 @@ std::optional<std::string> TreeEntry::catFile(const Repo &repo) const
 
 	return blob.content();
 }
+
+int Index::addAll(const std::vector<std::string> &paths, unsigned int flags, const MatchCB &cb)
+{
+	return git_index_add_all(m_index, StrArray(paths), flags, matchCB,
+				 const_cast<void *>(static_cast<const void *>(&cb)));
+}
+
+int Index::removeAll(const std::vector<std::string> &paths, const MatchCB &cb)
+{
+	return git_index_remove_all(m_index, StrArray(paths), matchCB,
+				 const_cast<void *>(static_cast<const void *>(&cb)));
+}
+
+int Index::updateAll(const std::vector<std::string> &paths, const MatchCB &cb)
+{
+	return git_index_update_all(m_index, StrArray(paths), matchCB,
+				 const_cast<void *>(static_cast<const void *>(&cb)));
+}
+
+int Index::matchCB(const char *path, const char *matched_pathspec, void *payload)
+{
+	const auto &cb = *static_cast<const MatchCB *>(payload);
+
+	return cb(path, matched_pathspec);
+}

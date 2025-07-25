@@ -106,20 +106,6 @@ private:
 	git_remote *m_remote;
 };
 
-class Index {
-public:
-	Index() : m_index(nullptr) { }
-	Index(git_index *m_index) : m_index(m_index) { }
-	~Index() { git_index_free(m_index); }
-
-	int repoIndex(const Repo &repo) { return git_repository_index(&m_index, repo); }
-
-	git_index *index() const { return m_index; }
-	operator git_index *() const { return m_index; }
-private:
-	git_index *m_index;
-};
-
 class Commit {
 public:
 	Commit() : m_commit(nullptr) { }
@@ -230,6 +216,59 @@ private:
 inline int Tree::lookup(const Repo &repo, const TreeEntry &entry) {
 	return lookup(repo, *entry.id());
 }
+
+class Index {
+public:
+	using MatchCB = std::function<int(const std::filesystem::path &, const std::string &)>;
+
+	Index() : m_index(nullptr) { }
+	Index(git_index *m_index) : m_index(m_index) { }
+	~Index() { git_index_free(m_index); }
+
+	int repoIndex(const Repo &repo) { return git_repository_index(&m_index, repo); }
+	int byPath(const std::filesystem::path &path) {
+		return git_index_open(&m_index, path.c_str());
+	}
+	int create() { return git_index_new(&m_index); }
+
+	int read(bool force = true) { return git_index_read(m_index, force); }
+	int write() { return git_index_write(m_index); }
+
+	int readTree(const Tree &tree) { return git_index_read_tree(m_index, tree); }
+	int writeTree(const Repo &repo, Tree &tree) {
+		git_oid oid;
+		auto ret = git_index_write_tree(&oid, m_index);
+		if (ret)
+			return ret;
+		return tree.lookup(repo, oid);
+	}
+
+	const git_index_entry *entryByIndex(size_t idx) const {
+		return git_index_get_byindex(m_index, idx);
+	}
+	const git_index_entry *entryByPath(const std::filesystem::path &path,
+					   git_index_stage_t stage = GIT_INDEX_STAGE_NORMAL) const {
+		return git_index_get_bypath(m_index, path.c_str(), stage);
+	}
+
+	int addByPath(const std::filesystem::path &path) {
+		return git_index_add_bypath(m_index, path.c_str());
+	}
+	int removeByPath(const std::filesystem::path &path) {
+		return git_index_remove_bypath(m_index, path.c_str());
+	}
+	int addAll(const std::vector<std::string> &paths, unsigned int flags, const MatchCB &cb);
+	int removeAll(const std::vector<std::string> &paths, const MatchCB &cb);
+	int updateAll(const std::vector<std::string> &paths, const MatchCB &cb);
+
+	bool hasConflicts() const { return git_index_has_conflicts(m_index); }
+
+	git_index *index() const { return m_index; }
+	operator git_index *() const { return m_index; }
+private:
+	static int matchCB(const char *path, const char *matched_pathspec, void *payload);
+	git_index *m_index;
+};
 
 class Blob {
 public:
