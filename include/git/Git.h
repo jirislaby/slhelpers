@@ -128,6 +128,12 @@ public:
 	int lookup(const Repo &repo, const git_oid &oid) {
 		return git_commit_lookup(&m_commit, repo, &oid);
 	}
+	int parent(const Commit &ofCommit, unsigned int nth) {
+		return git_commit_parent(&m_commit, ofCommit, nth);
+	}
+	int ancestor(const Commit &ofCommit, unsigned int nth) {
+		return git_commit_nth_gen_ancestor(&m_commit, ofCommit, nth);
+	}
 
 	int revparseSingle(const Repo &repo, const std::string &rev) {
 		return git_revparse_single((git_object **)&m_commit, repo, rev.c_str());
@@ -135,6 +141,19 @@ public:
 
 	const git_oid *id() const { return git_commit_id(m_commit); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
+	const git_oid *treeId() const { return git_commit_tree_id(m_commit); }
+	std::string treeIdStr() const { return Helpers::oidToStr(*treeId()); }
+	std::string messageEncoding() const { return git_commit_message_encoding(m_commit); }
+	std::string message() const { return git_commit_message(m_commit); }
+	std::string summary() const { return git_commit_summary(m_commit); }
+	git_time_t time() const { return git_commit_time(m_commit); }
+	int timeOffset() const { return git_commit_time_offset(m_commit); }
+	const git_signature *committer() const { return git_commit_committer(m_commit); }
+	const git_signature *author() const { return git_commit_author(m_commit); }
+	std::string rawHeader() const { return git_commit_raw_header(m_commit); }
+
+	unsigned int parentCount() const { return git_commit_parentcount(m_commit); }
+	const git_oid *parentId(unsigned int nth) const { return git_commit_parent_id(m_commit, nth); }
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
