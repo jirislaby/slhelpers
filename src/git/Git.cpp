@@ -283,6 +283,23 @@ std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &fi
 	return treeEntry.catFile(repo);
 }
 
+int Commit::create(const Repo &repo, const Signature &author, const Signature &committer,
+		   const std::string &msg, const Tree &tree,
+		   const std::vector<const Commit *> &parents)
+{
+	git_oid oid;
+	std::vector<const git_commit *> parentPtrs;
+
+	for (const auto &p : parents)
+		parentPtrs.push_back(p->commit());
+
+	auto ret = git_commit_create(&oid, repo, "HEAD", author, committer, "UTF-8",
+				     msg.c_str(), tree, parentPtrs.size(), parentPtrs.data());
+	if (ret)
+		return ret;
+	return lookup(repo, oid);
+}
+
 std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &file) const
 {
 	Tree tree;

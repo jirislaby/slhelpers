@@ -4,6 +4,7 @@ crash = executable('crash', 'crash.cpp')
 
 tests = {
   'branches' : { 'libs' : [ slkerncvs_lib ] },
+  'git' : { 'libs' : [ slgit_lib ] },
   'ratelimit' : {},
   'process' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
   'string' : {},

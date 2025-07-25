@@ -142,6 +142,19 @@ public:
 		return git_revparse_single((git_object **)&m_commit, repo, rev.c_str());
 	}
 
+	int create(const Repo &repo, const Signature &author, const Signature &committer,
+		   const std::string &msg, const Tree &tree,
+		   const std::vector<const Commit *> &parents = {});
+	int createCheckout(Repo &repo, const Signature &author, const Signature &committer,
+			   const std::string &msg, const Tree &tree,
+			   unsigned int strategy = GIT_CHECKOUT_SAFE,
+			   const std::vector<const Commit *> &parents = {}) {
+		auto ret = create(repo, author, committer, msg, tree, parents);
+		if (ret)
+			return ret;
+		return repo.checkoutTree(tree, strategy);
+	}
+
 	const git_oid *id() const { return git_commit_id(m_commit); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 	const git_oid *treeId() const { return git_commit_tree_id(m_commit); }
