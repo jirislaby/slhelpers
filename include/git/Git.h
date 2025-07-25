@@ -22,6 +22,23 @@ public:
 		git_oid_tostr(buf, sizeof(buf), &id);
 		return buf;
 	}
+
+};
+
+class StrArray {
+public:
+	StrArray(const std::vector<std::string> &vec) {
+		for (const auto &entry : vec)
+			strings.push_back(entry.c_str());
+		m_array.strings = const_cast<char **>(strings.data());
+		m_array.count = strings.size();
+	}
+
+	const git_strarray *array() const { return &m_array; }
+	operator const git_strarray *() const { return &m_array; }
+private:
+	std::vector<const char *> strings;
+	git_strarray m_array;
 };
 
 class FetchCallbacks {

@@ -230,13 +230,6 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, b
 {
 	if (refspecs.empty())
 		return git_remote_fetch(m_remote, nullptr, nullptr, nullptr);
-	std::vector<char *> strings;
-	for (const auto &r : refspecs)
-		strings.push_back(const_cast<char *>(r.c_str()));
-	git_strarray refs = {
-		.strings = strings.data(),
-		.count = strings.size(),
-	};
 	git_fetch_options opts GIT_FETCH_OPTIONS_INIT;
 	MyFetchCallbacks fc;
 	opts.callbacks.payload = &fc;
@@ -250,7 +243,7 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, b
 	if (!tags)
 		opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE;
 	opts.depth = depth;
-	return git_remote_fetch(m_remote, &refs, &opts, nullptr);
+	return git_remote_fetch(m_remote, StrArray(refspecs), &opts, nullptr);
 }
 
 int Remote::fetchBranches(const std::vector<std::string> &branches, int depth, bool tags)
