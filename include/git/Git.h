@@ -12,6 +12,9 @@
 
 namespace SlGit {
 
+class Tree;
+class TreeEntry;
+
 class Helpers {
 public:
 	static std::string oidToStr(const git_oid &id) {
@@ -44,8 +47,7 @@ public:
 	}
 };
 
-class Repo
-{
+class Repo {
 public:
 	Repo();
 	~Repo();
@@ -60,19 +62,19 @@ public:
 	int checkout(const std::string &branch);
 	std::optional<std::string> catFile(const std::string &branch, const std::string &file) const;
 
-	operator git_repository *() const { return repo; }
+	git_repository *repo() const { return m_repo; }
+	operator git_repository *() const { return m_repo; }
 private:
-	git_repository *repo;
+	git_repository *m_repo;
 };
 
-class Remote
-{
+class Remote {
 public:
-	Remote() : remote(nullptr) {}
-	~Remote() { git_remote_free(remote); }
+	Remote() : m_remote(nullptr) {}
+	~Remote() { git_remote_free(m_remote); }
 
 	int lookup(const Repo &repo, const std::string &name) {
-		return git_remote_lookup(&remote, repo, name.c_str());
+		return git_remote_lookup(&m_remote, repo, name.c_str());
 	}
 	int fetchRefspecs(const std::vector<std::string> &refspecs = {}, int depth = 0,
 			  bool tags = true);
@@ -80,107 +82,111 @@ public:
 			  bool tags = true);
 	int fetch(const std::string &branch, int depth = 0,
 		  bool tags = true) { return fetchBranches({ branch }, depth, tags); }
-	operator git_remote *() const { return remote; }
+
+	git_remote *remote() const { return m_remote; }
+	operator git_remote *() const { return m_remote; }
 private:
-	git_remote *remote;
+	git_remote *m_remote;
 };
 
 class Index {
 public:
-	Index() : index(nullptr) { }
-	Index(git_index *index) : index(index) { }
-	~Index() { git_index_free(index); }
+	Index() : m_index(nullptr) { }
+	Index(git_index *m_index) : m_index(m_index) { }
+	~Index() { git_index_free(m_index); }
 
-	int repoIndex(const Repo &repo) { return git_repository_index(&index, repo); }
+	int repoIndex(const Repo &repo) { return git_repository_index(&m_index, repo); }
 
-	operator git_index *() const { return index; }
+	git_index *index() const { return m_index; }
+	operator git_index *() const { return m_index; }
 private:
-	git_index *index;
+	git_index *m_index;
 };
 
 class Commit {
 public:
-	Commit() : commit(nullptr) { }
-	~Commit() { git_commit_free(commit); }
+	Commit() : m_commit(nullptr) { }
+	~Commit() { git_commit_free(m_commit); }
 
 	int lookup(const Repo &repo, const git_oid &oid) {
-		return git_commit_lookup(&commit, repo, &oid);
+		return git_commit_lookup(&m_commit, repo, &oid);
 	}
 
 	int revparseSingle(const Repo &repo, const std::string &rev) {
-		return git_revparse_single((git_object **)&commit, repo, rev.c_str());
+		return git_revparse_single((git_object **)&m_commit, repo, rev.c_str());
 	}
 
-	const git_oid *id() const { return git_commit_id(commit); }
+	const git_oid *id() const { return git_commit_id(m_commit); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
-	operator git_commit *() const { return commit; }
+	git_commit *commit() const { return m_commit; }
+	operator git_commit *() const { return m_commit; }
 private:
-	git_commit *commit;
+	git_commit *m_commit;
 };
-
-class TreeEntry;
 
 class Tree {
 public:
 	using WalkCallback = const std::function<int(const std::string &root,
 		const TreeEntry &entry)>;
-	Tree() : tree(nullptr) { }
-	~Tree() { git_tree_free(tree); }
+	Tree() : m_tree(nullptr) { }
+	~Tree() { git_tree_free(m_tree); }
 
 	int ofCommit(const Commit &commit) {
-		return git_commit_tree(&tree, commit);
+		return git_commit_tree(&m_tree, commit);
 	}
 	int lookup(const Repo &repo, const git_oid &id) {
-		return git_tree_lookup(&tree, repo, &id);
+		return git_tree_lookup(&m_tree, repo, &id);
 	}
 	int lookup(const Repo &repo, const TreeEntry &entry);
 
-	size_t entryCount() { return git_tree_entrycount(tree); }
+	size_t entryCount() { return git_tree_entrycount(m_tree); }
 
 	int walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE);
 
-	const git_oid *id() const { return git_tree_id(tree); }
+	const git_oid *id() const { return git_tree_id(m_tree); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
-	operator git_tree *() const { return tree; }
+	git_tree *tree() const { return m_tree; }
+	operator git_tree *() const { return m_tree; }
 private:
-	git_tree *tree;
+	git_tree *m_tree;
 };
 
 class TreeEntry {
 public:
-	TreeEntry() : treeEntry(nullptr), free(true) { }
-	TreeEntry(const git_tree_entry *entry) : treeEntry(const_cast<git_tree_entry *>(entry)),
+	TreeEntry() : m_treeEntry(nullptr), free(true) { }
+	TreeEntry(const git_tree_entry *entry) : m_treeEntry(const_cast<git_tree_entry *>(entry)),
 		free(false) { }
 	~TreeEntry() {
 		if (free)
-			git_tree_entry_free(treeEntry);
+			git_tree_entry_free(m_treeEntry);
 	}
 
 	int byPath(const Tree &tree, const std::string &path) {
-		return git_tree_entry_bypath(&treeEntry, tree, path.c_str());
+		return git_tree_entry_bypath(&m_treeEntry, tree, path.c_str());
 	}
 	void byIndex(const Tree &tree, size_t idx) {
-		treeEntry = const_cast<git_tree_entry *>(git_tree_entry_byindex(tree, idx));
+		m_treeEntry = const_cast<git_tree_entry *>(git_tree_entry_byindex(tree, idx));
 	}
 
-	const git_oid *id() const { return git_tree_entry_id(treeEntry); }
+	const git_oid *id() const { return git_tree_entry_id(m_treeEntry); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
-	std::string name() const { return git_tree_entry_name(treeEntry); }
-	git_object_t type() const { return git_tree_entry_type(treeEntry); }
-	git_filemode_t filemode() const { return git_tree_entry_filemode(treeEntry); }
+	std::string name() const { return git_tree_entry_name(m_treeEntry); }
+	git_object_t type() const { return git_tree_entry_type(m_treeEntry); }
+	git_filemode_t filemode() const { return git_tree_entry_filemode(m_treeEntry); }
 
 	std::optional<std::string> catFile(const Repo &repo) const;
 
-	operator git_tree_entry *() const { return treeEntry; }
+	git_tree_entry *treeEntry() const { return m_treeEntry; }
+	operator git_tree_entry *() const { return m_treeEntry; }
 private:
-	git_tree_entry *treeEntry;
+	git_tree_entry *m_treeEntry;
 	bool free;
 };
 
@@ -190,11 +196,11 @@ inline int Tree::lookup(const Repo &repo, const TreeEntry &entry) {
 
 class Blob {
 public:
-	Blob() : blob(nullptr) { }
-	~Blob() { git_blob_free(blob); }
+	Blob() : m_blob(nullptr) { }
+	~Blob() { git_blob_free(m_blob); }
 
 	int lookup(const Repo &repo, const TreeEntry &tentry) {
-		return git_blob_lookup(&blob, repo, tentry.id());
+		return git_blob_lookup(&m_blob, repo, tentry.id());
 	}
 
 	std::string content() const {
@@ -204,43 +210,44 @@ public:
 		return std::string_view(static_cast<const char *>(rawcontent()), rawsize());
 	}
 
-	operator git_blob *() const { return blob; }
+	git_blob *blob() const { return m_blob; }
+	operator git_blob *() const { return m_blob; }
 private:
-	git_object_size_t rawsize() const { return git_blob_rawsize(blob); }
-	const void *rawcontent() const { return git_blob_rawcontent(blob); }
+	git_object_size_t rawsize() const { return git_blob_rawsize(m_blob); }
+	const void *rawcontent() const { return git_blob_rawcontent(m_blob); }
 
-	git_blob *blob;
+	git_blob *m_blob;
 };
 
 class Reference {
 public:
-	Reference() : ref(nullptr) { }
-	~Reference() { git_reference_free(ref); }
+	Reference() : m_ref(nullptr) { }
+	~Reference() { git_reference_free(m_ref); }
 
 	int lookup(const Repo &repo, const std::string &name) {
-		return git_reference_lookup(&ref, repo, name.c_str());
+		return git_reference_lookup(&m_ref, repo, name.c_str());
 	}
 	int dwim(const Repo &repo, const std::string &name) {
-		return git_reference_dwim(&ref, repo, name.c_str());
+		return git_reference_dwim(&m_ref, repo, name.c_str());
 	}
 
 	int createDirect(const Repo &repo, const std::string &name, const git_oid &oid,
 			 bool force = false) {
-		return git_reference_create(&ref, repo, name.c_str(), &oid, force, nullptr);
+		return git_reference_create(&m_ref, repo, name.c_str(), &oid, force, nullptr);
 	}
 	int createSymbolic(const Repo &repo, const std::string &name, const std::string &target,
 			   bool force = false) {
-		return git_reference_symbolic_create(&ref, repo, name.c_str(), target.c_str(),
+		return git_reference_symbolic_create(&m_ref, repo, name.c_str(), target.c_str(),
 						     force, nullptr);
 	}
 
-	const git_oid *target() const { return git_reference_target(ref); }
+	const git_oid *target() const { return git_reference_target(m_ref); }
 
-	operator git_reference *() const { return ref; }
+	git_reference *ref() const { return m_ref; }
+	operator git_reference *() const { return m_ref; }
 private:
-	git_reference *ref;
+	git_reference *m_ref;
 };
-
 
 }
 

@@ -12,14 +12,14 @@
 
 using namespace SlGit;
 
-Repo::Repo() : repo(nullptr)
+Repo::Repo() : m_repo(nullptr)
 {
 	git_libgit2_init();
 }
 
 Repo::~Repo()
 {
-	git_repository_free(repo);
+	git_repository_free(m_repo);
 	git_libgit2_shutdown();
 }
 
@@ -31,7 +31,7 @@ int Repo::init(const std::filesystem::path &path, bool bare, const std::string &
 		opts.flags |= GIT_REPOSITORY_INIT_BARE;
 	if (!origin.empty())
 		opts.origin_url = origin.c_str();
-	return git_repository_init_ext(&repo, path.c_str(), &opts);
+	return git_repository_init_ext(&m_repo, path.c_str(), &opts);
 }
 
 class MyFetchCallbacks : public FetchCallbacks {
@@ -170,12 +170,12 @@ int Repo::clone(const std::filesystem::path &path, const std::string &url,
 #ifdef LIBGIT_HAS_UPDATE_REFS
 	opts.fetch_opts.callbacks.update_refs = fetchUpdateRefs;
 #endif
-	return git_clone(&repo, url.c_str(), path.c_str(), &opts);
+	return git_clone(&m_repo, url.c_str(), path.c_str(), &opts);
 }
 
 int Repo::open(const std::filesystem::path &path)
 {
-	int ret = git_repository_open(&repo, path.c_str());
+	int ret = git_repository_open(&m_repo, path.c_str());
 	if (ret < 0) {
 		auto e = git_error_last();
 		std::cerr << "Git: error " << ret << "/" << e->klass << ": " << e->message << '\n';
@@ -209,7 +209,7 @@ int Repo::checkout(const std::string &branch)
 	if (ret)
 		return ret;
 
-	ret = git_repository_set_head(repo, branch.c_str());
+	ret = git_repository_set_head(m_repo, branch.c_str());
 	if (ret)
 		return ret;
 
@@ -229,7 +229,7 @@ std::optional<std::string> Repo::catFile(const std::string &branch, const std::s
 int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, bool tags)
 {
 	if (refspecs.empty())
-		return git_remote_fetch(remote, nullptr, nullptr, nullptr);
+		return git_remote_fetch(m_remote, nullptr, nullptr, nullptr);
 	std::vector<char *> strings;
 	for (const auto &r : refspecs)
 		strings.push_back(const_cast<char *>(r.c_str()));
@@ -250,7 +250,7 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, b
 	if (!tags)
 		opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE;
 	opts.depth = depth;
-	return git_remote_fetch(remote, &refs, &opts, nullptr);
+	return git_remote_fetch(m_remote, &refs, &opts, nullptr);
 }
 
 int Remote::fetchBranches(const std::vector<std::string> &branches, int depth, bool tags)
@@ -273,7 +273,7 @@ static int treeWalkCB(const char *root, const git_tree_entry *entry, void *paylo
 }
 
 int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) {
-	return git_tree_walk(tree, mode, treeWalkCB,
+	return git_tree_walk(m_tree, mode, treeWalkCB,
 			     const_cast<void *>(static_cast<const void *>(&CB)));
 }
 
