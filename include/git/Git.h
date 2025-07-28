@@ -291,9 +291,36 @@ public:
 	Blob() : m_blob(nullptr) { }
 	~Blob() { git_blob_free(m_blob); }
 
+	int lookup(const Repo &repo, const git_oid &oid) {
+		return git_blob_lookup(&m_blob, repo, &oid);
+	}
 	int lookup(const Repo &repo, const TreeEntry &tentry) {
 		return git_blob_lookup(&m_blob, repo, tentry.id());
 	}
+	int createFromWorkDir(const Repo &repo, const std::filesystem::path &file) {
+		git_oid oid;
+		auto ret = git_blob_create_from_workdir(&oid, repo, file.c_str());
+		if (ret)
+			return ret;
+		return lookup(repo, oid);
+	}
+	int createFromDisk(const Repo &repo, const std::filesystem::path &file) {
+		git_oid oid;
+		auto ret = git_blob_create_from_disk(&oid, repo, file.c_str());
+		if (ret)
+			return ret;
+		return lookup(repo, oid);
+	}
+	int createFromBuffer(const Repo &repo, const std::string &buf) {
+		git_oid oid;
+		auto ret = git_blob_create_from_buffer(&oid, repo, buf.c_str(), buf.length());
+		if (ret)
+			return ret;
+		return lookup(repo, oid);
+	}
+
+	const git_oid *id() const { return git_blob_id(m_blob); }
+	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
 	std::string content() const {
 		return std::string(static_cast<const char *>(rawcontent()), rawsize());
