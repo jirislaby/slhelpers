@@ -202,10 +202,7 @@ int Repo::checkout(const std::string &branch)
 	if (ret)
 		return ret;
 
-	auto obj = reinterpret_cast<git_object *>(static_cast<git_tree *>(tree));
-	git_checkout_options opts GIT_CHECKOUT_OPTIONS_INIT;
-	opts.checkout_strategy = GIT_CHECKOUT_SAFE;
-	ret = git_checkout_tree(*this, obj, &opts);
+	ret = checkoutTree(tree);
 	if (ret)
 		return ret;
 
@@ -214,6 +211,13 @@ int Repo::checkout(const std::string &branch)
 		return ret;
 
 	return 0;
+}
+
+int Repo::checkoutTree(const Tree &tree, unsigned int strategy)
+{
+	git_checkout_options opts GIT_CHECKOUT_OPTIONS_INIT;
+	opts.checkout_strategy = strategy;
+	return git_checkout_tree(m_repo, reinterpret_cast<const git_object *>(tree.tree()), &opts);
 }
 
 std::optional<std::string> Repo::catFile(const std::string &branch, const std::string &file) const

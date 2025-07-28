@@ -92,6 +92,7 @@ public:
 	int open(const std::filesystem::path &path = ".");
 	int grepBranch(const std::string &branch, const std::regex &regex);
 	int checkout(const std::string &branch);
+	int checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE);
 	std::optional<std::string> catFile(const std::string &branch, const std::string &file) const;
 
 	git_repository *repo() const { return m_repo; }
