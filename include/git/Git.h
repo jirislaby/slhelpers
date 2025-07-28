@@ -14,6 +14,7 @@ namespace SlGit {
 
 class Tree;
 class TreeEntry;
+class Blob;
 
 class Helpers {
 public:
@@ -284,6 +285,41 @@ public:
 private:
 	static int matchCB(const char *path, const char *matched_pathspec, void *payload);
 	git_index *m_index;
+};
+
+class TreeBuilder {
+public:
+	TreeBuilder() : m_treeBuilder(nullptr) { }
+	~TreeBuilder() { git_treebuilder_free(m_treeBuilder); }
+
+	int create(const Repo &repo, const Tree *source = nullptr) {
+		return git_treebuilder_new(&m_treeBuilder, repo, source ? source->tree() : nullptr);
+	}
+
+	int insert(const std::filesystem::path &file, const Blob &blob);
+	int remove(const std::filesystem::path &file) {
+		return git_treebuilder_remove(m_treeBuilder, file.c_str());
+	}
+	int clear() { return git_treebuilder_clear(m_treeBuilder); }
+
+	int write(const Repo &repo, Tree &tree) {
+		git_oid oid;
+		auto ret = git_treebuilder_write(&oid, m_treeBuilder);
+		if (ret)
+			return ret;
+		return tree.lookup(repo, oid);
+	}
+
+	size_t entryCount() const { return git_treebuilder_entrycount(m_treeBuilder); }
+
+	const git_tree_entry *get(const std::filesystem::path &file) {
+		return git_treebuilder_get(m_treeBuilder, file.c_str());
+	}
+
+	git_treebuilder *treeBuilder() const { return m_treeBuilder; }
+	operator git_treebuilder *() const { return m_treeBuilder; }
+private:
+	git_treebuilder *m_treeBuilder;
 };
 
 class Blob {

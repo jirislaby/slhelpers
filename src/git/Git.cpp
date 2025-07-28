@@ -304,6 +304,13 @@ std::optional<std::string> TreeEntry::catFile(const Repo &repo) const
 	return blob.content();
 }
 
+int TreeBuilder::insert(const std::filesystem::path &file, const Blob &blob)
+{
+	const git_tree_entry *te;
+	return git_treebuilder_insert(&te, m_treeBuilder, file.c_str(), blob.id(),
+				      GIT_FILEMODE_BLOB);
+}
+
 int Index::addAll(const std::vector<std::string> &paths, unsigned int flags, const MatchCB &cb)
 {
 	return git_index_add_all(m_index, StrArray(paths), flags, matchCB,
