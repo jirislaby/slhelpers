@@ -64,6 +64,21 @@ public:
 	}
 };
 
+class Signature {
+public:
+	Signature() : m_signature(nullptr) { }
+	~Signature() { git_signature_free(m_signature); }
+
+	int now(const std::string &name, const std::string &email) {
+		return git_signature_now(&m_signature, name.c_str(), email.c_str());
+	}
+
+	git_signature *signature() const { return m_signature; }
+	operator git_signature *() const { return m_signature; }
+private:
+	git_signature *m_signature;
+};
+
 class Repo {
 public:
 	Repo();
