@@ -42,7 +42,9 @@ void SupportedConf::parseLine(std::string &line)
 		}
 	}
 
-	const auto &module = vec.back();
+	auto module = vec.back();
+	if (SlHelpers::String::endsWith(module, ".ko"))
+		module.resize(module.size() - 3);
 	entries.push_back({ module, supp });
 }
 
