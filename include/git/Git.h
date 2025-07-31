@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <optional>
 #include <regex>
+#include <string>
 #include <vector>
 
 #include <git2.h>
