@@ -3,31 +3,15 @@
 #ifndef SQLITESMART_H
 #define SQLITESMART_H
 
-#include <memory>
+#include "../helpers/Unique.h"
 
 typedef struct sqlite3 sqlite3;
 typedef struct sqlite3_stmt sqlite3_stmt;
 
 namespace SlSqlite {
 
-using SQLUnique = std::unique_ptr<sqlite3, void (*)(sqlite3 *)>;
-using SQLStmtUnique = std::unique_ptr<sqlite3_stmt, void (*)(sqlite3_stmt *)>;
-
-struct SQLHolder : public SQLUnique {
-	SQLHolder() : SQLHolder(nullptr) { }
-
-	SQLHolder(sqlite3 *sql);
-
-	operator sqlite3 *() { return get(); }
-};
-
-struct SQLStmtHolder : public SQLStmtUnique {
-	SQLStmtHolder() : SQLStmtHolder(nullptr) { }
-
-	SQLStmtHolder(sqlite3_stmt *stmt);
-
-	operator sqlite3_stmt *() { return get(); }
-};
+using SQLHolder = SlHelpers::UniqueHolder<sqlite3>;
+using SQLStmtHolder = SlHelpers::UniqueHolder<sqlite3_stmt>;
 
 struct SQLStmtResetter {
 	SQLStmtResetter(sqlite3 *sql, sqlite3_stmt *stmt) : sql(sql), stmt(stmt) { }

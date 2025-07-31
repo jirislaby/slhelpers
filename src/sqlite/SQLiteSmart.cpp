@@ -7,16 +7,16 @@
 
 using namespace SlSqlite;
 
-SQLHolder::SQLHolder(sqlite3 *sql) : SQLUnique(sql, [](sqlite3 *sql) {
-		sqlite3_close(sql);
-	})
+template<>
+void SlHelpers::Deleter<sqlite3>::operator()(sqlite3 *sql) const
 {
+	sqlite3_close(sql);
 }
 
-SQLStmtHolder::SQLStmtHolder(sqlite3_stmt *stmt) : SQLStmtUnique(stmt, [](sqlite3_stmt *stmt) {
-		sqlite3_finalize(stmt);
-	})
+template<>
+void SlHelpers::Deleter<sqlite3_stmt>::operator()(sqlite3_stmt *stmt) const
 {
+	sqlite3_finalize(stmt);
 }
 
 SQLStmtResetter::~SQLStmtResetter()
