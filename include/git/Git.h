@@ -418,6 +418,36 @@ private:
 	git_reference *m_ref;
 };
 
+class RevWalk {
+public:
+	RevWalk() : m_revWalk(nullptr) { }
+	~RevWalk() { git_revwalk_free(m_revWalk); }
+
+	int create(const Repo &repo) { return git_revwalk_new(&m_revWalk, repo); }
+
+	int pushHead() { return git_revwalk_push_head(m_revWalk); }
+	int pushRef(const std::string &ref) { return git_revwalk_push_ref(m_revWalk, ref.c_str()); }
+	int pushGlob(const std::string &glob) {
+		return git_revwalk_push_glob(m_revWalk, glob.c_str());
+	}
+	int pushRange(const std::string &range) {
+		return git_revwalk_push_range(m_revWalk, range.c_str());
+	}
+
+	/* Hiding marks stopping points */
+	int hide(const git_oid &oid) { return git_revwalk_hide(m_revWalk, &oid); }
+	int hideGlob(const std::string &glob) {
+		return git_revwalk_hide_glob(m_revWalk, glob.c_str());
+	}
+
+	int next(git_oid &oid) { return git_revwalk_next(&oid, m_revWalk); }
+
+	git_revwalk *ref() const { return m_revWalk; }
+	operator git_revwalk *() const { return m_revWalk; }
+private:
+	git_revwalk *m_revWalk;
+};
+
 }
 
 #endif // GIT_H
