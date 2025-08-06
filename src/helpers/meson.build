@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 public_headers += [
+  'helpers/Color.h',
   'helpers/HomeDir.h',
   'helpers/Process.h',
   'helpers/PushD.h',
