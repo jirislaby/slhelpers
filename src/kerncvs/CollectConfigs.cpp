@@ -10,21 +10,20 @@ using namespace SlKernCVS;
 
  int CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 {
-	SlGit::Tree tree;
-	tree.ofCommit(commit);
+	auto tree = commit.tree();
 
-	SlGit::TreeEntry configTreeEntry;
-	if (configTreeEntry.byPath(tree, "config/"))
+	auto configTreeEntry = tree->treeEntryByPath("config/");
+	if (!configTreeEntry)
 		return -1;
-	if (configTreeEntry.type() != GIT_OBJECT_TREE)
-		return -1;
-
-	SlGit::Tree configTree;
-	if (configTree.lookup(repo, configTreeEntry))
+	if (configTreeEntry->type() != GIT_OBJECT_TREE)
 		return -1;
 
-	auto ret = configTree.walk([this](const std::string &root,
-				   const SlGit::TreeEntry &entry) -> int {
+	auto configTree = repo.treeLookup(*configTreeEntry);
+	if (!configTree)
+		return -1;
+
+	auto ret = configTree->walk([this](const std::string &root,
+				    const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() == GIT_OBJECT_BLOB)
 			return processFlavor(root.substr(0, root.size() - 1), entry.name(), entry);
 

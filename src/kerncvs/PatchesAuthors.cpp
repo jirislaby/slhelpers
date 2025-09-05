@@ -79,25 +79,24 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 int PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
 				   const InsertUFMap &insertUFMap)
 {
-	SlGit::Tree tree;
-	tree.ofCommit(commit);
+	auto tree = *commit.tree();
 
-	SlGit::TreeEntry patchesSuseTreeEntry;
-	if (patchesSuseTreeEntry.byPath(tree, "patches.suse/"))
+	auto patchesSuseTreeEntry = tree.treeEntryByPath("patches.suse/");
+	if (!patchesSuseTreeEntry)
 		return -1;
-	if (patchesSuseTreeEntry.type() != GIT_OBJECT_TREE)
+	if (patchesSuseTreeEntry->type() != GIT_OBJECT_TREE)
 		return -1;
 
-	SlGit::Tree patchesSuseTree;
-	if (patchesSuseTree.lookup(repo, patchesSuseTreeEntry))
+	auto patchesSuseTree = repo.treeLookup(*patchesSuseTreeEntry);
+	if (!patchesSuseTree)
 		return -1;
-	auto ret = patchesSuseTree.walk([this](const std::string &root,
-					const SlGit::TreeEntry &entry) -> int {
-		SlGit::Blob blob;
-		if (blob.lookup(repo, entry))
+	auto ret = patchesSuseTree->walk([this](const std::string &root,
+					 const SlGit::TreeEntry &entry) -> int {
+		auto blob = repo.blobLookup(entry);
+		if (!blob)
 			return -1000;
 
-		return processPatch(root + entry.name(), blob.content());
+		return processPatch(root + entry.name(), blob->content());
 	});
 	if (ret)
 		return -1;

@@ -4,69 +4,208 @@
 
 #include "git/Git.h"
 
-int main()
+static std::filesystem::path createTestDir(const std::string &name)
 {
-	SlGit::Repo repo;
-
-	std::string s = std::filesystem::temp_directory_path() / "testgitdir.XXXXXX";
+	std::string s = std::filesystem::temp_directory_path() / name;
+	s += ".XXXXXX";
 	assert(mkdtemp(s.data()));
-	std::filesystem::path gitDir{s};
-	std::cout << gitDir << '\n';
+	return std::filesystem::path{s};
+}
 
-	SlGit::Signature me;
-	assert(!me.now("Jiri Slaby", "jirislaby@gmail.com"));
+static SlGit::Repo testRepoInit()
+{
+	auto gitDir = createTestDir("testgitdir");
 
-	assert(!repo.init(gitDir));
+	auto repoOpt = SlGit::Repo::init(gitDir);
+	assert(repoOpt);
+	auto repo = std::move(*repoOpt);
 	assert(std::filesystem::exists(gitDir / ".git/objects"));
+	std::cout << __func__ << ": gitDir=" << gitDir << " workDir=" << repo.workDir() << '\n';
+	assert(std::filesystem::equivalent(gitDir, repo.workDir()));
 
-	SlGit::Index index;
-	assert(!index.repoIndex(repo));
+	assert(repo.index());
 
-	// ===
-	SlGit::TreeBuilder aTb;
-	assert(!aTb.create(repo));
+	return repo;
+}
+
+static SlGit::Repo testRepoClone(const SlGit::Repo &repo)
+{
+	auto gitDir2 = createTestDir("testgitdir2");
+	std::cout << __func__ << ": gitDir2=" << gitDir2 << '\n';
+	std::cout << "vvv clone output vvv\n";
+	auto repo2 = SlGit::Repo::clone(gitDir2, repo.path());
+	std::cout << "^^^ clone output ^^^\n";
+	assert(repo2);
+
+	return std::move(*repo2);
+}
+
+static SlGit::Signature testSignature()
+{
+	static const std::string name("Jiri Slaby");
+	static const std::string email("jirislaby@gmail.com");
+	auto me = SlGit::Signature::now(name, email);
+	assert(me);
+	assert(me->name() == name);
+	assert(me->email() == email);
+	return std::move(*me);
+}
+
+static std::tuple<SlGit::Commit, std::filesystem::path, std::string>
+createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
+{
+	auto aTb = repo.treeBuilderCreate();
+	assert(aTb);
 
 	std::filesystem::path aFile{"a.txt"};
 	std::string aContent{"this is " + aFile.string()};
 
-	SlGit::Blob aBlob;
-	assert(!aBlob.createFromBuffer(repo, aContent));
+	auto aBlob = repo.blobCreateFromBuffer(aContent);
+	assert(aBlob);
 
-	assert(!aTb.insert(aFile, aBlob));
-	SlGit::Tree aTree;
-	assert(!aTb.write(repo, aTree));
-	std::cout << "aTree=" << aTree.idStr() << '\n';
+	assert(!aTb->insert(aFile, *aBlob));
+	auto aTreeOpt = aTb->write(repo);
+	assert(aTreeOpt);
+	auto aTree = std::move(*aTreeOpt);
+	std::cout << __func__ << ": aTree=" << aTree.idStr() << '\n';
 
-	assert(!index.readTree(aTree));
+	assert(!repo.index()->readTree(aTree));
 
-	SlGit::Commit aCommit;
-	assert(!aCommit.createCheckout(repo, me, me, "commit of " + aFile.string(), aTree));
-	std::cout << "aCommit=" << aCommit.idStr() << '\n';
+	auto aCommitOpt = repo.commitCreateCheckout(me, me, "commit of " + aFile.string(), aTree);
+	assert(aCommitOpt);
+	auto aCommit = std::move(*aCommitOpt);
+	std::cout << __func__ << ": aCommit=" << aCommit.idStr() << '\n';
 
-	// ===
-	SlGit::TreeBuilder bTb;
-	assert(!bTb.create(repo, &aTree));
+	assert(repo.refCreateDirect("refs/heads/aRef", *aCommit.id()));
+	assert(repo.refCreateDirect("refs/heads/aRef2", *aCommit.id()));
+
+	return { std::move(aCommit), aFile, aContent };
+}
+
+static std::tuple<SlGit::Commit, std::filesystem::path, std::string>
+createBCommit(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit::Signature &me)
+{
+	auto aTree = *aCommit.tree();
+	auto bTb = repo.treeBuilderCreate(&aTree);
+	assert(bTb);
 
 	std::filesystem::path bFile{"b.txt"};
 	std::string bContent{"this is " + bFile.string()};
 
-	SlGit::Blob bBlob;
-	assert(!bBlob.createFromBuffer(repo, bContent));
+	auto bBlob = repo.blobCreateFromBuffer(bContent);
+	assert(bBlob);
 
-	assert(!bTb.insert(bFile, bBlob));
-	SlGit::Tree bTree;
-	assert(!bTb.write(repo, bTree));
-	std::cout << "bTree=" << bTree.idStr() << '\n';
+	assert(!bTb->insert(bFile, *bBlob));
+	auto bTreeOpt = bTb->write(repo);
+	assert(bTreeOpt);
+	auto bTree = std::move(*bTreeOpt);
+	std::cout << __func__ << ": bTree=" << bTree.idStr() << '\n';
 
-	assert(!index.readTree(bTree));
+	assert(!repo.index()->readTree(bTree));
 
-	SlGit::Commit bCommit;
-	assert(!bCommit.createCheckout(repo, me, me, "commit of " + bFile.string(), bTree,
-				       GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING,
-				       { &aCommit }));
-	std::cout << "bCommit=" << bCommit.idStr() << '\n';
+	auto bCommitOpt = repo.commitCreateCheckout(me, me, "commit of " + bFile.string(), bTree,
+						    GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING,
+						    { &aCommit });
+	assert(bCommitOpt);
+	auto bCommit = std::move(*bCommitOpt);
+	std::cout << __func__ << ": bCommit=" << bCommit.idStr() << '\n';
 
-	// ===
+	assert(repo.refCreateDirect("refs/heads/bRef", *bCommit.id()));
+
+	return { std::move(bCommit), bFile, bContent };
+}
+
+static void testRefs(const SlGit::Repo &repo, const SlGit::Commit &aCommit)
+{
+	auto ref = repo.refDWIM("aRef2");
+	assert(ref);
+	auto idStr = SlGit::Helpers::oidToStr(*ref->target());
+	assert(idStr == aCommit.idStr());
+	std::cout << __func__ << ": aRef2 points to " << idStr << '\n';
+	ref = repo.refDWIM("aRef3");
+	assert(!ref);
+}
+
+static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+			 const SlGit::Commit &bCommit, const std::filesystem::path &bFile)
+{
+	auto commit = repo.commitRevparseSingle("HEAD");
+	assert(commit);
+	assert(commit->idStr() == bCommit.idStr());
+
+	commit = repo.commitRevparseSingle("HEAD^1");
+	assert(commit);
+	assert(commit->idStr() == aCommit.idStr());
+
+	auto failTree = repo.commitRevparseSingle("HEAD^{tree}");
+	assert(!failTree);
+	auto failBlob = repo.commitRevparseSingle("HEAD:" + bFile.string());
+	assert(!failBlob);
+
+	auto tree = repo.treeRevparseSingle("HEAD^{tree}");
+	assert(tree);
+	assert(tree->idStr() == bCommit.treeIdStr());
+
+	auto blob = repo.blobRevparseSingle("HEAD:" + bFile.string());
+	assert(blob);
+	assert(blob->idStr() == bCommit.tree()->treeEntryByPath(bFile)->idStr());
+}
+
+static void testRemote(const SlGit::Repo &repo)
+{
+	const std::string url = "https://localhost";
+	auto remote1 = repo.remoteCreate("origin", url);
+	assert(remote1);
+	auto remote2 = repo.remoteLookup("origin");
+	assert(remote2);
+	assert(remote1->url() == url);
+	assert(remote1->url() == remote2->url());
+	std::cout << __func__ << ": remote1=" << remote1->url() <<
+		     " remote2=" << remote2->url() << '\n';
+	remote2 = repo.remoteLookup("origin2");
+	assert(!remote2);
+}
+
+static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+			const SlGit::Commit &bCommit)
+{
+	auto revWalk = repo.revWalkCreate();
+	assert(revWalk);
+	revWalk->pushHead();
+	auto nextCommit = revWalk->next(repo);
+	assert(nextCommit);
+	assert(nextCommit->idStr() == bCommit.idStr());
+	std::cout << __func__ << ": top-0=" << nextCommit->idStr() << '\n';
+	nextCommit = revWalk->next(repo);
+	assert(nextCommit);
+	assert(nextCommit->idStr() == aCommit.idStr());
+	std::cout << __func__ << ": top-1=" << nextCommit->idStr() << '\n';
+	nextCommit = revWalk->next(repo);
+	assert(!nextCommit);
+}
+
+static void testCatFile(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+			const std::filesystem::path &aFile, const std::string &aContent,
+			const std::filesystem::path &bFile, const std::string &bContent)
+{
+	auto aContentRead = aCommit.catFile(repo, aFile);
+	assert(aContentRead);
+	assert(aContent == *aContentRead);
+
+	auto noBFile = aCommit.catFile(repo, bFile);
+	assert(!noBFile);
+
+	auto bContentRead = repo.catFile("HEAD", bFile);
+	assert(bContentRead);
+	assert(bContent == *bContentRead);
+}
+
+static void testFilesOnFS(const SlGit::Repo &repo, const std::filesystem::path &aFile,
+			  const std::string &aContent,
+			  const std::filesystem::path &bFile)
+{
+	auto gitDir = repo.workDir();
+
 	assert(std::filesystem::exists(gitDir / aFile));
 	assert(std::filesystem::exists(gitDir / bFile));
 
@@ -77,8 +216,49 @@ int main()
 	assert(std::getline(ifs, line));
 	ifs.close();
 	assert(line == aContent);
+}
+static void testCheckout(const SlGit::Repo &repo2, const SlGit::Commit &aCommit)
+{
+	auto r = repo2.refDWIM("origin/aRef2");
+	assert(r);
+	assert(r->name() == "refs/remotes/origin/aRef2");
+	assert(!repo2.checkout(*r));
+	auto head = repo2.commitRevparseSingle("HEAD");
+	assert(head);
+	std::cout << __func__ << ": cloned head=" << head->idStr() << '\n';
+	assert(head->idStr() == aCommit.idStr());
+}
 
-	std::filesystem::remove_all(gitDir);
+static void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
+{
+	auto remote = repo2.remoteLookup("origin");
+	assert(remote);
+	std::cout << "vvv fetch output vvv\n";
+	assert(!remote->fetch("master"));
+	std::cout << "^^^ fetch output ^^^\n";
+	auto originMaster = repo2.commitRevparseSingle("origin/master");
+	std::cout << __func__ << ": origin/master=" << originMaster->idStr() << '\n';
+	assert(originMaster->idStr() == bCommit.idStr());
+}
+
+int main()
+{
+	auto repo = testRepoInit();
+	auto me = testSignature();
+	auto [ aCommit, aFile, aContent ] = createACommit(repo, me);
+	testRefs(repo, aCommit);
+	auto repo2 = testRepoClone(repo);
+	auto [ bCommit, bFile, bContent ] = createBCommit(repo, aCommit, me);
+	testRevparse(repo, aCommit, bCommit, bFile);
+	testRemote(repo);
+	testRevWalk(repo, aCommit, bCommit);
+	testCatFile(repo, aCommit, aFile, aContent, bFile, bContent);
+	testFilesOnFS(repo, aFile, aContent, bFile);
+	testCheckout(repo2, aCommit);
+	testFetch(repo2, bCommit);
+
+	std::filesystem::remove_all(repo.workDir());
+	std::filesystem::remove_all(repo2.workDir());
 
 	return 0;
 }

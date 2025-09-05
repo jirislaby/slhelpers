@@ -10,11 +10,27 @@ if cpp_compiler.has_member('git_remote_callbacks', 'update_refs',
 endif
 
 public_headers += [
+    'git/FetchCallbacks.h',
+    'git/Commit.h',
     'git/Git.h',
+    'git/Helpers.h',
+    'git/Index.h',
+    'git/Remote.h',
+    'git/Repo.h',
+    'git/Misc.h',
+    'git/StrArray.h',
+    'git/Tree.h',
 ]
 
 slgit = library('slgit++', [
-    'Git.cpp',
+    'Commit.cpp',
+    'Index.cpp',
+    'Initer.cpp',
+    'MyFetchCallbacks.cpp',
+    'Remote.cpp',
+    'Repo.cpp',
+    'Misc.cpp',
+    'Tree.cpp',
   ],
   cpp_args: cpp_args,
   include_directories : global_inc,
