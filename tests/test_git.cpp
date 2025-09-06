@@ -126,6 +126,20 @@ static void testRefs(const SlGit::Repo &repo, const SlGit::Commit &aCommit)
 	assert(!ref);
 }
 
+static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+		     const SlGit::Commit &bCommit, const SlGit::Signature &me)
+{
+	auto tag = repo.tagCreate("aTag", reinterpret_cast<git_object *>(aCommit.commit()), me,
+				  "a tag for aCommit");
+	assert(tag);
+	tag = repo.tagCreate("bTag", reinterpret_cast<git_object *>(bCommit.commit()), me,
+			     "a tag for bCommit");
+	assert(tag);
+	auto aTag = repo.tagRevparseSingle("aTag");
+	assert(aTag);
+	assert(aTag->targetIdStr() == aCommit.idStr());
+}
+
 static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 			 const SlGit::Commit &bCommit, const std::filesystem::path &bFile)
 {
@@ -249,6 +263,7 @@ int main()
 	testRefs(repo, aCommit);
 	auto repo2 = testRepoClone(repo);
 	auto [ bCommit, bFile, bContent ] = createBCommit(repo, aCommit, me);
+	testTags(repo, aCommit, bCommit, me);
 	testRevparse(repo, aCommit, bCommit, bFile);
 	testRemote(repo);
 	testRevWalk(repo, aCommit, bCommit);

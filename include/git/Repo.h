@@ -23,6 +23,7 @@ class Reference;
 class Remote;
 class RevWalk;
 class Signature;
+class Tag;
 class Tree;
 class TreeBuilder;
 class TreeEntry;
@@ -45,7 +46,7 @@ public:
 	int checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE) const;
 	std::optional<std::string> catFile(const std::string &branch, const std::string &file) const;
 
-	std::variant<Blob, SlGit::Commit, SlGit::Tree, std::monostate>
+	std::variant<Blob, Commit, Tag, Tree, std::monostate>
 	revparseSingle(const std::string &rev) const;
 
 	std::optional<Blob> blobCreateFromWorkDir(const std::filesystem::path &file) const;
@@ -81,6 +82,13 @@ public:
 						   bool force = false) const;
 
 	std::optional<RevWalk> revWalkCreate() const;
+
+	std::optional<Tag> tagCreate(const std::string &tagName, const git_object *target,
+				     const Signature &tagger, const std::string &message,
+				     bool force = false) const;
+	std::optional<Tag> tagLookup(const git_oid &oid) const;
+	std::optional<Tag> tagLookup(const TreeEntry &tentry) const;
+	std::optional<Tag> tagRevparseSingle(const std::string &rev) const;
 
 	std::optional<Tree> treeLookup(const git_oid &oid) const;
 	std::optional<Tree> treeLookup(const TreeEntry &entry) const;

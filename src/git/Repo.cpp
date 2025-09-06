@@ -9,6 +9,7 @@
 #include "git/Repo.h"
 #include "git/Remote.h"
 #include "git/Misc.h"
+#include "git/Tag.h"
 #include "git/Tree.h"
 
 #include "MyFetchCallbacks.h"
@@ -156,7 +157,7 @@ std::optional<Commit> Repo::commitRevparseSingle(const std::string &rev) const
 	return std::nullopt;
 }
 
-std::variant<Blob, Commit, Tree, std::monostate> Repo::revparseSingle(const std::string &rev) const
+std::variant<Blob, Commit, Tag, Tree, std::monostate> Repo::revparseSingle(const std::string &rev) const
 {
 	git_object *obj;
 	if (git_revparse_single(&obj, repo(), rev.c_str()))
@@ -167,9 +168,10 @@ std::variant<Blob, Commit, Tree, std::monostate> Repo::revparseSingle(const std:
 		return Blob(reinterpret_cast<git_blob *>(obj));
 	case GIT_OBJECT_COMMIT:
 		return Commit(reinterpret_cast<git_commit *>(obj));
+	case GIT_OBJECT_TAG:
+		return Tag(reinterpret_cast<git_tag *>(obj));
 	case GIT_OBJECT_TREE:
 		return Tree(reinterpret_cast<git_tree *>(obj));
-	case GIT_OBJECT_TAG: // TODO
 	default:
 		git_object_free(obj);
 		return std::monostate{};
@@ -227,6 +229,37 @@ std::optional<RevWalk> Repo::revWalkCreate() const
 	if (git_revwalk_new(&revWalk, repo()))
 		return std::nullopt;
 	return RevWalk(revWalk);
+}
+
+std::optional<Tag> Repo::tagCreate(const std::string &tagName, const git_object *target,
+				   const Signature &tagger, const std::string &message,
+				   bool force) const
+{
+	git_oid oid;
+	if (git_tag_create(&oid, repo(), tagName.c_str(), target, tagger, message.c_str(), force))
+		return std::nullopt;
+	return tagLookup(oid);
+}
+
+std::optional<Tag> Repo::tagLookup(const git_oid &oid) const
+{
+	git_tag *tag;
+	if (git_tag_lookup(&tag, repo(), &oid))
+		return std::nullopt;
+	return Tag(tag);
+}
+
+std::optional<Tag> Repo::tagLookup(const TreeEntry &tentry) const
+{
+	return tagLookup(*tentry.id());
+}
+
+std::optional<Tag> Repo::tagRevparseSingle(const std::string &rev) const
+{
+	auto res = revparseSingle(rev);
+	if (std::holds_alternative<Tag>(res))
+		return std::move(std::get<Tag>(res));
+	return std::nullopt;
 }
 
 std::optional<Reference> Repo::refLookup(const std::string &name) const

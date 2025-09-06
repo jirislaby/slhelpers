@@ -9,6 +9,7 @@
 #include "Misc.h"
 #include "Remote.h"
 #include "Repo.h"
+#include "Tag.h"
 #include "Tree.h"
 
 #endif // GIT_H

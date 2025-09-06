@@ -19,6 +19,7 @@ public_headers += [
     'git/Repo.h',
     'git/Misc.h',
     'git/StrArray.h',
+    'git/Tag.h',
     'git/Tree.h',
 ]
 
@@ -30,6 +31,7 @@ slgit = library('slgit++', [
     'Remote.cpp',
     'Repo.cpp',
     'Misc.cpp',
+    'Tag.cpp',
     'Tree.cpp',
   ],
   cpp_args: cpp_args,
