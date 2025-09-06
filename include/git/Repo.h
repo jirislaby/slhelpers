@@ -91,7 +91,7 @@ public:
 	std::optional<Tag> tagRevparseSingle(const std::string &rev) const;
 
 	std::optional<Tree> treeLookup(const git_oid &oid) const;
-	std::optional<Tree> treeLookup(const TreeEntry &entry) const;
+	std::optional<Tree> treeLookup(const TreeEntry &tentry) const;
 	std::optional<Tree> treeRevparseSingle(const std::string &rev) const;
 
 	std::optional<TreeBuilder> treeBuilderCreate(const Tree *source = nullptr) const;

@@ -186,9 +186,9 @@ std::optional<Tree> Repo::treeLookup(const git_oid &oid) const
 	return Tree(tree);
 }
 
-std::optional<Tree> Repo::treeLookup(const TreeEntry &entry) const
+std::optional<Tree> Repo::treeLookup(const TreeEntry &tentry) const
 {
-	return treeLookup(*entry.id());
+	return treeLookup(*tentry.id());
 }
 
 std::optional<Tree> Repo::treeRevparseSingle(const std::string &rev) const
