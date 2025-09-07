@@ -232,12 +232,13 @@ std::optional<RevWalk> Repo::revWalkCreate() const
 	return RevWalk(revWalk);
 }
 
-std::optional<Tag> Repo::tagCreate(const std::string &tagName, const git_object *target,
+std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &target,
 				   const Signature &tagger, const std::string &message,
 				   bool force) const
 {
 	git_oid oid;
-	if (git_tag_create(&oid, repo(), tagName.c_str(), target, tagger, message.c_str(), force))
+	if (git_tag_create(&oid, repo(), tagName.c_str(), target.object(), tagger, message.c_str(),
+			   force))
 		return std::nullopt;
 	return tagLookup(oid);
 }

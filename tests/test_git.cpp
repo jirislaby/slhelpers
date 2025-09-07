@@ -137,15 +137,17 @@ static void testOperator(const SlGit::Commit &aCommit, const SlGit::Commit &bCom
 static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 		     const SlGit::Commit &bCommit, const SlGit::Signature &me)
 {
-	auto tag = repo.tagCreate("aTag", reinterpret_cast<git_object *>(aCommit.commit()), me,
-				  "a tag for aCommit");
+	auto tag = repo.tagCreate("aTag", aCommit, me, "a tag for aCommit");
 	assert(tag);
-	tag = repo.tagCreate("bTag", reinterpret_cast<git_object *>(bCommit.commit()), me,
-			     "a tag for bCommit");
+	tag = repo.tagCreate("bTag", bCommit, me, "a tag for bCommit");
 	assert(tag);
 	auto aTag = repo.tagRevparseSingle("aTag");
 	assert(aTag);
 	assert(aTag->targetIdStr() == aCommit.idStr());
+
+	tag = repo.tagCreate("bTreeTag", *bCommit.tree(), me, "a tag for bTree");
+	assert(tag);
+	assert(tag->targetIdStr() == bCommit.tree()->idStr());
 }
 
 static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,

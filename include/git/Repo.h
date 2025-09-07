@@ -19,6 +19,7 @@ namespace SlGit {
 class Blob;
 class Commit;
 class Index;
+class Object;
 class Reference;
 class Remote;
 class RevWalk;
@@ -83,7 +84,7 @@ public:
 
 	std::optional<RevWalk> revWalkCreate() const;
 
-	std::optional<Tag> tagCreate(const std::string &tagName, const git_object *target,
+	std::optional<Tag> tagCreate(const std::string &tagName, const Object &target,
 				     const Signature &tagger, const std::string &message,
 				     bool force = false) const;
 	std::optional<Tag> tagLookup(const git_oid &oid) const;
