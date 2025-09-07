@@ -24,6 +24,9 @@ public:
 	const git_oid *id() const { return git_object_id(object()); }
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
+	git_object_t type() const noexcept { return git_object_type(object()); }
+	std::string typeStr() const noexcept { return git_object_type2string(type()); }
+
 	virtual git_object *object() const = 0;
 
 	bool operator==(const Object &other) const noexcept {

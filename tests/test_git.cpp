@@ -62,11 +62,15 @@ createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
 
 	auto aBlob = repo.blobCreateFromBuffer(aContent);
 	assert(aBlob);
+	assert(aBlob->type() == GIT_OBJECT_BLOB);
+	assert(aBlob->typeStr() == "blob");
 
 	assert(!aTb->insert(aFile, *aBlob));
 	auto aTreeOpt = aTb->write(repo);
 	assert(aTreeOpt);
 	auto aTree = std::move(*aTreeOpt);
+	assert(aTree.type() == GIT_OBJECT_TREE);
+	assert(aTree.typeStr() == "tree");
 	std::cout << __func__ << ": aTree=" << aTree.idStr() << '\n';
 
 	assert(!repo.index()->readTree(aTree));
@@ -74,6 +78,8 @@ createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
 	auto aCommitOpt = repo.commitCreateCheckout(me, me, "commit of " + aFile.string(), aTree);
 	assert(aCommitOpt);
 	auto aCommit = std::move(*aCommitOpt);
+	assert(aCommit.type() == GIT_OBJECT_COMMIT);
+	assert(aCommit.typeStr() == "commit");
 	std::cout << __func__ << ": aCommit=" << aCommit.idStr() << '\n';
 
 	assert(repo.refCreateDirect("refs/heads/aRef", *aCommit.id()));
@@ -108,6 +114,7 @@ createBCommit(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit
 						    { &aCommit });
 	assert(bCommitOpt);
 	auto bCommit = std::move(*bCommitOpt);
+	assert(bCommit.type() == GIT_OBJECT_COMMIT);
 	std::cout << __func__ << ": bCommit=" << bCommit.idStr() << '\n';
 
 	assert(repo.refCreateDirect("refs/heads/bRef", *bCommit.id()));
@@ -139,6 +146,8 @@ static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 {
 	auto tag = repo.tagCreate("aTag", aCommit, me, "a tag for aCommit");
 	assert(tag);
+	assert(tag->type() == GIT_OBJECT_TAG);
+	assert(tag->typeStr() == "tag");
 	tag = repo.tagCreate("bTag", bCommit, me, "a tag for bCommit");
 	assert(tag);
 	auto aTag = repo.tagRevparseSingle("aTag");
