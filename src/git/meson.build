@@ -16,6 +16,7 @@ public_headers += [
     'git/Git.h',
     'git/Helpers.h',
     'git/Index.h',
+    'git/Object.h',
     'git/Remote.h',
     'git/Repo.h',
     'git/Misc.h',

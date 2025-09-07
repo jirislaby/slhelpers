@@ -13,6 +13,7 @@
 #include "../helpers/Unique.h"
 
 #include "Helpers.h"
+#include "Object.h"
 
 namespace SlGit {
 
@@ -21,9 +22,7 @@ class Commit;
 class Repo;
 class TreeEntry;
 
-class Tree {
-	using Holder = SlHelpers::UniqueHolder<git_tree>;
-
+class Tree : public TypedObject<git_tree> {
 	friend class Commit;
 	friend class Repo;
 public:
@@ -35,22 +34,16 @@ public:
 
 	int walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE);
 
-	const git_oid *id() const { return git_tree_id(tree()); }
-	std::string idStr() const { return Helpers::oidToStr(*id()); }
-
 	std::optional<TreeEntry> treeEntryByPath(const std::string &path) const;
 	TreeEntry treeEntryByIndex(size_t idx) const;
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
-	git_tree *tree() const { return m_tree.get(); }
-	operator git_tree *() const { return tree(); }
+	git_tree *tree() const { return typed(); }
 private:
 	static int walkCB(const char *root, const git_tree_entry *entry, void *payload);
 
-	explicit Tree(git_tree *tree) : m_tree(tree) {}
-
-	Holder m_tree;
+	explicit Tree(git_tree *tree) : TypedObject(tree) {}
 };
 
 class TreeBuilder {

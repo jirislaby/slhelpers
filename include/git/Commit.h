@@ -8,18 +8,15 @@
 
 #include <git2.h>
 
-#include "../helpers/Unique.h"
-
 #include "Helpers.h"
+#include "Object.h"
 
 namespace SlGit {
 
 class Repo;
 class Tree;
 
-class Commit {
-	using Holder = SlHelpers::UniqueHolder<git_commit>;
-
+class Commit : public TypedObject<git_commit> {
 	friend class Repo;
 public:
 	Commit() = delete;
@@ -29,8 +26,6 @@ public:
 
 	std::optional<Tree> tree() const;
 
-	const git_oid *id() const { return git_commit_id(commit()); }
-	std::string idStr() const { return Helpers::oidToStr(*id()); }
 	const git_oid *treeId() const { return git_commit_tree_id(commit()); }
 	std::string treeIdStr() const { return Helpers::oidToStr(*treeId()); }
 	std::string messageEncoding() const { return git_commit_message_encoding(commit()); }
@@ -47,12 +42,10 @@ public:
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
-	git_commit *commit() const { return m_commit.get(); }
+	git_commit *commit() const { return typed(); }
 	operator git_commit *() const { return commit(); }
 private:
-	explicit Commit(git_commit *commit) : m_commit(commit) { }
-
-	Holder m_commit;
+	explicit Commit(git_commit *commit) : TypedObject(commit) { }
 };
 
 }
