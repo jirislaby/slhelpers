@@ -5,7 +5,9 @@
 #include <git2.h>
 #include <optional>
 
-#include "git/Git.h"
+#include "git/Blob.h"
+#include "git/Repo.h"
+#include "git/Tree.h"
 
 using namespace SlGit;
 
