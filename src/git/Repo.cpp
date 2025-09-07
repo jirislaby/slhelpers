@@ -4,6 +4,7 @@
 
 #include <git2.h>
 
+#include "git/Blob.h"
 #include "git/Commit.h"
 #include "git/Index.h"
 #include "git/Repo.h"

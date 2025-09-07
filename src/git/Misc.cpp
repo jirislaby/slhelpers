@@ -9,12 +9,6 @@
 using namespace SlGit;
 
 template<>
-void SlHelpers::Deleter<git_blob>::operator()(git_blob *blob) const
-{
-	git_blob_free(blob);
-}
-
-template<>
 void SlHelpers::Deleter<git_reference>::operator()(git_reference *ref) const
 {
 	git_reference_free(ref);
@@ -30,10 +24,6 @@ template<>
 void SlHelpers::Deleter<git_signature>::operator()(git_signature *sig) const
 {
 	git_signature_free(sig);
-}
-
-Blob::Blob(git_blob *blob) : m_blob(blob)
-{
 }
 
 std::optional<Reference> Reference::resolve() const

@@ -3,6 +3,7 @@
 #ifndef GIT_GIT_H
 #define GIT_GIT_H
 
+#include "Blob.h"
 #include "Commit.h"
 #include "Helpers.h"
 #include "Index.h"
