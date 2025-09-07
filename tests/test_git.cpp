@@ -126,6 +126,14 @@ static void testRefs(const SlGit::Repo &repo, const SlGit::Commit &aCommit)
 	assert(!ref);
 }
 
+static void testOperator(const SlGit::Commit &aCommit, const SlGit::Commit &bCommit)
+{
+	assert(aCommit == aCommit);
+	assert(bCommit == bCommit);
+	assert(!(aCommit == bCommit));
+	assert(aCommit != bCommit);
+}
+
 static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 		     const SlGit::Commit &bCommit, const SlGit::Signature &me)
 {
@@ -263,6 +271,7 @@ int main()
 	testRefs(repo, aCommit);
 	auto repo2 = testRepoClone(repo);
 	auto [ bCommit, bFile, bContent ] = createBCommit(repo, aCommit, me);
+	testOperator(aCommit, bCommit);
 	testTags(repo, aCommit, bCommit, me);
 	testRevparse(repo, aCommit, bCommit, bFile);
 	testRemote(repo);

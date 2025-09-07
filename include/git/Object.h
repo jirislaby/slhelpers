@@ -25,6 +25,16 @@ public:
 	std::string idStr() const { return Helpers::oidToStr(*id()); }
 
 	virtual git_object *object() const = 0;
+
+	bool operator==(const Object &other) const noexcept {
+	    if (object() == other.object())
+		    return true;
+	    if (!object() || !other.object())
+		    return false;
+	    return git_oid_equal(id(), other.id());
+	}
+
+	bool operator!=(const Object &other) const noexcept { return !(*this == other); }
 };
 
 template<typename T>
