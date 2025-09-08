@@ -18,6 +18,7 @@ namespace SlGit {
 
 class Blob;
 class Commit;
+class Diff;
 class Index;
 class Object;
 class Reference;
@@ -71,6 +72,29 @@ public:
 						   const std::vector<const Commit *> &parents = {}) const noexcept;
 	std::optional<Commit> commitHead() const noexcept;
 	std::optional<Commit> commitRevparseSingle(const std::string &rev) const noexcept;
+
+	// two commits/trees: git diff commit1..commit2
+	std::optional<Diff> diff(const Commit &commit1, const Commit &commit2,
+				 const git_diff_options *opts = nullptr) const noexcept;
+	std::optional<Diff> diff(const Tree &tree1, const Tree &tree2,
+				 const git_diff_options *opts = nullptr) const noexcept;
+	// commit/tree to index: git diff --cached commit
+	std::optional<Diff> diffCached(const Commit &commit, const Index &index,
+				       const git_diff_options *opts = nullptr) const noexcept;
+	std::optional<Diff> diffCached(const Tree &tree, const Index &index,
+				       const git_diff_options *opts = nullptr) const noexcept;
+	// commit/tree to repo's index
+	std::optional<Diff> diffCached(const Commit &commit,
+				       const git_diff_options *opts = nullptr) const noexcept;
+	std::optional<Diff> diffCached(const Tree &tree,
+				       const git_diff_options *opts = nullptr) const noexcept;
+	// index to workdir: git diff
+	std::optional<Diff> diffWorkdir(const Index &index,
+					const git_diff_options *opts = nullptr) const noexcept;
+	std::optional<Diff> diffWorkdir(const Commit &commit,
+					const git_diff_options *opts = nullptr) const noexcept;
+	std::optional<Diff> diffWorkdir(const Tree &tree,
+					const git_diff_options *opts = nullptr) const noexcept;
 
 	std::optional<Index> index() const noexcept;
 

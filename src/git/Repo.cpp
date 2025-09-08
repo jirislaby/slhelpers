@@ -4,6 +4,7 @@
 
 #include "git/Blob.h"
 #include "git/Commit.h"
+#include "git/Diff.h"
 #include "git/Index.h"
 #include "git/Repo.h"
 #include "git/Remote.h"
@@ -143,6 +144,58 @@ std::optional<Commit> Repo::commitRevparseSingle(const std::string &rev) const n
 	if (std::holds_alternative<Commit>(res))
 		return std::move(std::get<Commit>(res));
 	return std::nullopt;
+}
+
+std::optional<Diff> Repo::diff(const Commit &commit1, const Commit &commit2,
+			       const git_diff_options *opts) const noexcept
+{
+	return diff(*commit1.tree(), *commit2.tree(), opts);
+}
+
+std::optional<Diff> Repo::diff(const Tree &tree1, const Tree &tree2,
+			       const git_diff_options *opts) const noexcept
+{
+	return MakeGit<Diff>(git_diff_tree_to_tree, repo(), tree1, tree2, opts);
+}
+
+std::optional<Diff> Repo::diffCached(const Commit &commit, const Index &index,
+				     const git_diff_options *opts) const noexcept
+{
+	return diffCached(*commit.tree(), index, opts);
+}
+
+std::optional<Diff> Repo::diffCached(const Tree &tree, const Index &index,
+				     const git_diff_options *opts) const noexcept
+{
+	return MakeGit<Diff>(git_diff_tree_to_index, repo(), tree, index, opts);
+}
+
+std::optional<Diff> Repo::diffCached(const Commit &commit,
+				     const git_diff_options *opts) const noexcept
+{
+	return diffCached(commit, *index(), opts);
+}
+
+std::optional<Diff> Repo::diffCached(const Tree &tree, const git_diff_options *opts) const noexcept
+{
+	return diffCached(tree, *index(), opts);
+}
+
+std::optional<Diff> Repo::diffWorkdir(const Index &index,
+				      const git_diff_options *opts) const noexcept
+{
+	return MakeGit<Diff>(git_diff_index_to_workdir, repo(), index, opts);
+}
+
+std::optional<Diff> Repo::diffWorkdir(const Commit &commit,
+				      const git_diff_options *opts) const noexcept
+{
+	return diffWorkdir(*commit.tree(), opts);
+}
+
+std::optional<Diff> Repo::diffWorkdir(const Tree &tree, const git_diff_options *opts) const noexcept
+{
+	return MakeGit<Diff>(git_diff_tree_to_workdir, repo(), tree, opts);
 }
 
 std::variant<Blob, Commit, Tag, Tree, std::monostate>
