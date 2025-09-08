@@ -164,12 +164,12 @@ static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 {
 	auto commit = repo.commitRevparseSingle("HEAD");
 	assert(commit);
-	assert(*commit == *repo.commitHead());
-	assert(commit->idStr() == bCommit.idStr());
+	assert(commit == repo.commitHead());
+	assert(commit == bCommit);
 
 	commit = repo.commitRevparseSingle("HEAD^1");
 	assert(commit);
-	assert(commit->idStr() == aCommit.idStr());
+	assert(commit == aCommit);
 
 	auto failTree = repo.commitRevparseSingle("HEAD^{tree}");
 	assert(!failTree);
@@ -178,7 +178,7 @@ static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 
 	auto tree = repo.treeRevparseSingle("HEAD^{tree}");
 	assert(tree);
-	assert(tree->idStr() == bCommit.treeIdStr());
+	assert(tree == bCommit.tree());
 
 	auto blob = repo.blobRevparseSingle("HEAD:" + bFile.string());
 	assert(blob);
@@ -208,11 +208,11 @@ static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	revWalk->pushHead();
 	auto nextCommit = revWalk->next(repo);
 	assert(nextCommit);
-	assert(nextCommit->idStr() == bCommit.idStr());
+	assert(nextCommit == bCommit);
 	std::cout << __func__ << ": top-0=" << nextCommit->idStr() << '\n';
 	nextCommit = revWalk->next(repo);
 	assert(nextCommit);
-	assert(nextCommit->idStr() == aCommit.idStr());
+	assert(nextCommit == aCommit);
 	std::cout << __func__ << ": top-1=" << nextCommit->idStr() << '\n';
 	nextCommit = revWalk->next(repo);
 	assert(!nextCommit);
@@ -260,7 +260,7 @@ static void testCheckout(const SlGit::Repo &repo2, const SlGit::Commit &aCommit)
 	auto head = repo2.commitRevparseSingle("HEAD");
 	assert(head);
 	std::cout << __func__ << ": cloned head=" << head->idStr() << '\n';
-	assert(head->idStr() == aCommit.idStr());
+	assert(head == aCommit);
 }
 
 static void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
@@ -272,7 +272,7 @@ static void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
 	std::cout << "^^^ fetch output ^^^\n";
 	auto originMaster = repo2.commitRevparseSingle("origin/master");
 	std::cout << __func__ << ": origin/master=" << originMaster->idStr() << '\n';
-	assert(originMaster->idStr() == bCommit.idStr());
+	assert(originMaster == bCommit);
 }
 
 int main()
