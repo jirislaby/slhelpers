@@ -12,6 +12,7 @@ endif
 public_headers += [
     'git/Blob.h',
     'git/Commit.h',
+    'git/Diff.h',
     'git/FetchCallbacks.h',
     'git/Git.h',
     'git/Helpers.h',
@@ -28,6 +29,7 @@ public_headers += [
 slgit = library('slgit++', [
     'Blob.cpp',
     'Commit.cpp',
+    'Diff.cpp',
     'Index.cpp',
     'Initer.cpp',
     'MyFetchCallbacks.cpp',

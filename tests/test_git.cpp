@@ -141,6 +141,24 @@ static void testOperator(const SlGit::Commit &aCommit, const SlGit::Commit &bCom
 	assert(aCommit != bCommit);
 }
 
+static void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+		     const SlGit::Commit &bCommit)
+{
+	auto diff = repo.diff(aCommit, bCommit);
+	assert(diff);
+	assert(!diff->print(GIT_DIFF_FORMAT_PATCH,
+			    [](const git_diff_delta &delta,
+			       const git_diff_hunk *hunk,
+			       const git_diff_line &line) -> int {
+		std::cout << delta.old_file.path << "->" << delta.new_file.path << '\n';
+		if (hunk)
+			std::cout << "hunk=" << hunk->header << '\n';
+		std::string_view s(line.content, line.content_len);
+		std::cout << "origin=" << line.origin << " content=" << s << "=========\n";
+		return 0;
+	}));
+}
+
 static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 		     const SlGit::Commit &bCommit, const SlGit::Signature &me)
 {
@@ -285,6 +303,7 @@ int main()
 	auto repo2 = testRepoClone(repo);
 	auto [ bCommit, bFile, bContent ] = createBCommit(repo, aCommit, me);
 	testOperator(aCommit, bCommit);
+	testDiff(repo, aCommit, bCommit);
 	testTags(repo, aCommit, bCommit, me);
 	testRevparse(repo, aCommit, bCommit, bFile);
 	testRemote(repo);

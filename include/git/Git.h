@@ -5,6 +5,7 @@
 
 #include "Blob.h"
 #include "Commit.h"
+#include "Diff.h"
 #include "Helpers.h"
 #include "Index.h"
 #include "Misc.h"
