@@ -150,6 +150,11 @@ std::optional<Commit> Repo::commitCreateCheckout(const Signature &author,
 	return commit;
 }
 
+std::optional<Commit> Repo::commitHead() const noexcept
+{
+	return commitRevparseSingle("HEAD");
+}
+
 std::optional<Commit> Repo::commitRevparseSingle(const std::string &rev) const
 {
 	auto res = revparseSingle(rev);

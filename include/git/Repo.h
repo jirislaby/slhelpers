@@ -66,6 +66,7 @@ public:
 						   const std::string &msg, const Tree &tree,
 						   unsigned int strategy = GIT_CHECKOUT_SAFE,
 						   const std::vector<const Commit *> &parents = {}) const;
+	std::optional<Commit> commitHead() const noexcept;
 	std::optional<Commit> commitRevparseSingle(const std::string &rev) const;
 
 	std::optional<Index> index() const;
