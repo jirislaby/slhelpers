@@ -14,20 +14,20 @@ void SlHelpers::Deleter<git_commit>::operator()(git_commit *commit) const
 	git_commit_free(commit);
 }
 
-std::optional<Commit> Commit::parent(const Commit &ofCommit, unsigned int nth)
+std::optional<Commit> Commit::parent(unsigned int nth)
 {
-	git_commit *commit;
-	if (git_commit_parent(&commit, ofCommit, nth))
+	git_commit *parent;
+	if (git_commit_parent(&parent, commit(), nth))
 		return std::nullopt;
-	return Commit(commit);
+	return Commit(parent);
 }
 
-std::optional<Commit> Commit::ancestor(const Commit &ofCommit, unsigned int nth)
+std::optional<Commit> Commit::ancestor(unsigned int nth)
 {
-	git_commit *commit;
-	if (git_commit_nth_gen_ancestor(&commit, ofCommit, nth))
+	git_commit *ancestor;
+	if (git_commit_nth_gen_ancestor(&ancestor, commit(), nth))
 		return std::nullopt;
-	return Commit(commit);
+	return Commit(ancestor);
 }
 
 std::optional<Tree> Commit::tree() const

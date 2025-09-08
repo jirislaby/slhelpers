@@ -166,6 +166,7 @@ static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	assert(commit);
 	assert(commit == repo.commitHead());
 	assert(commit == bCommit);
+	assert(commit->parent() == aCommit);
 
 	commit = repo.commitRevparseSingle("HEAD^1");
 	assert(commit);

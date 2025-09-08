@@ -21,8 +21,8 @@ class Commit : public TypedObject<git_commit> {
 public:
 	Commit() = delete;
 
-	std::optional<Commit> parent(const Commit &ofCommit, unsigned int nth);
-	std::optional<Commit> ancestor(const Commit &ofCommit, unsigned int nth);
+	std::optional<Commit> parent(unsigned int nth = 0);
+	std::optional<Commit> ancestor(unsigned int nth = 0);
 
 	std::optional<Tree> tree() const;
 
