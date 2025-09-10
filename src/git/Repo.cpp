@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <iostream>
-
 #include <git2.h>
 
 #include "git/Blob.h"
@@ -32,24 +30,13 @@ std::optional<Repo> Repo::init(const std::filesystem::path &path, bool bare,
 		opts.flags |= GIT_REPOSITORY_INIT_BARE;
 	if (!originUrl.empty())
 		opts.origin_url = originUrl.c_str();
-	git_repository *repo;
-	if (git_repository_init_ext(&repo, path.c_str(), &opts))
-		return std::nullopt;
 
-	return Repo(repo);
+	return MakeGit<Repo>(git_repository_init_ext, path.c_str(), &opts);
 }
 
 std::optional<Repo> Repo::open(const std::filesystem::__cxx11::path &path)
 {
-	git_repository *repo;
-	int ret = git_repository_open(&repo, path.c_str());
-	if (ret < 0) {
-		auto e = git_error_last();
-		std::cerr << "Git: error " << ret << "/" << e->klass << ": " << e->message << '\n';
-		return std::nullopt;
-	}
-
-	return Repo(repo);
+	return MakeGit<Repo>(git_repository_open, path.c_str());
 }
 
 int Repo::checkoutTree(const Tree &tree, unsigned int strategy) const
@@ -93,10 +80,7 @@ std::optional<Blob> Repo::blobCreateFromBuffer(const std::string &buf) const
 
 std::optional<Blob> Repo::blobLookup(const git_oid &oid) const
 {
-	git_blob *blob;
-	if (git_blob_lookup(&blob, repo(), &oid))
-		return std::nullopt;
-	return Blob(blob);
+	return MakeGit<Blob>(git_blob_lookup, repo(), &oid);
 }
 
 std::optional<Blob> Repo::blobLookup(const TreeEntry &tentry) const
@@ -114,10 +98,7 @@ std::optional<Blob> Repo::blobRevparseSingle(const std::string &rev) const
 
 std::optional<Commit> Repo::commitLookup(const git_oid &oid) const
 {
-	git_commit *commit;
-	if (git_commit_lookup(&commit, repo(), &oid))
-		return std::nullopt;
-	return Commit(commit);
+	return MakeGit<Commit>(git_commit_lookup, repo(), &oid);
 }
 
 std::optional<Commit> Repo::commitCreate(const Signature &author, const Signature &committer,
@@ -186,10 +167,7 @@ std::variant<Blob, Commit, Tag, Tree, std::monostate> Repo::revparseSingle(const
 
 std::optional<Tree> Repo::treeLookup(const git_oid &oid) const
 {
-	git_tree *tree;
-	if (git_tree_lookup(&tree, repo(), &oid))
-		return std::nullopt;
-	return Tree(tree);
+	return MakeGit<Tree>(git_tree_lookup, repo(), &oid);
 }
 
 std::optional<Tree> Repo::treeLookup(const TreeEntry &tentry) const
@@ -207,34 +185,22 @@ std::optional<Tree> Repo::treeRevparseSingle(const std::string &rev) const
 
 std::optional<Index> Repo::index() const
 {
-	git_index *index;
-	if (git_repository_index(&index, repo()))
-		return std::nullopt;
-	return Index(index);
+	return MakeGit<Index>(git_repository_index, repo());
 }
 
 std::optional<Remote> Repo::remoteCreate(const std::string &name, const std::string &url) const
 {
-	git_remote *remote;
-	if (git_remote_create(&remote, repo(), name.c_str(), url.c_str()))
-		return std::nullopt;
-	return Remote(remote);
+	return MakeGit<Remote>(git_remote_create, repo(), name.c_str(), url.c_str());
 }
 
 std::optional<Remote> Repo::remoteLookup(const std::string &name) const
 {
-	git_remote *remote;
-	if (git_remote_lookup(&remote, repo(), name.c_str()))
-		return std::nullopt;
-	return Remote(remote);
+	return MakeGit<Remote>(git_remote_lookup, repo(), name.c_str());
 }
 
 std::optional<RevWalk> Repo::revWalkCreate() const
 {
-	git_revwalk *revWalk;
-	if (git_revwalk_new(&revWalk, repo()))
-		return std::nullopt;
-	return RevWalk(revWalk);
+	return MakeGit<RevWalk>(git_revwalk_new, repo());
 }
 
 std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &target,
@@ -250,10 +216,7 @@ std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &tar
 
 std::optional<Tag> Repo::tagLookup(const git_oid &oid) const
 {
-	git_tag *tag;
-	if (git_tag_lookup(&tag, repo(), &oid))
-		return std::nullopt;
-	return Tag(tag);
+	return MakeGit<Tag>(git_tag_lookup, repo(), &oid);
 }
 
 std::optional<Tag> Repo::tagLookup(const TreeEntry &tentry) const
@@ -271,44 +234,29 @@ std::optional<Tag> Repo::tagRevparseSingle(const std::string &rev) const
 
 std::optional<Reference> Repo::refLookup(const std::string &name) const
 {
-	git_reference *ref;
-	if (git_reference_lookup(&ref, repo(), name.c_str()))
-		return std::nullopt;
-	return Reference(ref);
+	return MakeGit<Reference>(git_reference_lookup, repo(), name.c_str());
 }
 
 std::optional<Reference> Repo::refDWIM(const std::string &name) const
 {
-	git_reference *ref;
-	if (git_reference_dwim(&ref, repo(), name.c_str()))
-		return std::nullopt;
-	return Reference(ref);
+	return MakeGit<Reference>(git_reference_dwim, repo(), name.c_str());
 }
 
 std::optional<Reference> Repo::refCreateDirect(const std::string &name, const git_oid &oid,
 					       bool force) const {
-	git_reference *ref;
-	if (git_reference_create(&ref, repo(), name.c_str(), &oid, force, nullptr))
-		return std::nullopt;
-	return Reference(ref);
+	return MakeGit<Reference>(git_reference_create, repo(), name.c_str(), &oid, force, nullptr);
 }
 
 std::optional<Reference> Repo::refCreateSymbolic(const std::string &name, const std::string &target,
 						 bool force) const
 {
-	git_reference *ref;
-	if (git_reference_symbolic_create(&ref, repo(), name.c_str(), target.c_str(),
-					  force, nullptr))
-		return std::nullopt;
-	return Reference(ref);
+	return MakeGit<Reference>(git_reference_symbolic_create, repo(), name.c_str(),
+				  target.c_str(), force, nullptr);
 }
 
 std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const
 {
-	git_treebuilder *TB;
-	if (git_treebuilder_new(&TB, repo(), source ? source->tree() : nullptr))
-		return std::nullopt;
-	return TreeBuilder(TB);
+	return MakeGit<TreeBuilder>(git_treebuilder_new, repo(), source ? source->tree() : nullptr);
 }
 
 std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::string &url,
@@ -328,10 +276,8 @@ std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::st
 #ifdef LIBGIT_HAS_UPDATE_REFS
 	opts.fetch_opts.callbacks.update_refs = Remote::fetchUpdateRefs;
 #endif
-	git_repository *repo;
-	if (git_clone(&repo, url.c_str(), path.c_str(), &opts))
-		return std::nullopt;
-	return Repo(repo);
+
+	return MakeGit<Repo>(git_clone, url.c_str(), path.c_str(), &opts);
 }
 
 int Repo::checkout(const std::string &branch) const

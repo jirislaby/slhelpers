@@ -108,6 +108,16 @@ private:
 	explicit Repo(GitTy *repo) : m_repo(repo) {}
 
 	Holder m_repo;
+
+	template<class Class, typename FunTy, typename... Args>
+	static std::optional<Class> MakeGit(const FunTy &fun, Args&&... args)
+	{
+		class Class::GitTy *gitEntry;
+		if (fun(&gitEntry, std::forward<Args>(args)...))
+			return std::nullopt;
+		return Class(gitEntry);
+	}
+
 };
 
 }
