@@ -13,6 +13,6 @@ void SlHelpers::Deleter<git_tag>::operator()(git_tag *tag) const
 	git_tag_free(tag);
 }
 
-Tag::Tag(git_tag *tag) : TypedObject(tag)
+Tag::Tag(git_tag *tag) noexcept : TypedObject(tag)
 {
 }

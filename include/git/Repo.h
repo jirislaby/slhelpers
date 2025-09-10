@@ -36,76 +36,79 @@ public:
 	Repo() = delete;
 
 	static std::optional<Repo> init(const std::filesystem::path &path, bool bare = false,
-					const std::string &originUrl = "");
+					const std::string &originUrl = "") noexcept;
 	static std::optional<Repo> clone(const std::filesystem::path &path, const std::string &url,
 					 const std::string &branch = "",
-					 const unsigned int &depth = 0, bool tags = true);
-	static std::optional<Repo> open(const std::filesystem::path &path = ".");
+					 const unsigned int &depth = 0,
+					 bool tags = true) noexcept;
+	static std::optional<Repo> open(const std::filesystem::path &path = ".") noexcept;
 
-	int grepBranch(const std::string &branch, const std::regex &regex) const;
-	int checkout(const std::string &branch) const;
-	int checkout(const Reference &reference) const;
-	int checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE) const;
-	std::optional<std::string> catFile(const std::string &branch, const std::string &file) const;
+	int grepBranch(const std::string &branch, const std::regex &regex) const noexcept;
+	int checkout(const std::string &branch) const noexcept;
+	int checkout(const Reference &reference) const noexcept;
+	int checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE) const noexcept;
+	std::optional<std::string> catFile(const std::string &branch,
+					   const std::string &file) const noexcept;
 
 	std::variant<Blob, Commit, Tag, Tree, std::monostate>
-	revparseSingle(const std::string &rev) const;
+	revparseSingle(const std::string &rev) const noexcept;
 
-	std::optional<Blob> blobCreateFromWorkDir(const std::filesystem::path &file) const;
-	std::optional<Blob> blobCreateFromDisk(const std::filesystem::path &file) const;
-	std::optional<Blob> blobCreateFromBuffer(const std::string &buf) const;
-	std::optional<Blob> blobLookup(const git_oid &oid) const;
-	std::optional<Blob> blobLookup(const TreeEntry &tentry) const;
-	std::optional<Blob> blobRevparseSingle(const std::string &rev) const;
+	std::optional<Blob> blobCreateFromWorkDir(const std::filesystem::path &file) const noexcept;
+	std::optional<Blob> blobCreateFromDisk(const std::filesystem::path &file) const noexcept;
+	std::optional<Blob> blobCreateFromBuffer(const std::string &buf) const noexcept;
+	std::optional<Blob> blobLookup(const git_oid &oid) const noexcept;
+	std::optional<Blob> blobLookup(const TreeEntry &tentry) const noexcept;
+	std::optional<Blob> blobRevparseSingle(const std::string &rev) const noexcept;
 
-	std::optional<Commit> commitLookup(const git_oid &oid) const;
+	std::optional<Commit> commitLookup(const git_oid &oid) const noexcept;
 	std::optional<Commit> commitCreate(const Signature &author, const Signature &committer,
 					   const std::string &msg, const Tree &tree,
-					   const std::vector<const Commit *> &parents = {}) const;
+					   const std::vector<const Commit *> &parents = {}) const noexcept;
 	std::optional<Commit> commitCreateCheckout(const Signature &author,
 						   const Signature &committer,
 						   const std::string &msg, const Tree &tree,
 						   unsigned int strategy = GIT_CHECKOUT_SAFE,
-						   const std::vector<const Commit *> &parents = {}) const;
+						   const std::vector<const Commit *> &parents = {}) const noexcept;
 	std::optional<Commit> commitHead() const noexcept;
-	std::optional<Commit> commitRevparseSingle(const std::string &rev) const;
+	std::optional<Commit> commitRevparseSingle(const std::string &rev) const noexcept;
 
-	std::optional<Index> index() const;
+	std::optional<Index> index() const noexcept;
 
-	std::optional<Remote> remoteCreate(const std::string &name, const std::string &url) const;
-	std::optional<Remote> remoteLookup(const std::string &name) const;
+	std::optional<Remote> remoteCreate(const std::string &name,
+					   const std::string &url) const noexcept;
+	std::optional<Remote> remoteLookup(const std::string &name) const noexcept;
 
-	std::optional<Reference> refLookup(const std::string &name) const;
-	std::optional<Reference> refDWIM(const std::string &name) const;
+	std::optional<Reference> refLookup(const std::string &name) const noexcept;
+	std::optional<Reference> refDWIM(const std::string &name) const noexcept;
 
 	std::optional<Reference> refCreateDirect(const std::string &name, const git_oid &oid,
-						 bool force = false) const;
+						 bool force = false) const noexcept;
 	std::optional<Reference> refCreateSymbolic(const std::string &name,
 						   const std::string &target,
-						   bool force = false) const;
+						   bool force = false) const noexcept;
 
-	std::optional<RevWalk> revWalkCreate() const;
+	std::optional<RevWalk> revWalkCreate() const noexcept;
 
 	std::optional<Tag> tagCreate(const std::string &tagName, const Object &target,
 				     const Signature &tagger, const std::string &message,
-				     bool force = false) const;
-	std::optional<Tag> tagLookup(const git_oid &oid) const;
-	std::optional<Tag> tagLookup(const TreeEntry &tentry) const;
-	std::optional<Tag> tagRevparseSingle(const std::string &rev) const;
+				     bool force = false) const noexcept;
+	std::optional<Tag> tagLookup(const git_oid &oid) const noexcept;
+	std::optional<Tag> tagLookup(const TreeEntry &tentry) const noexcept;
+	std::optional<Tag> tagRevparseSingle(const std::string &rev) const noexcept;
 
-	std::optional<Tree> treeLookup(const git_oid &oid) const;
-	std::optional<Tree> treeLookup(const TreeEntry &tentry) const;
-	std::optional<Tree> treeRevparseSingle(const std::string &rev) const;
+	std::optional<Tree> treeLookup(const git_oid &oid) const noexcept;
+	std::optional<Tree> treeLookup(const TreeEntry &tentry) const noexcept;
+	std::optional<Tree> treeRevparseSingle(const std::string &rev) const noexcept;
 
-	std::optional<TreeBuilder> treeBuilderCreate(const Tree *source = nullptr) const;
+	std::optional<TreeBuilder> treeBuilderCreate(const Tree *source = nullptr) const noexcept;
 
-	std::filesystem::path path() const { return git_repository_path(repo()); }
-	std::filesystem::path workDir() const { return git_repository_workdir(repo()); }
+	std::filesystem::path path() const noexcept { return git_repository_path(repo()); }
+	std::filesystem::path workDir() const noexcept { return git_repository_workdir(repo()); }
 
-	GitTy *repo() const { return m_repo.get(); }
-	operator GitTy *() const { return repo(); }
+	GitTy *repo() const noexcept { return m_repo.get(); }
+	operator GitTy *() const noexcept { return repo(); }
 private:
-	explicit Repo(GitTy *repo) : m_repo(repo) {}
+	explicit Repo(GitTy *repo) noexcept : m_repo(repo) {}
 
 	Holder m_repo;
 

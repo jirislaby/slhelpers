@@ -21,13 +21,13 @@ protected:
 public:
 	virtual ~Object() = default;
 
-	const git_oid *id() const { return git_object_id(object()); }
-	std::string idStr() const { return Helpers::oidToStr(*id()); }
+	const git_oid *id() const noexcept { return git_object_id(object()); }
+	std::string idStr() const noexcept { return Helpers::oidToStr(*id()); }
 
 	git_object_t type() const noexcept { return git_object_type(object()); }
 	std::string typeStr() const noexcept { return git_object_type2string(type()); }
 
-	virtual git_object *object() const = 0;
+	virtual git_object *object() const noexcept = 0;
 
 	bool operator==(const Object &other) const noexcept {
 	    if (object() == other.object())
@@ -49,12 +49,12 @@ public:
 		return reinterpret_cast<git_object *>(typed());
 	}
 
-	operator T *() const { return typed(); }
+	operator T *() const noexcept { return typed(); }
 
 protected:
-	explicit TypedObject(T* typed) : m_typed(typed) { }
+	explicit TypedObject(T* typed) noexcept : m_typed(typed) { }
 
-	T *typed() const { return m_typed.get(); }
+	T *typed() const noexcept { return m_typed.get(); }
 
 private:
 	Holder m_typed;

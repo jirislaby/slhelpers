@@ -12,6 +12,6 @@ void SlHelpers::Deleter<git_blob>::operator()(git_blob *blob) const
 	git_blob_free(blob);
 }
 
-Blob::Blob(git_blob *blob) : TypedObject(blob)
+Blob::Blob(git_blob *blob) noexcept : TypedObject(blob)
 {
 }

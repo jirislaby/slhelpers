@@ -21,17 +21,17 @@ class Tag : public TypedObject<git_tag> {
 public:
 	Tag() = delete;
 
-	const git_oid *targetId() const { return git_tag_target_id(tag()); }
-	std::string targetIdStr() const { return  Helpers::oidToStr(*targetId()); }
-	git_object_t targetType() const { return git_tag_target_type(tag()); }
+	const git_oid *targetId() const noexcept { return git_tag_target_id(tag()); }
+	std::string targetIdStr() const noexcept { return  Helpers::oidToStr(*targetId()); }
+	git_object_t targetType() const noexcept { return git_tag_target_type(tag()); }
 
-	std::string name() const { return git_tag_name(tag()); }
-	const git_signature *tagger() const { return git_tag_tagger(tag()); }
-	std::string message() const { return git_tag_message(tag()); }
+	std::string name() const noexcept { return git_tag_name(tag()); }
+	const git_signature *tagger() const noexcept { return git_tag_tagger(tag()); }
+	std::string message() const noexcept { return git_tag_message(tag()); }
 
-	GitTy *tag() const { return typed(); }
+	GitTy *tag() const noexcept { return typed(); }
 private:
-	explicit Tag(GitTy *tag);
+	explicit Tag(GitTy *tag) noexcept;
 };
 
 }

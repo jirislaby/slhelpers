@@ -30,13 +30,13 @@ void SlHelpers::Deleter<git_tree_entry>::operator()(git_tree_entry *TE) const
 		git_tree_entry_free(TE);
 }
 
-int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode)
+int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) const
 {
 	return git_tree_walk(tree(), mode, walkCB,
 			     const_cast<void *>(static_cast<const void *>(&CB)));
 }
 
-std::optional<TreeEntry> Tree::treeEntryByPath(const std::string &path) const
+std::optional<TreeEntry> Tree::treeEntryByPath(const std::string &path) const noexcept
 {
 	git_tree_entry *TE;
 	if (git_tree_entry_bypath(&TE, tree(), path.c_str()))
@@ -44,12 +44,12 @@ std::optional<TreeEntry> Tree::treeEntryByPath(const std::string &path) const
 	return TreeEntry(TE);
 }
 
-TreeEntry Tree::treeEntryByIndex(size_t idx) const
+TreeEntry Tree::treeEntryByIndex(size_t idx) const noexcept
 {
 	return TreeEntry(git_tree_entry_byindex(tree(), idx));
 }
 
-std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &file) const
+std::optional<std::string> Tree::catFile(const Repo &repo, const std::string &file) const noexcept
 {
 	if (auto treeEntry = treeEntryByPath(file))
 		return treeEntry->catFile(repo);
@@ -64,13 +64,13 @@ int Tree::walkCB(const char *root, const git_tree_entry *entry, void *payload)
 	return CB(root, std::move(TreeEntry(entry)));
 }
 
-int TreeBuilder::insert(const std::filesystem::path &file, const Blob &blob)
+int TreeBuilder::insert(const std::filesystem::path &file, const Blob &blob) const noexcept
 {
 	return git_treebuilder_insert(nullptr, treeBuilder(), file.c_str(), blob.id(),
 				      GIT_FILEMODE_BLOB);
 }
 
-std::optional<Tree> TreeBuilder::write(const Repo &repo) const
+std::optional<Tree> TreeBuilder::write(const Repo &repo) const noexcept
 {
 	git_oid oid;
 	auto ret = git_treebuilder_write(&oid, treeBuilder());
@@ -79,7 +79,7 @@ std::optional<Tree> TreeBuilder::write(const Repo &repo) const
 	return repo.treeLookup(oid);
 }
 
-std::optional<std::string> TreeEntry::catFile(const Repo &repo) const
+std::optional<std::string> TreeEntry::catFile(const Repo &repo) const noexcept
 {
 	if (type() != GIT_OBJECT_BLOB)
 		return std::nullopt;

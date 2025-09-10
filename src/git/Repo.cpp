@@ -22,7 +22,7 @@ void SlHelpers::Deleter<git_repository>::operator()(git_repository *repo) const
 }
 
 std::optional<Repo> Repo::init(const std::filesystem::path &path, bool bare,
-				 const std::string &originUrl)
+				 const std::string &originUrl) noexcept
 {
 	git_repository_init_options opts GIT_REPOSITORY_INIT_OPTIONS_INIT;
 	opts.flags |= GIT_REPOSITORY_INIT_MKPATH;
@@ -34,19 +34,20 @@ std::optional<Repo> Repo::init(const std::filesystem::path &path, bool bare,
 	return MakeGit<Repo>(git_repository_init_ext, path.c_str(), &opts);
 }
 
-std::optional<Repo> Repo::open(const std::filesystem::__cxx11::path &path)
+std::optional<Repo> Repo::open(const std::filesystem::__cxx11::path &path) noexcept
 {
 	return MakeGit<Repo>(git_repository_open, path.c_str());
 }
 
-int Repo::checkoutTree(const Tree &tree, unsigned int strategy) const
+int Repo::checkoutTree(const Tree &tree, unsigned int strategy) const noexcept
 {
 	git_checkout_options opts GIT_CHECKOUT_OPTIONS_INIT;
 	opts.checkout_strategy = strategy;
 	return git_checkout_tree(repo(), reinterpret_cast<const git_object *>(tree.tree()), &opts);
 }
 
-std::optional<std::string> Repo::catFile(const std::string &branch, const std::string &file) const
+std::optional<std::string> Repo::catFile(const std::string &branch,
+					 const std::string &file) const noexcept
 {
 	if (auto commit = commitRevparseSingle(branch))
 		return commit->catFile(*this, file);
@@ -54,7 +55,7 @@ std::optional<std::string> Repo::catFile(const std::string &branch, const std::s
 	return std::nullopt;
 }
 
-std::optional<Blob> Repo::blobCreateFromWorkDir(const std::filesystem::path &file) const
+std::optional<Blob> Repo::blobCreateFromWorkDir(const std::filesystem::path &file) const noexcept
 {
 	git_oid oid;
 	if (git_blob_create_from_workdir(&oid, repo(), file.c_str()))
@@ -62,7 +63,7 @@ std::optional<Blob> Repo::blobCreateFromWorkDir(const std::filesystem::path &fil
 	return blobLookup(oid);
 }
 
-std::optional<Blob> Repo::blobCreateFromDisk(const std::filesystem::path &file) const
+std::optional<Blob> Repo::blobCreateFromDisk(const std::filesystem::path &file) const noexcept
 {
 	git_oid oid;
 	if (git_blob_create_from_disk(&oid, repo(), file.c_str()))
@@ -70,7 +71,7 @@ std::optional<Blob> Repo::blobCreateFromDisk(const std::filesystem::path &file) 
 	return blobLookup(oid);
 }
 
-std::optional<Blob> Repo::blobCreateFromBuffer(const std::string &buf) const
+std::optional<Blob> Repo::blobCreateFromBuffer(const std::string &buf) const noexcept
 {
 	git_oid oid;
 	if (git_blob_create_from_buffer(&oid, repo(), buf.c_str(), buf.length()))
@@ -78,17 +79,17 @@ std::optional<Blob> Repo::blobCreateFromBuffer(const std::string &buf) const
 	return blobLookup(oid);
 }
 
-std::optional<Blob> Repo::blobLookup(const git_oid &oid) const
+std::optional<Blob> Repo::blobLookup(const git_oid &oid) const noexcept
 {
 	return MakeGit<Blob>(git_blob_lookup, repo(), &oid);
 }
 
-std::optional<Blob> Repo::blobLookup(const TreeEntry &tentry) const
+std::optional<Blob> Repo::blobLookup(const TreeEntry &tentry) const noexcept
 {
 	return blobLookup(*tentry.id());
 }
 
-std::optional<Blob> Repo::blobRevparseSingle(const std::string &rev) const
+std::optional<Blob> Repo::blobRevparseSingle(const std::string &rev) const noexcept
 {
 	auto res = revparseSingle(rev);
 	if (std::holds_alternative<Blob>(res))
@@ -96,14 +97,14 @@ std::optional<Blob> Repo::blobRevparseSingle(const std::string &rev) const
 	return std::nullopt;
 }
 
-std::optional<Commit> Repo::commitLookup(const git_oid &oid) const
+std::optional<Commit> Repo::commitLookup(const git_oid &oid) const noexcept
 {
 	return MakeGit<Commit>(git_commit_lookup, repo(), &oid);
 }
 
 std::optional<Commit> Repo::commitCreate(const Signature &author, const Signature &committer,
 					 const std::string &msg, const Tree &tree,
-					 const std::vector<const Commit *> &parents) const
+					 const std::vector<const Commit *> &parents) const noexcept
 {
 	git_oid oid;
 	std::vector<const git_commit *> parentPtrs;
@@ -121,7 +122,7 @@ std::optional<Commit> Repo::commitCreateCheckout(const Signature &author,
 						 const Signature &committer,
 						 const std::string &msg, const Tree &tree,
 						 unsigned int strategy,
-						 const std::vector<const Commit *> &parents) const
+						 const std::vector<const Commit *> &parents) const noexcept
 {
 	auto commit = commitCreate(author, committer, msg, tree, parents);
 	if (!commit)
@@ -136,7 +137,7 @@ std::optional<Commit> Repo::commitHead() const noexcept
 	return commitRevparseSingle("HEAD");
 }
 
-std::optional<Commit> Repo::commitRevparseSingle(const std::string &rev) const
+std::optional<Commit> Repo::commitRevparseSingle(const std::string &rev) const noexcept
 {
 	auto res = revparseSingle(rev);
 	if (std::holds_alternative<Commit>(res))
@@ -144,7 +145,8 @@ std::optional<Commit> Repo::commitRevparseSingle(const std::string &rev) const
 	return std::nullopt;
 }
 
-std::variant<Blob, Commit, Tag, Tree, std::monostate> Repo::revparseSingle(const std::string &rev) const
+std::variant<Blob, Commit, Tag, Tree, std::monostate>
+Repo::revparseSingle(const std::string &rev) const noexcept
 {
 	git_object *obj;
 	if (git_revparse_single(&obj, repo(), rev.c_str()))
@@ -165,17 +167,17 @@ std::variant<Blob, Commit, Tag, Tree, std::monostate> Repo::revparseSingle(const
 	}
 }
 
-std::optional<Tree> Repo::treeLookup(const git_oid &oid) const
+std::optional<Tree> Repo::treeLookup(const git_oid &oid) const noexcept
 {
 	return MakeGit<Tree>(git_tree_lookup, repo(), &oid);
 }
 
-std::optional<Tree> Repo::treeLookup(const TreeEntry &tentry) const
+std::optional<Tree> Repo::treeLookup(const TreeEntry &tentry) const noexcept
 {
 	return treeLookup(*tentry.id());
 }
 
-std::optional<Tree> Repo::treeRevparseSingle(const std::string &rev) const
+std::optional<Tree> Repo::treeRevparseSingle(const std::string &rev) const noexcept
 {
 	auto res = revparseSingle(rev);
 	if (std::holds_alternative<Tree>(res))
@@ -183,29 +185,30 @@ std::optional<Tree> Repo::treeRevparseSingle(const std::string &rev) const
 	return std::nullopt;
 }
 
-std::optional<Index> Repo::index() const
+std::optional<Index> Repo::index() const noexcept
 {
 	return MakeGit<Index>(git_repository_index, repo());
 }
 
-std::optional<Remote> Repo::remoteCreate(const std::string &name, const std::string &url) const
+std::optional<Remote> Repo::remoteCreate(const std::string &name,
+					 const std::string &url) const noexcept
 {
 	return MakeGit<Remote>(git_remote_create, repo(), name.c_str(), url.c_str());
 }
 
-std::optional<Remote> Repo::remoteLookup(const std::string &name) const
+std::optional<Remote> Repo::remoteLookup(const std::string &name) const noexcept
 {
 	return MakeGit<Remote>(git_remote_lookup, repo(), name.c_str());
 }
 
-std::optional<RevWalk> Repo::revWalkCreate() const
+std::optional<RevWalk> Repo::revWalkCreate() const noexcept
 {
 	return MakeGit<RevWalk>(git_revwalk_new, repo());
 }
 
 std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &target,
 				   const Signature &tagger, const std::string &message,
-				   bool force) const
+				   bool force) const noexcept
 {
 	git_oid oid;
 	if (git_tag_create(&oid, repo(), tagName.c_str(), target.object(), tagger, message.c_str(),
@@ -214,17 +217,17 @@ std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &tar
 	return tagLookup(oid);
 }
 
-std::optional<Tag> Repo::tagLookup(const git_oid &oid) const
+std::optional<Tag> Repo::tagLookup(const git_oid &oid) const noexcept
 {
 	return MakeGit<Tag>(git_tag_lookup, repo(), &oid);
 }
 
-std::optional<Tag> Repo::tagLookup(const TreeEntry &tentry) const
+std::optional<Tag> Repo::tagLookup(const TreeEntry &tentry) const noexcept
 {
 	return tagLookup(*tentry.id());
 }
 
-std::optional<Tag> Repo::tagRevparseSingle(const std::string &rev) const
+std::optional<Tag> Repo::tagRevparseSingle(const std::string &rev) const noexcept
 {
 	auto res = revparseSingle(rev);
 	if (std::holds_alternative<Tag>(res))
@@ -232,35 +235,36 @@ std::optional<Tag> Repo::tagRevparseSingle(const std::string &rev) const
 	return std::nullopt;
 }
 
-std::optional<Reference> Repo::refLookup(const std::string &name) const
+std::optional<Reference> Repo::refLookup(const std::string &name) const noexcept
 {
 	return MakeGit<Reference>(git_reference_lookup, repo(), name.c_str());
 }
 
-std::optional<Reference> Repo::refDWIM(const std::string &name) const
+std::optional<Reference> Repo::refDWIM(const std::string &name) const noexcept
 {
 	return MakeGit<Reference>(git_reference_dwim, repo(), name.c_str());
 }
 
 std::optional<Reference> Repo::refCreateDirect(const std::string &name, const git_oid &oid,
-					       bool force) const {
+					       bool force) const noexcept {
 	return MakeGit<Reference>(git_reference_create, repo(), name.c_str(), &oid, force, nullptr);
 }
 
 std::optional<Reference> Repo::refCreateSymbolic(const std::string &name, const std::string &target,
-						 bool force) const
+						 bool force) const noexcept
 {
 	return MakeGit<Reference>(git_reference_symbolic_create, repo(), name.c_str(),
 				  target.c_str(), force, nullptr);
 }
 
-std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const
+std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const noexcept
 {
 	return MakeGit<TreeBuilder>(git_treebuilder_new, repo(), source ? source->tree() : nullptr);
 }
 
 std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::string &url,
-				const std::string &branch, const unsigned int &depth, bool tags)
+				const std::string &branch, const unsigned int &depth,
+				bool tags) noexcept
 {
 	MyFetchCallbacks fc;
 	git_clone_options opts GIT_CLONE_OPTIONS_INIT;
@@ -280,7 +284,7 @@ std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::st
 	return MakeGit<Repo>(git_clone, url.c_str(), path.c_str(), &opts);
 }
 
-int Repo::checkout(const std::string &branch) const
+int Repo::checkout(const std::string &branch) const noexcept
 {
 	auto ref = refLookup(branch);
 	if (!ref)
@@ -289,7 +293,7 @@ int Repo::checkout(const std::string &branch) const
 	return checkout(*ref);
 }
 
-int Repo::checkout(const Reference &ref) const
+int Repo::checkout(const Reference &ref) const noexcept
 {
 	auto c = commitLookup(*ref.target());
 	if (!c)

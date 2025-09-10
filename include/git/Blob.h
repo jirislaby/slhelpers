@@ -18,19 +18,19 @@ class Blob : public TypedObject<git_blob> {
 public:
 	Blob() = delete;
 
-	std::string content() const {
+	std::string content() const noexcept {
 		return std::string(static_cast<const char *>(rawcontent()), rawsize());
 	}
-	std::string_view contentView() const {
+	std::string_view contentView() const noexcept {
 		return std::string_view(static_cast<const char *>(rawcontent()), rawsize());
 	}
 
-	GitTy *blob() const { return typed(); }
+	GitTy *blob() const noexcept { return typed(); }
 private:
-	git_object_size_t rawsize() const { return git_blob_rawsize(blob()); }
-	const void *rawcontent() const { return git_blob_rawcontent(blob()); }
+	git_object_size_t rawsize() const noexcept { return git_blob_rawsize(blob()); }
+	const void *rawcontent() const noexcept { return git_blob_rawcontent(blob()); }
 
-	explicit Blob(GitTy *blob);
+	explicit Blob(GitTy *blob) noexcept;
 };
 
 }

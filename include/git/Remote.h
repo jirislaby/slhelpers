@@ -23,28 +23,28 @@ public:
 	Remote() = delete;
 
 	int fetchRefspecs(const std::vector<std::string> &refspecs = {}, int depth = 0,
-			  bool tags = true);
+			  bool tags = true) const noexcept;
 	int fetchBranches(const std::vector<std::string> &branches, int depth = 0,
-			  bool tags = true);
+			  bool tags = true) const noexcept;
 	int fetch(const std::string &branch, int depth = 0,
-		  bool tags = true) { return fetchBranches({ branch }, depth, tags); }
+		  bool tags = true) const noexcept { return fetchBranches({ branch }, depth, tags); }
 
-	std::string url() const { return git_remote_url(remote()); }
+	std::string url() const noexcept { return git_remote_url(remote()); }
 
-	GitTy *remote() const { return m_remote.get(); }
-	operator GitTy *() const { return remote(); }
+	GitTy *remote() const noexcept { return m_remote.get(); }
+	operator GitTy *() const noexcept { return remote(); }
 private:
-	explicit Remote(GitTy *remote) : m_remote(remote) { }
+	explicit Remote(GitTy *remote) noexcept : m_remote(remote) { }
 
 	static int fetchCredentials(git_credential **out, const char *url,
 				    const char *usernameFromUrl, unsigned int allowedTypes,
-				    void *payload);
+				    void *payload) noexcept;
 	static int fetchPackProgress(int stage, uint32_t current, uint32_t total, void *payload);
-	static int fetchSidebandProgress(const char *str, int len, void *payload);
-	static int fetchTransferProgress(const git_indexer_progress *stats, void *payload);
+	static int fetchSidebandProgress(const char *str, int len, void *payload) noexcept;
+	static int fetchTransferProgress(const git_indexer_progress *stats, void *payload) noexcept;
 #ifdef LIBGIT_HAS_UPDATE_REFS
 	static int fetchUpdateRefs(const char *refname, const git_oid *a, const git_oid *b,
-				   git_refspec *refspec, void *payload);
+				   git_refspec *refspec, void *payload) noexcept;
 #endif
 
 	Holder m_remote;

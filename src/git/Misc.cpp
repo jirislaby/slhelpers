@@ -26,7 +26,7 @@ void SlHelpers::Deleter<git_signature>::operator()(git_signature *sig) const
 	git_signature_free(sig);
 }
 
-std::optional<Reference> Reference::resolve() const
+std::optional<Reference> Reference::resolve() const noexcept
 {
 	git_reference *out;
 	if (git_reference_resolve(&out, ref()))
@@ -34,7 +34,7 @@ std::optional<Reference> Reference::resolve() const
 	return Reference(out);
 }
 
-std::optional<Commit> RevWalk::next(const Repo &repo)
+std::optional<Commit> RevWalk::next(const Repo &repo) const noexcept
 {
 	git_oid oid;
 	if (git_revwalk_next(&oid, revWalk()))

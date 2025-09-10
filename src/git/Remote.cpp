@@ -16,7 +16,7 @@ void SlHelpers::Deleter<git_remote>::operator()(git_remote *remote) const
 }
 
 int Remote::fetchCredentials(git_credential **out, const char *url, const char *usernameFromUrl,
-			      unsigned int allowedTypes, void *payload)
+			     unsigned int allowedTypes, void *payload) noexcept
 {
 	std::optional<std::string> username;
 	if (usernameFromUrl)
@@ -30,25 +30,26 @@ int Remote::fetchPackProgress(int stage, uint32_t current, uint32_t total, void 
 	return static_cast<FetchCallbacks *>(payload)->packProgress(stage, current, total);
 }
 
-int Remote::fetchSidebandProgress(const char *str, int len, void *payload)
+int Remote::fetchSidebandProgress(const char *str, int len, void *payload) noexcept
 {
 	return static_cast<FetchCallbacks *>(payload)->sidebandProgress({ str, static_cast<size_t>(len) });
 }
 
-int Remote::fetchTransferProgress(const git_indexer_progress *stats, void *payload)
+int Remote::fetchTransferProgress(const git_indexer_progress *stats, void *payload) noexcept
 {
 	return static_cast<FetchCallbacks *>(payload)->transferProgress(*stats);
 }
 
 #ifdef LIBGIT_HAS_UPDATE_REFS
 int Remote::fetchUpdateRefs(const char *refname, const git_oid *a, const git_oid *b,
-			    git_refspec *refspec, void *payload)
+			    git_refspec *refspec, void *payload) noexcept
 {
 	return static_cast<FetchCallbacks *>(payload)->updateRefs(refname, *a, *b, *refspec);
 }
 #endif
 
-int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, bool tags)
+int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth,
+			  bool tags) const noexcept
 {
 	if (refspecs.empty())
 		return git_remote_fetch(remote(), nullptr, nullptr, nullptr);
@@ -68,7 +69,8 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth, b
 	return git_remote_fetch(remote(), StrArray(refspecs), &opts, nullptr);
 }
 
-int Remote::fetchBranches(const std::vector<std::string> &branches, int depth, bool tags)
+int Remote::fetchBranches(const std::vector<std::string> &branches, int depth,
+			  bool tags) const noexcept
 {
 	std::string remote { git_remote_name(*this) };
 	std::vector<std::string> refspecs;

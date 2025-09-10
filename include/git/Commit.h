@@ -23,31 +23,36 @@ class Commit : public TypedObject<git_commit> {
 public:
 	Commit() = delete;
 
-	std::optional<Commit> parent(unsigned int nth = 0);
-	std::optional<Commit> ancestor(unsigned int nth = 0);
+	std::optional<Commit> parent(unsigned int nth = 0) const noexcept;
+	std::optional<Commit> ancestor(unsigned int nth = 0) const noexcept;
 
-	std::optional<Tree> tree() const;
+	std::optional<Tree> tree() const noexcept;
 
-	const git_oid *treeId() const { return git_commit_tree_id(commit()); }
-	std::string treeIdStr() const { return Helpers::oidToStr(*treeId()); }
-	std::string messageEncoding() const { return git_commit_message_encoding(commit()); }
-	std::string message() const { return git_commit_message(commit()); }
-	std::string summary() const { return git_commit_summary(commit()); }
-	git_time_t time() const { return git_commit_time(commit()); }
-	int timeOffset() const { return git_commit_time_offset(commit()); }
-	const git_signature *committer() const { return git_commit_committer(commit()); }
-	const git_signature *author() const { return git_commit_author(commit()); }
-	std::string rawHeader() const { return git_commit_raw_header(commit()); }
+	const git_oid *treeId() const noexcept { return git_commit_tree_id(commit()); }
+	std::string treeIdStr() const noexcept { return Helpers::oidToStr(*treeId()); }
+	std::string messageEncoding() const noexcept {
+		return git_commit_message_encoding(commit());
+	}
+	std::string message() const noexcept { return git_commit_message(commit()); }
+	std::string summary() const noexcept { return git_commit_summary(commit()); }
+	git_time_t time() const noexcept { return git_commit_time(commit()); }
+	int timeOffset() const noexcept { return git_commit_time_offset(commit()); }
+	const git_signature *committer() const noexcept { return git_commit_committer(commit()); }
+	const git_signature *author() const noexcept { return git_commit_author(commit()); }
+	std::string rawHeader() const noexcept { return git_commit_raw_header(commit()); }
 
-	unsigned int parentCount() const { return git_commit_parentcount(commit()); }
-	const git_oid *parentId(unsigned int nth) const { return git_commit_parent_id(commit(), nth); }
+	unsigned int parentCount() const noexcept { return git_commit_parentcount(commit()); }
+	const git_oid *parentId(unsigned int nth) const noexcept {
+		return git_commit_parent_id(commit(), nth);
+	}
 
-	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
+	std::optional<std::string> catFile(const Repo &repo,
+					   const std::string &file) const noexcept;
 
-	GitTy *commit() const { return typed(); }
-	operator GitTy *() const { return commit(); }
+	GitTy *commit() const noexcept { return typed(); }
+	operator GitTy *() const noexcept { return commit(); }
 private:
-	explicit Commit(GitTy *commit) : TypedObject(commit) { }
+	explicit Commit(GitTy *commit) noexcept : TypedObject(commit) { }
 };
 
 }

@@ -14,7 +14,7 @@ void SlHelpers::Deleter<git_commit>::operator()(git_commit *commit) const
 	git_commit_free(commit);
 }
 
-std::optional<Commit> Commit::parent(unsigned int nth)
+std::optional<Commit> Commit::parent(unsigned int nth) const noexcept
 {
 	git_commit *parent;
 	if (git_commit_parent(&parent, commit(), nth))
@@ -22,7 +22,7 @@ std::optional<Commit> Commit::parent(unsigned int nth)
 	return Commit(parent);
 }
 
-std::optional<Commit> Commit::ancestor(unsigned int nth)
+std::optional<Commit> Commit::ancestor(unsigned int nth) const noexcept
 {
 	git_commit *ancestor;
 	if (git_commit_nth_gen_ancestor(&ancestor, commit(), nth))
@@ -30,7 +30,7 @@ std::optional<Commit> Commit::ancestor(unsigned int nth)
 	return Commit(ancestor);
 }
 
-std::optional<Tree> Commit::tree() const
+std::optional<Tree> Commit::tree() const noexcept
 {
 	git_tree *tree;
 	if (git_commit_tree(&tree, commit()))
@@ -38,7 +38,7 @@ std::optional<Tree> Commit::tree() const
 	return Tree(tree);
 }
 
-std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &file) const
+std::optional<std::string> Commit::catFile(const Repo &repo, const std::string &file) const noexcept
 {
 	if (auto t = tree())
 		return t->catFile(repo, file);
