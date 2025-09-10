@@ -15,6 +15,8 @@ namespace SlGit {
 class Repo;
 
 class Tag : public TypedObject<git_tag> {
+	using GitTy = git_tag;
+
 	friend class Repo;
 public:
 	Tag() = delete;
@@ -27,9 +29,9 @@ public:
 	const git_signature *tagger() const { return git_tag_tagger(tag()); }
 	std::string message() const { return git_tag_message(tag()); }
 
-	git_tag *tag() const { return typed(); }
+	GitTy *tag() const { return typed(); }
 private:
-	explicit Tag(git_tag *tag);
+	explicit Tag(GitTy *tag);
 };
 
 }

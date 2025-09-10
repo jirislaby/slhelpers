@@ -30,7 +30,8 @@ class TreeBuilder;
 class TreeEntry;
 
 class Repo {
-	using Holder = SlHelpers::UniqueHolder<git_repository>;
+	using GitTy = git_repository;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 public:
 	Repo() = delete;
 
@@ -101,10 +102,10 @@ public:
 	std::filesystem::path path() const { return git_repository_path(repo()); }
 	std::filesystem::path workDir() const { return git_repository_workdir(repo()); }
 
-	git_repository *repo() const { return m_repo.get(); }
-	operator git_repository *() const { return repo(); }
+	GitTy *repo() const { return m_repo.get(); }
+	operator GitTy *() const { return repo(); }
 private:
-	explicit Repo(git_repository *repo) : m_repo(repo) {}
+	explicit Repo(GitTy *repo) : m_repo(repo) {}
 
 	Holder m_repo;
 };

@@ -12,6 +12,8 @@
 namespace SlGit {
 
 class Blob : public TypedObject<git_blob> {
+	using GitTy = git_blob;
+
 	friend class Repo;
 public:
 	Blob() = delete;
@@ -23,12 +25,12 @@ public:
 		return std::string_view(static_cast<const char *>(rawcontent()), rawsize());
 	}
 
-	git_blob *blob() const { return typed(); }
+	GitTy *blob() const { return typed(); }
 private:
 	git_object_size_t rawsize() const { return git_blob_rawsize(blob()); }
 	const void *rawcontent() const { return git_blob_rawcontent(blob()); }
 
-	explicit Blob(git_blob *blob);
+	explicit Blob(GitTy *blob);
 };
 
 }

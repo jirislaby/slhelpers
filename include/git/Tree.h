@@ -23,6 +23,8 @@ class Repo;
 class TreeEntry;
 
 class Tree : public TypedObject<git_tree> {
+	using GitTy = git_tree;
+
 	friend class Commit;
 	friend class Repo;
 public:
@@ -39,15 +41,16 @@ public:
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
-	git_tree *tree() const { return typed(); }
+	GitTy *tree() const { return typed(); }
 private:
 	static int walkCB(const char *root, const git_tree_entry *entry, void *payload);
 
-	explicit Tree(git_tree *tree) : TypedObject(tree) {}
+	explicit Tree(GitTy *tree) : TypedObject(tree) {}
 };
 
 class TreeBuilder {
-	using Holder = SlHelpers::UniqueHolder<git_treebuilder>;
+	using GitTy = git_treebuilder;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Repo;
 public:
@@ -67,16 +70,17 @@ public:
 		return git_treebuilder_get(treeBuilder(), file.c_str());
 	}
 
-	git_treebuilder *treeBuilder() const { return m_treeBuilder.get(); }
-	operator git_treebuilder *() const { return treeBuilder(); }
+	GitTy *treeBuilder() const { return m_treeBuilder.get(); }
+	operator GitTy *() const { return treeBuilder(); }
 private:
-	explicit TreeBuilder(git_treebuilder *TB) : m_treeBuilder(TB) { }
+	explicit TreeBuilder(GitTy *TB) : m_treeBuilder(TB) { }
 
 	Holder m_treeBuilder;
 };
 
 class TreeEntry {
-	using Holder = SlHelpers::UniqueHolder<git_tree_entry>;
+	using GitTy = git_tree_entry;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Tree;
 public:
@@ -91,12 +95,12 @@ public:
 
 	std::optional<std::string> catFile(const Repo &repo) const;
 
-	git_tree_entry *treeEntry() const { return m_treeEntry.get(); }
-	operator git_tree_entry *() const { return treeEntry(); }
+	GitTy *treeEntry() const { return m_treeEntry.get(); }
+	operator GitTy *() const { return treeEntry(); }
 private:
-	explicit TreeEntry(git_tree_entry *entry, bool free = true) : m_treeEntry(entry, free) { }
-	explicit TreeEntry(const git_tree_entry *entry) :
-		m_treeEntry(const_cast<git_tree_entry *>(entry), false) { }
+	explicit TreeEntry(GitTy *entry, bool free = true) : m_treeEntry(entry, free) { }
+	explicit TreeEntry(const GitTy *entry) :
+		m_treeEntry(const_cast<GitTy *>(entry), false) { }
 
 	Holder m_treeEntry;
 };

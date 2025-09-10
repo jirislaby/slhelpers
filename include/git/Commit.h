@@ -17,6 +17,8 @@ class Repo;
 class Tree;
 
 class Commit : public TypedObject<git_commit> {
+	using GitTy = git_commit;
+
 	friend class Repo;
 public:
 	Commit() = delete;
@@ -42,10 +44,10 @@ public:
 
 	std::optional<std::string> catFile(const Repo &repo, const std::string &file) const;
 
-	git_commit *commit() const { return typed(); }
-	operator git_commit *() const { return commit(); }
+	GitTy *commit() const { return typed(); }
+	operator GitTy *() const { return commit(); }
 private:
-	explicit Commit(git_commit *commit) : TypedObject(commit) { }
+	explicit Commit(GitTy *commit) : TypedObject(commit) { }
 };
 
 }

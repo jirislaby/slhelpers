@@ -13,7 +13,8 @@
 namespace SlGit {
 
 class Reference {
-	using Holder = SlHelpers::UniqueHolder<git_reference>;
+	using GitTy = git_reference;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Repo;
 public:
@@ -27,10 +28,10 @@ public:
 
 	std::optional<Reference> resolve() const;
 
-	git_reference *ref() const { return m_ref.get(); }
-	operator git_reference *() const { return ref(); }
+	GitTy *ref() const { return m_ref.get(); }
+	operator GitTy *() const { return ref(); }
 private:
-	explicit Reference(git_reference *ref) : m_ref(ref) { }
+	explicit Reference(GitTy *ref) : m_ref(ref) { }
 
 	Holder m_ref;
 };
@@ -39,7 +40,8 @@ class Commit;
 class Repo;
 
 class RevWalk {
-	using Holder = SlHelpers::UniqueHolder<git_revwalk>;
+	using GitTy = git_revwalk;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Repo;
 public:
@@ -62,16 +64,17 @@ public:
 
 	std::optional<Commit> next(const Repo &repo);
 
-	git_revwalk *revWalk() const { return m_revWalk.get(); }
-	operator git_revwalk *() const { return revWalk(); }
+	GitTy *revWalk() const { return m_revWalk.get(); }
+	operator GitTy *() const { return revWalk(); }
 private:
-	explicit RevWalk(git_revwalk *revWalk) : m_revWalk(revWalk) { }
+	explicit RevWalk(GitTy *revWalk) : m_revWalk(revWalk) { }
 
 	Holder m_revWalk;
 };
 
 class Signature {
-	using Holder = SlHelpers::UniqueHolder<git_signature>;
+	using GitTy = git_signature;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 public:
 	Signature() = delete;
 
@@ -80,10 +83,10 @@ public:
 	std::string name() const { return signature()->name; }
 	std::string email() const { return signature()->email; }
 
-	git_signature *signature() const { return m_signature.get(); }
-	operator git_signature *() const { return signature(); }
+	GitTy *signature() const { return m_signature.get(); }
+	operator GitTy *() const { return signature(); }
 private:
-	explicit Signature(git_signature *sig) : m_signature(sig) {}
+	explicit Signature(GitTy *sig) : m_signature(sig) {}
 
 	Holder m_signature;
 };

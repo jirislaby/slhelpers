@@ -15,7 +15,8 @@ namespace SlGit {
 class Repo;
 
 class Remote {
-	using Holder = SlHelpers::UniqueHolder<git_remote>;
+	using GitTy = git_remote;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Repo;
 public:
@@ -30,10 +31,10 @@ public:
 
 	std::string url() const { return git_remote_url(remote()); }
 
-	git_remote *remote() const { return m_remote.get(); }
-	operator git_remote *() const { return remote(); }
+	GitTy *remote() const { return m_remote.get(); }
+	operator GitTy *() const { return remote(); }
 private:
-	explicit Remote(git_remote *remote) : m_remote(remote) { }
+	explicit Remote(GitTy *remote) : m_remote(remote) { }
 
 	static int fetchCredentials(git_credential **out, const char *url,
 				    const char *usernameFromUrl, unsigned int allowedTypes,

@@ -19,7 +19,8 @@ class Repo;
 class Tree;
 
 class Index {
-	using Holder = SlHelpers::UniqueHolder<git_index>;
+	using GitTy = git_index;
+	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Repo;
 public:
@@ -55,10 +56,10 @@ public:
 
 	bool hasConflicts() const { return git_index_has_conflicts(index()); }
 
-	git_index *index() const { return m_index.get(); }
-	operator git_index *() const { return index(); }
+	GitTy *index() const { return m_index.get(); }
+	operator GitTy *() const { return index(); }
 private:
-	explicit Index(git_index *index) : m_index(index) { }
+	explicit Index(GitTy *index) : m_index(index) { }
 
 	static int matchCB(const char *path, const char *matched_pathspec, void *payload);
 
