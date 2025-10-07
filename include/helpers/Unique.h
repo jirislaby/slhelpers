@@ -25,7 +25,7 @@ struct UniqueHolder : public Deleter<T>::Unique {
 	UniqueHolder() : UniqueHolder(nullptr) { }
 	UniqueHolder(T *ptr, bool free = true) : Deleter<T>::Unique(ptr, Deleter<T>{free}) {}
 
-	operator T *() { return Deleter<T>::Unique::get(); }
+	operator T *() const { return Deleter<T>::Unique::get(); }
 };
 
 }

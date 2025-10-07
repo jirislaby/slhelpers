@@ -34,7 +34,7 @@ static void joinVec(std::ostringstream &ss, const std::vector<std::string> &vec,
 	}
 }
 
-int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags)
+int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noexcept
 {
 	sqlite3 *sql;
 	int openFlags = SQLITE_OPEN_READWRITE;
@@ -71,7 +71,7 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags)
 	return 0;
 }
 
-int SQLConn::createTables(const Tables &tables)
+int SQLConn::createTables(const Tables &tables) const noexcept
 {
 	char *err;
 	int ret;
@@ -94,7 +94,7 @@ int SQLConn::createTables(const Tables &tables)
 	return 0;
 }
 
-int SQLConn::createIndices(const Indices &indices)
+int SQLConn::createIndices(const Indices &indices) const noexcept
 {
 	char *err;
 	int ret;
@@ -115,7 +115,7 @@ int SQLConn::createIndices(const Indices &indices)
 	return 0;
 }
 
-int SQLConn::createViews(const Views &views)
+int SQLConn::createViews(const Views &views) const noexcept
 {
 	char *err;
 	int ret;
@@ -136,7 +136,7 @@ int SQLConn::createViews(const Views &views)
 	return 0;
 }
 
-int SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt)
+int SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept
 {
 	sqlite3_stmt *SQLStmt;
 	int ret = sqlite3_prepare_v2(sqlHolder, sql.c_str(), -1, &SQLStmt, NULL);
@@ -180,7 +180,8 @@ int SQLConn::end()
 	return 0;
 }
 
-int SQLConn::bind(SQLStmtHolder &ins, const std::string &key, const BindVal &val)
+int SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
+		  const BindVal &val) const noexcept
 {
 	auto bindIdx = sqlite3_bind_parameter_index(ins, key.c_str());
 	if (!bindIdx) {
@@ -213,7 +214,7 @@ int SQLConn::bind(SQLStmtHolder &ins, const std::string &key, const BindVal &val
 	return 0;
 }
 
-int SQLConn::bind(SQLStmtHolder &ins, const Binding &binding)
+int SQLConn::bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept
 {
 	for (const auto &b : binding)
 		if (bind(ins, b.first, b.second))
@@ -222,7 +223,7 @@ int SQLConn::bind(SQLStmtHolder &ins, const Binding &binding)
 	return 0;
 }
 
-int SQLConn::insert(SQLStmtHolder &ins, const Binding &binding)
+int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding) const noexcept
 {
 	SQLStmtResetter insResetter(sqlHolder, ins);
 	int ret;
@@ -251,8 +252,8 @@ int SQLConn::insert(SQLStmtHolder &ins, const Binding &binding)
 	return 0;
 }
 
-int SQLConn::select(SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
-		    SelectResult &result)
+int SQLConn::select(const SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
+		    SelectResult &result) const noexcept
 {
 	SQLStmtResetter selResetter(sqlHolder, sel);
 	int ret;

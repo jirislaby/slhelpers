@@ -30,7 +30,7 @@ public:
 		return 0;
 	}
 
-	int openDB(const std::filesystem::path &dbFile, unsigned int flags = 0);
+	int openDB(const std::filesystem::path &dbFile, unsigned int flags = 0) noexcept;
 	virtual int createDB() { return 0; }
 	virtual int prepDB() { return 0; }
 
@@ -51,17 +51,17 @@ protected:
 	using Row = std::vector<Column>;
 	using SelectResult = std::vector<Row>;
 
-	int createTables(const Tables &tables);
-	int createIndices(const Indices &indices);
-	int createViews(const Views &views);
+	int createTables(const Tables &tables) const noexcept;
+	int createIndices(const Indices &indices) const noexcept;
+	int createViews(const Views &views) const noexcept;
 
-	int prepareStatement(const std::string &sql, SQLStmtHolder &stmt);
+	int prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
 
-	int bind(SQLStmtHolder &ins, const std::string &key, const BindVal &val);
-	int bind(SQLStmtHolder &ins, const Binding &binding);
-	int insert(SQLStmtHolder &ins, const Binding &binding);
-	int select(SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
-		   SelectResult &result);
+	int bind(const SQLStmtHolder &ins, const std::string &key, const BindVal &val) const noexcept;
+	int bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
+	int insert(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
+	int select(const SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
+		   SelectResult &result) const noexcept;
 
 	SQLHolder sqlHolder;
 };
