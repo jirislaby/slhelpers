@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -9,11 +11,11 @@
 
 using namespace SlCurl;
 
-static size_t ssWriter(const char *contents, size_t size, size_t nmemb, std::stringstream *ss)
+static size_t ssWriter(const char *contents, size_t size, size_t nmemb, std::ostream *stream)
 {
 	size *= nmemb;
 
-	ss->write(contents, size);
+	stream->write(contents, size);
 
 	return size;
 }
@@ -41,28 +43,56 @@ LibCurl::~LibCurl()
 	curl_global_cleanup();
 }
 
-std::optional<std::string> LibCurl::download(const std::string &url)
+bool LibCurl::downloadToStream(const std::string &url, const std::ostream &stream,
+			       unsigned *HTTPErrorCode)
 {
-	std::stringstream ss;
-
 	curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &ss);
+	curl_easy_setopt(handle, CURLOPT_WRITEDATA, &stream);
 	auto ret = curl_easy_perform(handle);
+	long resp = 0;
+	curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &resp);
+	if (HTTPErrorCode)
+		*HTTPErrorCode = resp;
 	if (ret != CURLE_OK) {
-		long resp = 0;
-		curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &resp);
 		std::cerr << "Curl: curl_easy_perform() failed (resp=" << resp << "): " <<
 			     curl_easy_strerror(ret) << '\n';
-		return {};
+		return false;
 	}
 
+	return true;
+}
+
+bool LibCurl::downloadToFile(const std::string &url, const std::filesystem::path &file,
+			     unsigned *HTTPErrorCode)
+{
+	std::ofstream fs(file);
+	if (!fs)
+		return false;
+
+	return downloadToStream(url, fs, HTTPErrorCode);
+}
+
+std::optional<std::string> LibCurl::download(const std::string &url, unsigned *HTTPErrorCode)
+{
+	std::ostringstream ss;
+
+	if (!downloadToStream(url, ss, HTTPErrorCode))
+		return {};
 
 	return ss.str();
 }
 
-std::optional<std::string> LibCurl::singleDownload(const std::string &url)
+std::optional<std::string> LibCurl::singleDownload(const std::string &url, unsigned *HTTPErrorCode)
 {
 	LibCurl curl;
 
-	return curl.download(url);
+	return curl.download(url, HTTPErrorCode);
+}
+
+bool LibCurl::singleDownloadToFile(const std::string &url, const std::filesystem::path &file,
+				   unsigned *HTTPErrorCode)
+{
+	LibCurl curl;
+
+	return curl.downloadToFile(url, file, HTTPErrorCode);
 }
