@@ -4,17 +4,11 @@
 
 #include "git/Git.h"
 
-static std::filesystem::path createTestDir(const std::string &name)
-{
-	std::string s = std::filesystem::temp_directory_path() / name;
-	s += ".XXXXXX";
-	assert(mkdtemp(s.data()));
-	return std::filesystem::path{s};
-}
+#include "helpers.h"
 
 static SlGit::Repo testRepoInit()
 {
-	auto gitDir = createTestDir("testgitdir");
+	auto gitDir = THelpers::getTmpDir("testgitdir");
 
 	auto repoOpt = SlGit::Repo::init(gitDir);
 	assert(repoOpt);
@@ -30,7 +24,7 @@ static SlGit::Repo testRepoInit()
 
 static SlGit::Repo testRepoClone(const SlGit::Repo &repo)
 {
-	auto gitDir2 = createTestDir("testgitdir2");
+	auto gitDir2 = THelpers::getTmpDir("testgitdir2");
 	std::cout << __func__ << ": gitDir2=" << gitDir2 << '\n';
 	std::cout << "vvv clone output vvv\n";
 	auto repo2 = SlGit::Repo::clone(gitDir2, repo.path());
