@@ -51,8 +51,6 @@ int Remote::fetchUpdateRefs(const char *refname, const git_oid *a, const git_oid
 int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth,
 			  bool tags) const noexcept
 {
-	if (refspecs.empty())
-		return git_remote_fetch(remote(), nullptr, nullptr, nullptr);
 	git_fetch_options opts GIT_FETCH_OPTIONS_INIT;
 	MyFetchCallbacks fc;
 	opts.callbacks.payload = &fc;
