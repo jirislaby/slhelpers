@@ -139,7 +139,7 @@ private:
 	template<class Class, typename FunTy, typename... Args>
 	static std::optional<Class> MakeGit(const FunTy &fun, Args&&... args)
 	{
-		class Class::GitTy *gitEntry;
+		typename Class::GitTy *gitEntry;
 		if (fun(&gitEntry, std::forward<Args>(args)...))
 			return std::nullopt;
 		return Class(gitEntry);
