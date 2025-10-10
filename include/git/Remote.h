@@ -31,6 +31,8 @@ public:
 
 	std::string url() const noexcept { return git_remote_url(remote()); }
 
+	const git_indexer_progress *stats() const noexcept { return git_remote_stats(remote()); }
+
 	GitTy *remote() const noexcept { return m_remote.get(); }
 	operator GitTy *() const noexcept { return remote(); }
 private:
