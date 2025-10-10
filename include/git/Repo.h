@@ -14,6 +14,8 @@
 
 #include "../helpers/Unique.h"
 
+#include "DefaultFetchCallbacks.h"
+
 namespace SlGit {
 
 class Blob;
@@ -39,9 +41,17 @@ public:
 	static std::optional<Repo> init(const std::filesystem::path &path, bool bare = false,
 					const std::string &originUrl = "") noexcept;
 	static std::optional<Repo> clone(const std::filesystem::path &path, const std::string &url,
+					 FetchCallbacks &fc,
 					 const std::string &branch = "",
 					 const unsigned int &depth = 0,
 					 bool tags = true) noexcept;
+	static std::optional<Repo> clone(const std::filesystem::path &path, const std::string &url,
+					 const std::string &branch = "",
+					 const unsigned int &depth = 0,
+					 bool tags = true) noexcept {
+		DefaultFetchCallbacks fc;
+		return clone(path, url, fc, branch, depth, tags);
+	}
 	static std::optional<Repo> open(const std::filesystem::path &path = ".") noexcept;
 
 	int grepBranch(const std::string &branch, const std::regex &regex) const noexcept;

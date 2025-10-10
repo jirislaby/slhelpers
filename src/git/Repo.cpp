@@ -4,7 +4,6 @@
 
 #include "git/Blob.h"
 #include "git/Commit.h"
-#include "git/DefaultFetchCallbacks.h"
 #include "git/Diff.h"
 #include "git/Index.h"
 #include "git/Repo.h"
@@ -315,10 +314,9 @@ std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const noe
 }
 
 std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::string &url,
-				const std::string &branch, const unsigned int &depth,
-				bool tags) noexcept
+				FetchCallbacks &fc, const std::string &branch,
+				const unsigned int &depth, bool tags) noexcept
 {
-	DefaultFetchCallbacks fc;
 	git_clone_options opts GIT_CLONE_OPTIONS_INIT;
 	opts.checkout_branch = branch.empty() ? nullptr : branch.c_str();
 	opts.fetch_opts.depth = depth;

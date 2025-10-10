@@ -2,7 +2,6 @@
 
 #include <git2.h>
 
-#include "git/DefaultFetchCallbacks.h"
 #include "git/Remote.h"
 #include "git/StrArray.h"
 
@@ -47,11 +46,10 @@ int Remote::fetchUpdateRefs(const char *refname, const git_oid *a, const git_oid
 }
 #endif
 
-int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth,
+int Remote::fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &refspecs, int depth,
 			  bool tags) const noexcept
 {
 	git_fetch_options opts GIT_FETCH_OPTIONS_INIT;
-	DefaultFetchCallbacks fc;
 	opts.callbacks.payload = &fc;
 	opts.callbacks.credentials = fetchCredentials;
 	opts.callbacks.pack_progress = fetchPackProgress;

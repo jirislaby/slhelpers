@@ -10,6 +10,8 @@
 
 #include "../helpers/Unique.h"
 
+#include "DefaultFetchCallbacks.h"
+
 namespace SlGit {
 
 class Repo;
@@ -22,8 +24,13 @@ class Remote {
 public:
 	Remote() = delete;
 
+	int fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &refspecs = {},
+			  int depth = 0, bool tags = true) const noexcept;
 	int fetchRefspecs(const std::vector<std::string> &refspecs = {}, int depth = 0,
-			  bool tags = true) const noexcept;
+			  bool tags = true) const noexcept {
+		DefaultFetchCallbacks fc;
+		return fetchRefspecs(fc, refspecs, depth, tags);
+	}
 	int fetchBranches(const std::vector<std::string> &branches, int depth = 0,
 			  bool tags = true) const noexcept;
 	int fetch(const std::string &branch, int depth = 0,
