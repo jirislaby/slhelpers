@@ -2,10 +2,9 @@
 
 #include <git2.h>
 
+#include "git/DefaultFetchCallbacks.h"
 #include "git/Remote.h"
 #include "git/StrArray.h"
-
-#include "MyFetchCallbacks.h"
 
 using namespace SlGit;
 
@@ -52,7 +51,7 @@ int Remote::fetchRefspecs(const std::vector<std::string> &refspecs, int depth,
 			  bool tags) const noexcept
 {
 	git_fetch_options opts GIT_FETCH_OPTIONS_INIT;
-	MyFetchCallbacks fc;
+	DefaultFetchCallbacks fc;
 	opts.callbacks.payload = &fc;
 	opts.callbacks.credentials = fetchCredentials;
 	opts.callbacks.pack_progress = fetchPackProgress;

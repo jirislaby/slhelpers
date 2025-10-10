@@ -2,10 +2,9 @@
 #include <bitset>
 #include <iostream>
 
+#include "git/DefaultFetchCallbacks.h"
 #include "git/Helpers.h"
 #include "helpers/Misc.h"
-
-#include "MyFetchCallbacks.h"
 
 using namespace SlGit;
 
@@ -14,9 +13,9 @@ const constexpr std::string_view clearLine("\33[2K\r");
 const constexpr bool do_ratelimit = 1;
 }
 
-int MyFetchCallbacks::credentials(git_credential **out, const std::string &url,
-				  const std::optional<std::string> &usernameFromUrl,
-				  unsigned int allowedTypes)
+int DefaultFetchCallbacks::credentials(git_credential **out, const std::string &url,
+				       const std::optional<std::string> &usernameFromUrl,
+				       unsigned int allowedTypes)
 {
 	auto user = getUserName(usernameFromUrl);
 	std::cerr << __func__ << ": url=" << url << " user=" << user <<
@@ -44,7 +43,7 @@ int MyFetchCallbacks::credentials(git_credential **out, const std::string &url,
 	return GIT_PASSTHROUGH;
 }
 
-int MyFetchCallbacks::packProgress(int stage, uint32_t current, uint32_t total)
+int DefaultFetchCallbacks::packProgress(int stage, uint32_t current, uint32_t total)
 {
 	if (!do_ratelimit || current == 0 || current == total || ratelimit.limit())
 		std::cerr << "Packing objects: stage=" << stage << " " << current << "/" <<
@@ -52,14 +51,14 @@ int MyFetchCallbacks::packProgress(int stage, uint32_t current, uint32_t total)
 	return 0;
 }
 
-int MyFetchCallbacks::sidebandProgress(const std::string_view &str)
+int DefaultFetchCallbacks::sidebandProgress(const std::string_view &str)
 {
 	if (!do_ratelimit || ratelimit.limit())
 		std::cerr << clearLine << "remote: " << str;
 	return 0;
 }
 
-int MyFetchCallbacks::transferProgress(const git_indexer_progress &stats)
+int DefaultFetchCallbacks::transferProgress(const git_indexer_progress &stats)
 {
 	if (stats.received_objects == stats.total_objects && stats.total_deltas) {
 		const bool final = stats.indexed_deltas == stats.total_deltas;
@@ -83,7 +82,7 @@ int MyFetchCallbacks::transferProgress(const git_indexer_progress &stats)
 	return 0;
 }
 
-int MyFetchCallbacks::updateRefs(const std::string &refname, const git_oid &a, const git_oid &b,
+int DefaultFetchCallbacks::updateRefs(const std::string &refname, const git_oid &a, const git_oid &b,
 				 git_refspec &) {
 	const auto b_str = SlGit::Helpers::oidToStr(b);
 
@@ -97,7 +96,7 @@ int MyFetchCallbacks::updateRefs(const std::string &refname, const git_oid &a, c
 	return 0;
 }
 
-std::string MyFetchCallbacks::getUserName(const std::optional<std::string> &usernameFromUrl)
+std::string DefaultFetchCallbacks::getUserName(const std::optional<std::string> &usernameFromUrl)
 {
 	if (!userName.empty())
 		return userName;

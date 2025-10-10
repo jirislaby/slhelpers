@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#ifndef MYFETCHCALLBACKS_H
-#define MYFETCHCALLBACKS_H
+#ifndef DEFAULTFETCHCALLBACKS_H
+#define DEFAULTFETCHCALLBACKS_H
 
-#include "helpers/Ratelimit.h"
-#include "helpers/SSH.h"
+#include "../helpers/Ratelimit.h"
+#include "../helpers/SSH.h"
 
-#include "git/FetchCallbacks.h"
+#include "FetchCallbacks.h"
 
 namespace SlGit {
 
-class MyFetchCallbacks : public FetchCallbacks {
+class DefaultFetchCallbacks : public FetchCallbacks {
 public:
-	MyFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
+	DefaultFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
 		tried(0), triedKey(0) { }
 
 	virtual int credentials(git_credential **out, const std::string &url,

@@ -4,6 +4,7 @@
 
 #include "git/Blob.h"
 #include "git/Commit.h"
+#include "git/DefaultFetchCallbacks.h"
 #include "git/Diff.h"
 #include "git/Index.h"
 #include "git/Repo.h"
@@ -11,8 +12,6 @@
 #include "git/Misc.h"
 #include "git/Tag.h"
 #include "git/Tree.h"
-
-#include "MyFetchCallbacks.h"
 
 using namespace SlGit;
 
@@ -319,7 +318,7 @@ std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::st
 				const std::string &branch, const unsigned int &depth,
 				bool tags) noexcept
 {
-	MyFetchCallbacks fc;
+	DefaultFetchCallbacks fc;
 	git_clone_options opts GIT_CLONE_OPTIONS_INIT;
 	opts.checkout_branch = branch.empty() ? nullptr : branch.c_str();
 	opts.fetch_opts.depth = depth;
