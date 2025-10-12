@@ -2,9 +2,17 @@
 #include <bitset>
 #include <iostream>
 
+#include "git/Helpers.h"
+#include "helpers/Misc.h"
+
 #include "MyFetchCallbacks.h"
 
 using namespace SlGit;
+
+namespace {
+const constexpr std::string_view clearLine("\33[2K\r");
+const constexpr bool do_ratelimit = 1;
+}
 
 int MyFetchCallbacks::credentials(git_credential **out, const std::string &url,
 				  const std::optional<std::string> &usernameFromUrl,
@@ -38,42 +46,54 @@ int MyFetchCallbacks::credentials(git_credential **out, const std::string &url,
 
 int MyFetchCallbacks::packProgress(int stage, uint32_t current, uint32_t total)
 {
-	if (!ratelimit.limit() && current != 0 && current != total)
-		return 0;
-	std::cerr << __func__ << ": stage=" << stage << " " << current << "/" << total << '\n';
+	if (!do_ratelimit || current == 0 || current == total || ratelimit.limit())
+		std::cerr << "Packing objects: stage=" << stage << " " << current << "/" <<
+			     total << '\n';
 	return 0;
 }
 
 int MyFetchCallbacks::sidebandProgress(const std::string_view &str)
 {
-	if (!ratelimit.limit())
-		return 0;
-	std::cerr << __func__ << ": " << str;
-	if (str.back() != '\n')
-		std::cerr << '\n';
+	if (!do_ratelimit || ratelimit.limit())
+		std::cerr << clearLine << "remote: " << str;
 	return 0;
 }
 
 int MyFetchCallbacks::transferProgress(const git_indexer_progress &stats)
 {
-	if (!ratelimit.limit() && stats.indexed_objects != 0 &&
-			stats.indexed_objects != stats.total_objects)
-		return 0;
-	std::cerr << std::fixed << std::setprecision(2) << __func__ <<
-		     ": deltas=" << stats.indexed_deltas << '/' << stats.total_deltas <<
-		     " objs=" << stats.indexed_objects << '/' << stats.total_objects <<
-		     " local=" << stats.local_objects <<
-		     " recv=" << stats.received_objects <<
-		     " (" << stats.received_bytes / 1024. << " kB)\n";
+	if (stats.received_objects == stats.total_objects && stats.total_deltas) {
+		const bool final = stats.indexed_deltas == stats.total_deltas;
+		if (!do_ratelimit || final || ratelimit.limit())
+			std::cerr << clearLine << "Resolving deltas " << stats.indexed_deltas <<
+				     '/' << stats.total_deltas;
+		if (final)
+			std::cerr << '\n';
+	} else if (stats.total_objects > 0) {
+		const bool final = stats.received_objects == stats.total_objects;
+		if (!do_ratelimit || stats.indexed_objects == 0 || final || ratelimit.limit())
+			std::cerr << clearLine << "Received " <<
+				     std::fixed << std::setprecision(2) <<
+				     stats.received_objects << '/' <<
+				     stats.total_objects << " objects (" <<
+				     stats.indexed_objects << ") in " <<
+				     SlHelpers::Unit::human(stats.received_bytes);
+		if (final)
+			std::cerr << '\n';
+	}
 	return 0;
 }
 
 int MyFetchCallbacks::updateRefs(const std::string &refname, const git_oid &a, const git_oid &b,
 				 git_refspec &) {
-	char sha1[12] = {0}, sha2[12] = {0};
-	git_oid_tostr(sha1, sizeof(sha1) - 1, &a);
-	git_oid_tostr(sha2, sizeof(sha2) - 1, &b);
-	std::cerr << __func__ << ": ref=" << refname << " " << sha1 << ".." << sha2 << '\n';
+	const auto b_str = SlGit::Helpers::oidToStr(b);
+
+	if (git_oid_is_zero(&a)) {
+		std::cerr << "[new]     " << b_str.substr(0, 20) << ' ' << refname << '\n';
+	} else {
+		std::cerr << "[updated] " <<
+			     SlGit::Helpers::oidToStr(a).substr(0, 10) << ".." <<
+			     b_str.substr(0, 10) << ' ' << refname << '\n';
+	}
 	return 0;
 }
 
