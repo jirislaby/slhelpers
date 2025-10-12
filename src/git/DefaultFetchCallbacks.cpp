@@ -13,6 +13,18 @@ const constexpr std::string_view clearLine("\33[2K\r");
 const constexpr bool do_ratelimit = 1;
 }
 
+void DefaultFetchCallbacks::checkoutProgress(const std::string &path, size_t completed_steps,
+					     size_t total_steps)
+{
+	if (do_ratelimit && completed_steps != 0 && completed_steps != total_steps &&
+			!ratelimit.limit())
+		return;
+	std::cerr << clearLine << "Checked-out: " << completed_steps << '/' << total_steps <<
+		     " (" << path << ')';
+	if (completed_steps == total_steps)
+		std::cerr << '\n';
+}
+
 int DefaultFetchCallbacks::credentials(git_credential **out, const std::string &url,
 				       const std::optional<std::string> &usernameFromUrl,
 				       unsigned int allowedTypes)

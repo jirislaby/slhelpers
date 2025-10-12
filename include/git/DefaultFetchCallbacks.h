@@ -14,6 +14,8 @@ public:
 	DefaultFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
 		tried(0), triedKey(0) { }
 
+	virtual void checkoutProgress(const std::string &, size_t, size_t) override;
+
 	virtual int credentials(git_credential **out, const std::string &url,
 				const std::optional<std::string> &usernameFromUrl,
 				unsigned int allowedTypes) override;

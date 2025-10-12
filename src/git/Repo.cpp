@@ -313,6 +313,14 @@ std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const noe
 	return MakeGit<TreeBuilder>(git_treebuilder_new, repo(), source ? source->tree() : nullptr);
 }
 
+void Repo::checkoutProgress(const char *path, size_t completed_steps, size_t total_steps,
+			    void *payload)
+{
+	return static_cast<FetchCallbacks *>(payload)->checkoutProgress(path ? : "",
+									completed_steps,
+									total_steps);
+}
+
 std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::string &url,
 				FetchCallbacks &fc, const std::string &branch,
 				const unsigned int &depth, bool tags) noexcept
@@ -322,6 +330,8 @@ std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::st
 	opts.fetch_opts.depth = depth;
 	if (!tags)
 		opts.fetch_opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE;
+	opts.checkout_opts.progress_payload = &fc;
+	opts.checkout_opts.progress_cb = checkoutProgress;
 	opts.fetch_opts.callbacks.payload = &fc;
 	opts.fetch_opts.callbacks.credentials = Remote::fetchCredentials;
 	opts.fetch_opts.callbacks.pack_progress = Remote::fetchPackProgress;

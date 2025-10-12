@@ -14,6 +14,8 @@ class FetchCallbacks {
 public:
 	FetchCallbacks() {}
 
+	virtual void checkoutProgress(const std::string &, size_t, size_t) {}
+
 	virtual int credentials(git_credential **, const std::string &,
 				const std::optional<std::string> &, unsigned int) {
 		return GIT_PASSTHROUGH;
