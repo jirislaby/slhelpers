@@ -17,7 +17,7 @@ public:
 	void reset() { last = Clock::time_point{}; }
 
 	bool limit() {
-		auto now = std::chrono::steady_clock::now();
+		const auto now = std::chrono::steady_clock::now();
 		if (last + dur < now) {
 			last = now;
 			return true;
