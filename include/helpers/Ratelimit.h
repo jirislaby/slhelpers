@@ -14,8 +14,15 @@ public:
 	Ratelimit() = delete;
 	Ratelimit(const std::chrono::milliseconds &dur) : dur(dur), last(Clock::time_point{}) { }
 
+	/**
+	 * @brief start counting from now
+	 */
 	void reset() { last = Clock::time_point{}; }
 
+	/**
+	 * @brief limit actions to one per constructor's dur
+	 * @return true if the ratelimited action should be performed
+	 */
 	bool limit() {
 		const auto now = std::chrono::steady_clock::now();
 		if (last + dur < now) {

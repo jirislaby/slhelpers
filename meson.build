@@ -20,3 +20,27 @@ subdir('src')
 subdir('include')
 
 subdir('tests')
+
+doxygen = find_program('doxygen', required: false)
+if doxygen.found()
+    doxyfile = configure_file(
+    input: 'Doxyfile.in',
+    output: 'Doxyfile',
+    configuration: {
+      'DOXYGEN_INPUT_DIR': meson.project_source_root(),
+      'DOXYGEN_OUTPUT_DIR': meson.project_build_root() / 'docs',
+    }
+  )
+
+  doxy = custom_target('api-docs',
+    output: 'index.html',
+    input: doxyfile,
+    build_by_default: true,
+    command: [ doxygen, '@INPUT@' ],
+  )
+
+  install_subdir(
+    meson.project_build_root() / 'docs' / 'html',
+    install_dir: get_option('datadir') / 'doc' / meson.project_name(),
+  )
+endif
