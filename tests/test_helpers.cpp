@@ -5,6 +5,8 @@
 #include "helpers/HomeDir.h"
 #include "helpers/Process.h"
 
+#include "helpers.h"
+
 using namespace SlHelpers;
 
 namespace {
@@ -19,12 +21,30 @@ void restore_env(const std::string &env, const char *orig)
 
 void testHomeDir()
 {
-	auto orig_home = std::getenv("HOME");
+	const auto orig_xdg = std::getenv("XDG_CACHE_HOME");
+	const auto orig_home = std::getenv("HOME");
 	if (orig_home)
 		assert(HomeDir::get() == orig_home);
 
-	setenv("HOME", "/tmp", true);
-	assert(HomeDir::get() == "/tmp");
+	setenv("XDG_CACHE_HOME", "/xdg_cache", true);
+	setenv("HOME", "/tmp/", true);
+	assert(HomeDir::getCacheDir() == "/xdg_cache");
+	unsetenv("XDG_CACHE_HOME");
+	assert(HomeDir::getCacheDir() == "/tmp/.cache");
+
+	const auto tmpDir = THelpers::getTmpDir();
+	setenv("HOME", tmpDir.c_str(), true);
+	assert(HomeDir::get() == tmpDir);
+
+	const auto cacheDir = HomeDir::getCacheDir();
+	assert(cacheDir == tmpDir / ".cache");
+
+	auto createdCacheDir = HomeDir::createCacheDir("1");
+	assert(createdCacheDir == cacheDir / "1");
+	assert(std::filesystem::exists(createdCacheDir));
+	std::filesystem::remove_all(tmpDir);
+
+	restore_env("XDG_CACHE_HOME", orig_xdg);
 	restore_env("HOME", orig_home);
 }
 
