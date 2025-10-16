@@ -3,7 +3,9 @@
 #ifndef STRING_H
 #define STRING_H
 
+#include <algorithm>
 #include <cstring>
+#include <ctype.h>
 #include <optional>
 #include <string>
 #include <vector>
@@ -40,6 +42,9 @@ public:
 		return res;
 	}
 
+	static bool isHex(const std::string_view &s) {
+		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
+	}
 };
 
 }
