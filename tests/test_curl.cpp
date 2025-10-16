@@ -26,48 +26,44 @@ void test_download(const std::string &url, const std::string &content)
 	unsigned resp = ~0U;
 
 	{
-		const auto contentOpt = SlCurl::LibCurl::singleDownload("file:///012345test",
-									&resp);
+		const auto contentOpt = LibCurl::singleDownload("file:///012345test", &resp);
 		assert(!resp);
 		assert(!contentOpt);
 	}
 #ifdef HAS_CONNECTION
 	{
-		const auto contentOpt = SlCurl::LibCurl::singleDownload("http://www.google.com",
-									&resp);
+		const auto contentOpt = LibCurl::singleDownload("http://www.google.com", &resp);
 		assert(resp >= 200 && resp < 400);
 		assert(contentOpt);
 	}
 
 	{
-		const auto contentOpt = SlCurl::LibCurl::singleDownload("https://www.google.com",
-									&resp);
+		const auto contentOpt = LibCurl::singleDownload("https://www.google.com", &resp);
 		assert(resp >= 200 && resp < 400);
 		assert(contentOpt);
 	}
 
 	{
-		const auto contentOpt = SlCurl::LibCurl::singleDownload("http://nonexistant123.cz",
-									&resp);
+		const auto contentOpt = LibCurl::singleDownload("http://nonexistant123.cz", &resp);
 		assert(!resp);
 		assert(!contentOpt);
 	}
 
 	{
-		const auto contentOpt = SlCurl::LibCurl::singleDownload("https://www.seznam.cz/nonexistant123",
+		const auto contentOpt = LibCurl::singleDownload("https://www.seznam.cz/nonexistant123",
 									&resp);
 		assert(resp);
 	}
 #endif
 	{
-		const auto contentOpt = SlCurl::LibCurl::singleDownload(url, &resp);
+		const auto contentOpt = LibCurl::singleDownload(url, &resp);
 		assert(!resp);
 		assert(contentOpt);
 		assert(*contentOpt == content);
 	}
 
 	{
-		SlCurl::LibCurl c;
+		LibCurl c;
 		const auto contentOpt = c.download(url);
 		assert(contentOpt);
 		assert(*contentOpt == content);
@@ -78,7 +74,7 @@ void test_downloadToFile(const std::filesystem::path &tmpDir, const std::string 
 			 const std::string &content)
 {
 	const auto destFile = tmpDir / (std::string(__func__) + "_dest");
-	assert(SlCurl::LibCurl::singleDownloadToFile(url, destFile));
+	assert(LibCurl::singleDownloadToFile(url, destFile));
 
 	std::ifstream ifs(destFile, std::ios::in | std::ios::binary);
 	assert(ifs);
