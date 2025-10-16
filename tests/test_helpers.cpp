@@ -2,11 +2,31 @@
 
 #include <cassert>
 
+#include "helpers/HomeDir.h"
 #include "helpers/Process.h"
 
 using namespace SlHelpers;
 
 namespace {
+
+void restore_env(const std::string &env, const char *orig)
+{
+	if (orig)
+		setenv(env.c_str(), orig, true);
+	else
+		unsetenv(env.c_str());
+}
+
+void testHomeDir()
+{
+	auto orig_home = std::getenv("HOME");
+	if (orig_home)
+		assert(HomeDir::get() == orig_home);
+
+	setenv("HOME", "/tmp", true);
+	assert(HomeDir::get() == "/tmp");
+	restore_env("HOME", orig_home);
+}
 
 void testProcess(const std::filesystem::path &crash)
 {
@@ -38,6 +58,7 @@ void testProcess(const std::filesystem::path &crash)
 int main(int argc, char **argv)
 {
 	assert(argc > 1);
+	testHomeDir();
 	testProcess(argv[1]);
 
 	return 0;
