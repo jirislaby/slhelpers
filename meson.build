@@ -32,10 +32,9 @@ if doxygen.found()
     }
   )
 
-  doxy = custom_target('api-docs',
-    output: 'index.html',
+  custom_target('api-docs',
+    output: 'api-docs',
     input: doxyfile,
-    build_by_default: true,
     command: [ doxygen, '@INPUT@' ],
   )
 
