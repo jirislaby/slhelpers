@@ -2,6 +2,8 @@
 
 subdir('curl')
 subdir('git')
-subdir('helpers')
 subdir('kerncvs')
 subdir('sqlite')
+
+subdir('cves') # needs git
+subdir('helpers') # needs curl & git
