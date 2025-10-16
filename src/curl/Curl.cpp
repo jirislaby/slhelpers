@@ -8,8 +8,11 @@
 #include <curl/curl.h>
 
 #include "curl/Curl.h"
+#include "helpers/Color.h"
+#include "helpers/HomeDir.h"
 
 using namespace SlCurl;
+using Clr = SlHelpers::Color;
 
 static size_t ssWriter(const char *contents, size_t size, size_t nmemb, std::ostream *stream)
 {
@@ -95,4 +98,62 @@ bool LibCurl::singleDownloadToFile(const std::string &url, const std::filesystem
 	LibCurl curl;
 
 	return curl.downloadToFile(url, file, HTTPErrorCode);
+}
+
+bool LibCurl::isDownloadNeeded(const std::filesystem::path &filePath, bool &fileAlreadyExists,
+			       bool forceRefresh, const std::chrono::hours &hours)
+{
+	if (!std::filesystem::exists(filePath))
+		return true;
+
+	fileAlreadyExists = true;
+	if (forceRefresh)
+		return true;
+
+	const auto mtime = std::filesystem::last_write_time(filePath);
+	const auto now = std::filesystem::file_time_type::clock::now();
+
+	return mtime < now - hours;
+}
+
+std::filesystem::path LibCurl::fetchFileIfNeeded(const std::filesystem::path &filePath,
+						 const std::string &url,
+						 bool forceRefresh, bool ignoreErrors,
+						 const std::chrono::hours &hours)
+{
+	bool fileAlreadyExists = false;
+	if (!isDownloadNeeded(filePath, fileAlreadyExists, forceRefresh, hours))
+		return filePath;
+
+	if (forceRefresh)
+		std::cout << "Downloading... " << filePath << " from " << url << '\n';
+
+	auto newPath(filePath);
+	newPath += ".NEW";
+	unsigned http_code;
+	if (!singleDownloadToFile(url, newPath, &http_code)) {
+		if (ignoreErrors)
+			return "";
+		Clr(std::cerr, Clr::RED) << "Failed to fetch " << url << " to " << filePath;
+		if (fileAlreadyExists)
+			return filePath;
+		return "";
+	}
+	if (http_code >= 400) {
+		if (ignoreErrors)
+			return "";
+		Clr(std::cerr, Clr::RED) << "Failed to fetch " << url << " (" << http_code <<
+					    ") " << " to " << filePath;
+		if (fileAlreadyExists)
+			return filePath;
+		return "";
+	}
+	std::error_code ec;
+	std::filesystem::rename(newPath, filePath, ec);
+	if (ec) {
+		Clr(std::cerr, Clr::RED) << "Failed to rename " << newPath << " to " << filePath;
+		return "";
+	}
+
+	return filePath;
 }

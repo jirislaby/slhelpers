@@ -3,6 +3,7 @@
 #ifndef CURL_H
 #define CURL_H
 
+#include <chrono>
 #include <filesystem>
 #include <optional>
 #include <ostream>
@@ -29,6 +30,30 @@ public:
 	static bool singleDownloadToFile(const std::string &url,
 					 const std::filesystem::path &file,
 					 unsigned *HTTPErrorCode = nullptr);
+	/**
+	 * @brief Check if \p filePath is old enough that it should be downloaded
+	 * @param filePath The file to check
+	 * @param fileAlreadyExists Stored true if the file exists already
+	 * @param forceRefresh Download in any case.
+	 * @param hours After how many hours this file expires (and is downloaded again)
+	 * @return True if a download should be performed.
+	 */
+	static bool isDownloadNeeded(const std::filesystem::path &filePath, bool &fileAlreadyExists,
+				     bool forceRefresh, const std::chrono::hours &hours);
+
+	/**
+	 * @brief Fetch \p url and store into \p filePath
+	 * @param filePath File to store to
+	 * @param url The URL to fetch
+	 * @param forceRefresh Fetch in any case (ignore \p hours)
+	 * @param ignoreErrors Errors are ignored
+	 * @param hours After how many hours this file expires (and is downloaded again)
+	 * @return Path to the fetched file or nullopt in case of error.
+	 */
+	static std::filesystem::path fetchFileIfNeeded(const std::filesystem::path &filePath,
+						       const std::string &url,
+						       bool forceRefresh, bool ignoreErrors,
+						       const std::chrono::hours &hours);
 private:
 	CURL *handle;
 };

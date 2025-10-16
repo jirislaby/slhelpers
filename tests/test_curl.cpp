@@ -9,9 +9,14 @@
 
 #include "helpers.h"
 
+using namespace std::chrono_literals;
 using namespace SlCurl;
 
 namespace {
+
+#ifndef HAS_CONNECTION
+#define HAS_CONNECTION	0
+#endif
 
 std::string writeContentToFile(const std::filesystem::path &file, const std::string &content)
 {
@@ -30,7 +35,7 @@ void test_download(const std::string &url, const std::string &content)
 		assert(!resp);
 		assert(!contentOpt);
 	}
-#ifdef HAS_CONNECTION
+#if HAS_CONNECTION != 0
 	{
 		const auto contentOpt = LibCurl::singleDownload("http://www.google.com", &resp);
 		assert(resp >= 200 && resp < 400);
@@ -84,6 +89,39 @@ void test_downloadToFile(const std::filesystem::path &tmpDir, const std::string 
 	assert(oss.str() == content);
 }
 
+
+void test_isDownloadNeeded(const std::filesystem::path &tmpDir)
+{
+	std::filesystem::path tmp_file = tmpDir / __func__;
+	bool exists = false;
+
+	assert(LibCurl::isDownloadNeeded(tmp_file, exists, true, 1h));
+	assert(!exists);
+	assert(LibCurl::isDownloadNeeded(tmp_file, exists, false, 1h));
+	assert(!exists);
+
+	std::ofstream ofs{tmp_file};
+	assert(LibCurl::isDownloadNeeded(tmp_file, exists, true, 1h));
+	assert(exists);
+	assert(!LibCurl::isDownloadNeeded(tmp_file, exists, false, 1h));
+	assert(exists);
+
+	std::filesystem::last_write_time(tmp_file,
+					 std::filesystem::file_time_type::clock::now() - 2h);
+	assert(LibCurl::isDownloadNeeded(tmp_file, exists, false, 1h));
+	assert(!LibCurl::isDownloadNeeded(tmp_file, exists, false, 3h));
+}
+
+void test_fetchFileIfNeeded()
+{
+	if (!HAS_CONNECTION)
+		return;
+	const auto file = LibCurl::fetchFileIfNeeded("trial",
+						     "https://www.google.com/robots.txt",
+						     false, false, 1h);
+	assert(file == "trial");
+}
+
 }
 
 int main()
@@ -97,6 +135,9 @@ int main()
 
 	test_download(url, content);
 	test_downloadToFile(tmpDir, url, content);
+
+	test_isDownloadNeeded(tmpDir);
+	test_fetchFileIfNeeded();
 
 	std::filesystem::remove_all(tmpDir);
 
