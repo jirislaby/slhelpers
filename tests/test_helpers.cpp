@@ -6,10 +6,11 @@
 
 using namespace SlHelpers;
 
-int main(int, char **argv)
+namespace {
+
+void testProcess(const std::filesystem::path &crash)
 {
 	Process p;
-	auto crash = argv[1];
 
 	assert(!p.run("/usr/bin/true"));
 	assert(!p.signalled());
@@ -28,9 +29,16 @@ int main(int, char **argv)
 	assert(!p.exitStatus());
 	assert(s == "one two\n\tthree\n");
 
-	assert(crash);
 	assert(!p.run(crash));
 	assert(p.signalled());
+}
+
+}
+
+int main(int argc, char **argv)
+{
+	assert(argc > 1);
+	testProcess(argv[1]);
 
 	return 0;
 }

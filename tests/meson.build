@@ -6,9 +6,9 @@ tests = {
   'branches' : { 'libs' : [ slkerncvs_lib ] },
   'curl' : { 'libs' : [ slcurl_lib ] },
   'git' : { 'libs' : [ slgit_lib ] },
+  'helpers' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
   'misc' : {},
   'ratelimit' : {},
-  'process' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
   'string' : {},
   'supported_conf' : { 'libs' : [ slkerncvs_lib ] },
 }
