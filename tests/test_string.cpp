@@ -6,7 +6,9 @@
 
 using namespace SlHelpers;
 
-static void testStartsWith()
+namespace {
+
+void testStartsWith()
 {
 	assert(String::startsWith("abcde", "abcde"));
 	assert(String::startsWith("abcde", "abc"));
@@ -16,7 +18,7 @@ static void testStartsWith()
 	assert(!String::startsWith("abcde", "bc"));
 }
 
-static void testEndsWith()
+void testEndsWith()
 {
 	assert(String::endsWith("abcde", "cde"));
 	assert(String::endsWith("abcde", "abcde"));
@@ -26,7 +28,7 @@ static void testEndsWith()
 	assert(!String::endsWith("abcde", "cd"));
 }
 
-static void testSplit()
+void testSplit()
 {
 	std::string toSplit {"first second    third\t\tfourth  " };
 
@@ -44,11 +46,22 @@ static void testSplit()
 	assert(split2[2] == "third\t\tfourth");
 }
 
+void testIsHex()
+{
+	assert(String::isHex(""));
+	assert(String::isHex("01234567890abcdefABCDEF"));
+	assert(!String::isHex("01234567890abcdefABCDEFG"));
+	assert(!String::isHex("x01234567890"));
+}
+
+}
+
 int main()
 {
 	testStartsWith();
 	testEndsWith();
 	testSplit();
+	testIsHex();
 
 	return 0;
 }
