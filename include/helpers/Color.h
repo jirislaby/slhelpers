@@ -52,6 +52,7 @@ public:
 	}
 
 	static void forceColor(bool force) { m_forceColor = force; }
+	static void forceColorValue(bool value) { m_forceColorValue = value; }
 
 	std::ostream &os() { return m_os; }
 
@@ -76,7 +77,7 @@ private:
 	}
 	static bool doColor(const std::ostream &os) {
 		if (m_forceColor)
-			return true;
+			return m_forceColorValue;
 		auto idx = outIndex(os);
 		if (m_doColor[idx] < 0)
 			m_doColor[idx] = isatty(idx + 1);
@@ -87,6 +88,7 @@ private:
 	inline static std::string seqEnd = "\033[0m";
 	inline static signed char m_doColor[] = { -1, -1, 1 };
 	inline static bool m_forceColor = false;
+	inline static bool m_forceColorValue = false;
 	bool m_NL;
 	std::ostream &m_os;
 };
