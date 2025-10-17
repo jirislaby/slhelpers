@@ -68,7 +68,11 @@ private:
 	template<typename T>
 	static unsigned toUnsigned(const T &val) { return val; }
 	static unsigned outIndex(const std::ostream &os) {
-		return os.rdbuf() == std::cout.rdbuf() ? 0U : 1U;
+		if (os.rdbuf() == std::cout.rdbuf())
+			return 0U;
+		if (os.rdbuf() == std::cerr.rdbuf())
+			return 1U;
+		return 2U;
 	}
 	static bool doColor(const std::ostream &os) {
 		if (m_forceColor)
@@ -81,12 +85,11 @@ private:
 
 	inline static std::string seqBegin = "\033[01;";
 	inline static std::string seqEnd = "\033[0m";
-	inline static int m_doColor[2] = { -1, -1 };
+	inline static signed char m_doColor[] = { -1, -1, 1 };
 	inline static bool m_forceColor = false;
 	bool m_NL;
 	std::ostream &m_os;
 };
-
 
 inline Color &&operator<<(Color &&os, const Color::Ctrl &ctrl)
 {
