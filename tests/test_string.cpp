@@ -54,6 +54,18 @@ void testIsHex()
 	assert(!String::isHex("x01234567890"));
 }
 
+void testTrim()
+{
+	assert(String::trim(std::string("")) == "");
+	assert(String::trim(std::string_view("")) == "");
+	assert(String::trim(std::string_view(" ")) == "");
+	assert(String::trim(std::string_view("\n\n \t")) == "");
+	assert(String::trim(std::string_view("\n\nx \t")) == "x");
+	assert(String::trim(std::string_view("x \t")) == "x");
+	assert(String::trim(std::string_view("\n\nx")) == "x");
+	assert(String::trim(std::string_view("x")) == "x");
+}
+
 }
 
 int main()
@@ -62,6 +74,7 @@ int main()
 	testEndsWith();
 	testSplit();
 	testIsHex();
+	testTrim();
 
 	return 0;
 }

@@ -42,6 +42,19 @@ public:
 		return res;
 	}
 
+	template <typename T>
+	static T trim(const T &line)
+	{
+		static constexpr const std::string_view spaces{" \n\t\r"};
+		const auto pos1 = line.find_first_not_of(spaces);
+		const auto pos2 = line.find_last_not_of(spaces);
+
+		if (pos1 == std::string::npos)
+			return {};
+
+		return line.substr(pos1, pos2 - pos1 + 1);
+	}
+
 	static bool isHex(const std::string_view &s) {
 		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
 	}
