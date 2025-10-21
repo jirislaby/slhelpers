@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <cassert>
+#include <iostream>
 
 #include "helpers/String.h"
 
@@ -66,6 +67,23 @@ void testTrim()
 	assert(String::trim(std::string_view("x")) == "x");
 }
 
+void testIFind()
+{
+	assert(String::iFind("", "") == 0);
+	assert(String::iFind("abc", "") == 0);
+	assert(String::iFind("abc", "b") == 1);
+	assert(String::iFind("abc", "B") == 1);
+	assert(String::iFind("abc", "c") == 2);
+	assert(String::iFind("abc", "abc") == 0);
+	assert(String::iFind("abc", "ABC") == 0);
+	assert(String::iFind("abc", "abcd") == std::string_view::npos);
+	assert(String::iFind("abc", "x") == std::string_view::npos);
+
+	assert(String::iFind(std::string_view("abc"), "b") == 1);
+	assert(String::iFind(std::string_view("abc"), std::string("b")) == 1);
+	assert(String::iFind(std::string_view("abc"), std::string_view("b")) == 1);
+}
+
 }
 
 int main()
@@ -75,6 +93,7 @@ int main()
 	testSplit();
 	testIsHex();
 	testTrim();
+	testIFind();
 
 	return 0;
 }

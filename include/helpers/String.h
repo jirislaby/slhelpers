@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <cstring>
-#include <ctype.h>
+#include <cctype>
 #include <optional>
 #include <string>
 #include <vector>
@@ -24,6 +24,31 @@ public:
 		auto wlen = what.length();
 		auto elen = endsWith.length();
 		return wlen >= elen && !what.compare(wlen - elen, std::string::npos, endsWith);
+	}
+
+	/**
+	 * @brief Like string::find() but ignoring case
+	 * @param str string to search in
+	 * @param sub string to search for
+	 * @return position of \p sub in \p str if found, std::string_view::npos otherwise
+	 */
+	static constexpr std::string_view::size_type
+	iFind(const std::string_view &str, const std::string_view &sub) {
+		if (str.empty() && sub.empty())
+			return 0;
+		const auto it = std::search(str.begin(), str.end(), sub.begin(), sub.end(),
+				   [](char ch1, char ch2) {
+			return std::tolower(static_cast<unsigned char>(ch1)) ==
+					      std::tolower(static_cast<unsigned char>(ch2));
+		});
+		if (it == str.end())
+			return std::string_view::npos;
+		return it - str.begin();
+	}
+
+	template <typename T1, typename T2>
+	static constexpr std::string_view::size_type iFind(const T1 &str, const T2 &sub) {
+		return iFind(std::string_view(str), std::string_view(sub));
 	}
 
 	static std::vector<std::string> split(const std::string &str, const std::string &delim,
