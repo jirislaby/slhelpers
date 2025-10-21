@@ -54,6 +54,14 @@ public:
 	}
 	static std::optional<Repo> open(const std::filesystem::path &path = ".") noexcept;
 
+	/**
+	 * @brief update/fetch remote \p remote in repository at \p path
+	 * @param path Path to an existing git repository
+	 * @param remote Remote to update
+	 * @return true on success
+	 */
+	static bool update(const std::filesystem::path &path, const std::string &remote = "origin");
+
 	int grepBranch(const std::string &branch, const std::regex &regex) const noexcept;
 	int checkout(const std::string &branch) const noexcept;
 	int checkout(const Reference &reference) const noexcept;

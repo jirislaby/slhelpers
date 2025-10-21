@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <git2.h>
+#include <iostream>
 
 #include "git/Blob.h"
 #include "git/Commit.h"
@@ -11,6 +12,8 @@
 #include "git/Misc.h"
 #include "git/Tag.h"
 #include "git/Tree.h"
+
+#include "helpers/Misc.h"
 
 using namespace SlGit;
 
@@ -36,6 +39,34 @@ std::optional<Repo> Repo::init(const std::filesystem::path &path, bool bare,
 std::optional<Repo> Repo::open(const std::filesystem::__cxx11::path &path) noexcept
 {
 	return MakeGit<Repo>(git_repository_open, path.c_str());
+}
+
+bool Repo::update(const std::filesystem::path &path, const std::string &remote)
+{
+	std::cerr << "Trying to fetch... " << remote << " in " << path << '\n';
+	auto repoOpt = SlGit::Repo::open(path);
+	if (!repoOpt)
+		return false;
+
+	auto remoteOpt = repoOpt->remoteLookup(remote);
+	if (!remoteOpt)
+		return false;
+
+	if (remoteOpt->fetchRefspecs())
+		return false;
+
+	const auto stats = remoteOpt->stats();
+	if (stats->local_objects > 0)
+		std::cerr << "Received " << stats->indexed_objects << '/' <<
+			     stats->total_objects << " objects in " <<
+			     SlHelpers::Unit::human(stats->received_bytes) <<
+			     " (used " << stats->local_objects << " local objects)\n";
+	else
+		std::cerr << "Received " << stats->indexed_objects << '/' <<
+			     stats->total_objects << " objects in " <<
+			     SlHelpers::Unit::human(stats->received_bytes) << '\n';
+
+	return true;
 }
 
 int Repo::checkoutTree(const Tree &tree, unsigned int strategy) const noexcept
