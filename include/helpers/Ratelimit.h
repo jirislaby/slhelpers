@@ -24,7 +24,7 @@ public:
 	 * @return true if the ratelimited action should be performed
 	 */
 	bool limit() {
-		const auto now = std::chrono::steady_clock::now();
+		const auto now = Clock::now();
 		if (last + dur < now) {
 			last = now;
 			return true;
