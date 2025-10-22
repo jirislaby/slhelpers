@@ -17,13 +17,16 @@ static void testHuman()
 	assert(Unit::human((1 << 20) - (1 << 10)) == "1023.00 KiB");
 
 	assert(Unit::human(10 << 20) == "10.00 MiB");
-	assert(Unit::human(10ULL << 30) == "10.00 GiB");
-	assert(Unit::human(10ULL << 40) == "10.00 TiB");
-	assert(Unit::human(10ULL << 50) == "10.00 PiB");
-	assert(Unit::human(10ULL << 60) == "10.00 EiB");
 
-	assert(Unit::human(10ULL << 60, 0) == "10 EiB");
-	assert(Unit::human(10ULL << 60, 5) == "10.00000 EiB");
+	if (sizeof(size_t) >= 8) {
+		assert(Unit::human(10ULL << 30) == "10.00 GiB");
+		assert(Unit::human(10ULL << 40) == "10.00 TiB");
+		assert(Unit::human(10ULL << 50) == "10.00 PiB");
+		assert(Unit::human(10ULL << 60) == "10.00 EiB");
+
+		assert(Unit::human(10ULL << 60, 0) == "10 EiB");
+		assert(Unit::human(10ULL << 60, 5) == "10.00000 EiB");
+	}
 
 	assert(Unit::human(static_cast<size_t>(10.5 * 1024)) == "10.50 KiB");
 }
