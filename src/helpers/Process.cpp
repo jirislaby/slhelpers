@@ -71,6 +71,10 @@ int Process::waitForFinished()
 
 	if (WIFEXITED(stat)) {
 		m_exitStatus = WEXITSTATUS(stat);
+		if (m_exitStatus == 127) { // 127 defined in man
+			setError(SpawnError, "pre-exec or execve() failure");
+			return -1;
+		}
 		return 0;
 	}
 
