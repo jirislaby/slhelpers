@@ -9,17 +9,23 @@
 
 int main()
 {
-	SlHelpers::Ratelimit r(std::chrono::milliseconds(100));
+	constexpr const std::chrono::milliseconds rlDur {100};
+	SlHelpers::Ratelimit r(rlDur);
 	auto counter = 0U;
 
-	for (auto i = 0U; i < 99U; ++i) {
+	const auto start = std::chrono::steady_clock::now();
+	for (auto i = 1U; i <= 100U; ++i) {
 		if (r.limit())
 			counter++;
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
+	const auto dur = std::chrono::steady_clock::now() - start;
+	const auto maxCount = dur / rlDur + 1;
 
-	std::cerr << "counter=" << counter << '\n';
-	assert(counter <= 10);
+	std::cerr << "took=" <<
+		     std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(dur).count() <<
+		     " ms checking " << counter << " <= " << maxCount << '\n';
+	assert(counter <= maxCount);
 
 	return 0;
 }
