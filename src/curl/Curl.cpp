@@ -9,7 +9,6 @@
 
 #include "curl/Curl.h"
 #include "helpers/Color.h"
-#include "helpers/HomeDir.h"
 
 using namespace SlCurl;
 using Clr = SlHelpers::Color;
@@ -23,16 +22,18 @@ static size_t ssWriter(const char *contents, size_t size, size_t nmemb, std::ost
 	return size;
 }
 
+thread_local std::string LibCurl::m_lastError;
+
 LibCurl::LibCurl() : handle(nullptr)
 {
 	if (curl_global_init(CURL_GLOBAL_ALL)) {
-		std::cerr << "Curl: cannot init libcurl\n";
+		m_lastError = "cannot init libcurl";
 		return;
 	}
 
 	handle = curl_easy_init();
 	if (!handle) {
-		std::cerr << "Curl: failed to get curl_handle\n";
+		m_lastError = "failed to get curl_handle";
 		return;
 	}
 	curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1L);
@@ -57,8 +58,8 @@ bool LibCurl::downloadToStream(const std::string &url, const std::ostream &strea
 	if (HTTPErrorCode)
 		*HTTPErrorCode = resp;
 	if (ret != CURLE_OK) {
-		std::cerr << "Curl: curl_easy_perform() failed (resp=" << resp << "): " <<
-			     curl_easy_strerror(ret) << '\n';
+		m_lastError = "curl_easy_perform() failed (resp=" + std::to_string(resp) + "): " +
+				curl_easy_strerror(ret);
 		return false;
 	}
 
@@ -134,7 +135,8 @@ std::filesystem::path LibCurl::fetchFileIfNeeded(const std::filesystem::path &fi
 	if (!singleDownloadToFile(url, newPath, &http_code)) {
 		if (ignoreErrors)
 			return "";
-		Clr(std::cerr, Clr::RED) << "Failed to fetch " << url << " to " << filePath;
+		Clr(std::cerr, Clr::RED) << "Failed to fetch " << url << " to " << filePath <<
+					    ": " << m_lastError;
 		if (fileAlreadyExists)
 			return filePath;
 		return "";

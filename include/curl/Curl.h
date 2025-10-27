@@ -54,8 +54,11 @@ public:
 						       const std::string &url,
 						       bool forceRefresh, bool ignoreErrors,
 						       const std::chrono::hours &hours);
+
+	static const std::string &lastError() { return m_lastError; }
 private:
 	CURL *handle;
+	static thread_local std::string m_lastError;
 };
 
 }

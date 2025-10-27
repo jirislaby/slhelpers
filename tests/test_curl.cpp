@@ -32,6 +32,8 @@ void test_download(const std::string &url, const std::string &content)
 
 	{
 		const auto contentOpt = LibCurl::singleDownload("file:///012345test", &resp);
+		std::cerr << __func__ << ": EXPECTED error: " << LibCurl::lastError() << '\n';
+		assert(LibCurl::lastError().find("Could not read a file://") != std::string::npos);
 		assert(!resp);
 		assert(!contentOpt);
 	}
@@ -50,6 +52,9 @@ void test_download(const std::string &url, const std::string &content)
 
 	{
 		const auto contentOpt = LibCurl::singleDownload("http://nonexistant123.cz", &resp);
+		std::cerr << __func__ << ": EXPECTED error: " << LibCurl::lastError() << '\n';
+		assert(LibCurl::lastError().find("Could not resolve hostname") !=
+				std::string::npos);
 		assert(!resp);
 		assert(!contentOpt);
 	}
