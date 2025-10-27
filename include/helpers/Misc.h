@@ -5,10 +5,20 @@
 
 #include <cstddef>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 #include <string>
 
 namespace SlHelpers {
+
+struct Env {
+	template <typename T = std::string>
+	static std::optional<T> get(const std::string &name) {
+		if (const auto env = std::getenv(name.c_str()))
+			return env;
+		return std::nullopt;
+	}
+};
 
 struct Unit {
 	static std::string human(const size_t bytes, const unsigned precision = 2,

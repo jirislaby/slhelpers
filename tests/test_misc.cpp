@@ -4,9 +4,13 @@
 
 #include "helpers/Misc.h"
 
+#include "helpers.h"
+
 using namespace SlHelpers;
 
-static void testHuman()
+namespace {
+
+void testHuman()
 {
 	assert(Unit::human(0) == "0.00 B");
 	assert(Unit::human(10) == "10.00 B");
@@ -31,9 +35,32 @@ static void testHuman()
 	assert(Unit::human(static_cast<size_t>(10.5 * 1024)) == "10.50 KiB");
 }
 
+void testEnv()
+{
+	THelpers::RestoreEnv env(__func__ + std::to_string(rand()));
+
+	::unsetenv(env.env().c_str());
+	assert(Env::get(env.env()) == std::nullopt);
+
+	{
+		const std::string strValue{"some_string"};
+		::setenv(env.env().c_str(), strValue.c_str(), true);
+		assert(Env::get<decltype(strValue)>(env.env()) == strValue);
+	}
+
+	{
+		const std::filesystem::path pathValue{"/some/path/to_file"};
+		::setenv(env.env().c_str(), pathValue.c_str(), true);
+		assert(Env::get<decltype(pathValue)>(env.env()) == pathValue);
+	}
+}
+
+}
+
 int main()
 {
 	testHuman();
+	testEnv();
 
 	return 0;
 }
