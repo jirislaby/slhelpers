@@ -11,6 +11,7 @@ tests = {
   'ratelimit' : {},
   'string' : {},
   'supported_conf' : { 'libs' : [ slkerncvs_lib ] },
+  'suse' : {},
 }
 
 foreach t : tests.keys()

@@ -9,6 +9,7 @@ public_headers += [
   'helpers/Ratelimit.h',
   'helpers/String.h',
   'helpers/SSH.h',
+  'helpers/SUSE.h',
   'helpers/Unique.h',
 ]
 
