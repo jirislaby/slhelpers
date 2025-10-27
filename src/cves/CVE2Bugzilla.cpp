@@ -29,7 +29,7 @@ std::optional<CVE2Bugzilla> CVE2Bugzilla::create(const std::filesystem::path &cv
 		const auto bsc_begin_idx = line.find_first_of(":");
 		if (cve_end_idx == std::string::npos || cve_end_idx < 10 ||
 				bsc_begin_idx == std::string::npos ||
-				bsc_begin_idx + 1 == std::string::npos) {
+				bsc_begin_idx + 1 >= line.size()) {
 			std::cerr << cve2bugzilla << ": " << line << '\n';
 			continue;
 		}
