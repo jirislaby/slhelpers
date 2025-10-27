@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 public_headers += [
+    'cves/CVE2Bugzilla.h',
     'cves/CVEHashMap.h',
 ]
 
 slcves = library('slcves++', [
+    'CVE2Bugzilla.cpp',
     'CVEHashMap.cpp',
   ],
   include_directories : global_inc,
