@@ -12,29 +12,37 @@
 
 using namespace SlCVEs;
 
-bool CVEHashMap::load(const std::filesystem::path &vsource)
+std::optional<CVEHashMap> CVEHashMap::create(const std::filesystem::path &vsource,
+					     ShaSize shaSize, const std::string &branch,
+					     unsigned year, bool rejected)
+
 {
 	if (vsource.empty())
-		return false;
+		return std::nullopt;
 
-	auto vulns_repo = SlGit::Repo::open(vsource);
+	const auto vulns_repo = SlGit::Repo::open(vsource);
 	if (!vulns_repo)
-		return false;
+		return std::nullopt;
 
-	auto commit = vulns_repo->commitRevparseSingle(branch);
+	const auto commit = vulns_repo->commitRevparseSingle(branch);
 	if (!commit)
-		return false;
+		return std::nullopt;
 
 	std::string cve_prefix = rejected ? "cve/rejected/" : "cve/published/";
 	if (year)
 		cve_prefix += std::to_string(year) + '/';
 	const auto subTree = commit->tree()->treeEntryByPath(cve_prefix);
 	if (!subTree)
-		return false;
+		return std::nullopt;
 
-	const auto regex_cve_number = std::regex("CVE-[0-9][0-9][0-9][0-9]-[0-9]+", std::regex::optimize);
+	const auto regex_cve_number = std::regex("CVE-[0-9][0-9][0-9][0-9]-[0-9]+",
+						 std::regex::optimize);
+	const bool isShort = shaSize == ShaSize::Short;
+	CVEHashMapTy cveMap;
+	SHAHashMapTy shaMap;
 
-	vulns_repo->treeLookup(*subTree)->walk([&regex_cve_number, &vulns_repo, this](const std::string &,
+	vulns_repo->treeLookup(*subTree)->walk([&regex_cve_number, &vulns_repo, &isShort, &shaMap,
+					       &cveMap](const std::string &,
 					       const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
@@ -58,15 +66,15 @@ bool CVEHashMap::load(const std::filesystem::path &vsource)
 					     file << "\")\n";
 				continue;
 			}
-			if (shaSize == ShaSize::Short)
-				m_sha_hash_map.insert(std::make_pair(sha_hash.substr(0, 12), cve_number));
+			if (isShort)
+				shaMap.insert(std::make_pair(sha_hash.substr(0, 12), cve_number));
 			else {
-				m_cve_hash_multimap.insert(std::make_pair(cve_number, sha_hash));
-				m_sha_hash_map.insert(std::make_pair(std::move(sha_hash), cve_number));
+				cveMap.insert(std::make_pair(cve_number, sha_hash));
+				shaMap.insert(std::make_pair(std::move(sha_hash), cve_number));
 			}
 		}
 		return 0;
 	});
 
-	return true;
+	return CVEHashMap(std::move(cveMap), std::move(shaMap));
 }

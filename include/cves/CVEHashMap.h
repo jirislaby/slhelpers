@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -14,28 +15,31 @@ namespace SlCVEs {
 
 class CVEHashMap {
 public:
+	using CVEHashMapTy = std::unordered_multimap<std::string, std::string>;
+	using SHAHashMapTy = std::unordered_map<std::string, std::string>;
+
 	enum struct ShaSize {
 		Long,
 		Short
 	};
 
 	CVEHashMap() = delete;
-	CVEHashMap(ShaSize shaSize, const std::string &b, unsigned y, bool r) :
-		shaSize(shaSize), branch(b), year(y), rejected(r) {}
 
-	bool load(const std::filesystem::path &vsource);
+	static std::optional<CVEHashMap> create(const std::filesystem::path &vsource,
+						ShaSize shaSize, const std::string &branch,
+						unsigned year, bool rejected);
 
 	std::string get_cve(const std::string &sha_commit) const {
-		const auto it = m_sha_hash_map.find(sha_commit);
-		if (it != m_sha_hash_map.cend())
+		const auto it = m_shaHashMap.find(sha_commit);
+		if (it != m_shaHashMap.cend())
 			return it->second;
 
-		return std::string();
+		return {};
 	}
 
 	std::vector<std::string> get_shas(const std::string &cve_number) const { //requires (S == ShaSize::Long)
 		std::vector<std::string> ret;
-		const auto range = m_cve_hash_multimap.equal_range(cve_number);
+		const auto range = m_cveHashMap.equal_range(cve_number);
 		for (auto it = range.first; it != range.second; ++it)
 			ret.push_back(it->second);
 		return ret;
@@ -43,7 +47,7 @@ public:
 
 	std::set<std::string> get_all_cves() const { //requires (S == ShaSize::Long)
 		std::set<std::string> ret;
-		std::transform(m_cve_hash_multimap.cbegin(), m_cve_hash_multimap.cend(),
+		std::transform(m_cveHashMap.cbegin(), m_cveHashMap.cend(),
 			       std::inserter(ret, ret.end()),
 			       [](const auto &p) {
 			return p.first;
@@ -52,12 +56,11 @@ public:
 	}
 
 private:
-	std::unordered_multimap<std::string, std::string> m_cve_hash_multimap;
-	std::unordered_map<std::string, std::string> m_sha_hash_map;
-	const ShaSize shaSize;
-	const std::string branch;
-	const unsigned year;
-	const bool rejected;
+	CVEHashMap(CVEHashMapTy cveMap, SHAHashMapTy shaMap) :
+		m_cveHashMap(std::move(cveMap)), m_shaHashMap(std::move(shaMap)) {}
+
+	CVEHashMapTy m_cveHashMap;
+	SHAHashMapTy m_shaHashMap;
 };
 
 }
