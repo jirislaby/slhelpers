@@ -10,7 +10,9 @@
 
 #include "cves/CVEHashMap.h"
 
-bool SlCVEs::CVEHashMap::load(const std::filesystem::path &vsource)
+using namespace SlCVEs;
+
+bool CVEHashMap::load(const std::filesystem::path &vsource)
 {
 	if (vsource.empty())
 		return false;
