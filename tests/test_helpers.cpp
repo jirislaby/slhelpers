@@ -11,20 +11,12 @@ using namespace SlHelpers;
 
 namespace {
 
-void restore_env(const std::string &env, const char *orig)
-{
-	if (orig)
-		setenv(env.c_str(), orig, true);
-	else
-		unsetenv(env.c_str());
-}
-
 void testHomeDir()
 {
-	const auto orig_xdg = std::getenv("XDG_CACHE_HOME");
-	const auto orig_home = std::getenv("HOME");
-	if (orig_home)
-		assert(HomeDir::get() == orig_home);
+	THelpers::RestoreEnv xdg("XDG_CACHE_HOME");
+	THelpers::RestoreEnv home("HOME");
+	if (home)
+		assert(HomeDir::get() == home.value());
 
 	setenv("XDG_CACHE_HOME", "/xdg_cache", true);
 	setenv("HOME", "/tmp/", true);
@@ -43,9 +35,6 @@ void testHomeDir()
 	assert(createdCacheDir == cacheDir / "1");
 	assert(std::filesystem::exists(createdCacheDir));
 	std::filesystem::remove_all(tmpDir);
-
-	restore_env("XDG_CACHE_HOME", orig_xdg);
-	restore_env("HOME", orig_home);
 }
 
 void testProcess(const std::filesystem::path &crash)
