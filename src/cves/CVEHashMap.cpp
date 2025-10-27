@@ -46,7 +46,7 @@ bool CVEHashMap::load(const std::filesystem::path &vsource)
 		std::regex_search(file, match, regex_cve_number);
 		std::string cve_number = match.str();
 		if (cve_number.size() < 10) {
-			std::cout << cve_number << " doesn't seem to be a cve number!\n";
+			std::cerr << cve_number << " doesn't seem to be a cve number!\n";
 			return 0;
 		}
 		std::istringstream iss(vulns_repo->blobLookup(entry)->content());
