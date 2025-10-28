@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <chrono>
-#include <iostream>
 #include <sqlite3.h>
 #include <thread>
 #include <typeindex>
@@ -46,7 +45,7 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noe
 	ret = sqlite3_open_v2(dbFile.c_str(), &sql, openFlags, NULL);
 	sqlHolder.reset(sql);
 	if (ret != SQLITE_OK) {
-		std::cerr << "db open failed: " << sqlite3_errstr(ret) << "\n";
+		m_lastError.reset() << "db open failed: " << sqlite3_errstr(ret);
 		return -1;
 	}
 
@@ -54,8 +53,8 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noe
 		char *err;
 		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", NULL, NULL, &err);
 		if (ret != SQLITE_OK) {
-			std::cerr << "db PRAGMA failed (" << __LINE__ << "): " <<
-					sqlite3_errstr(ret) << " -> " << err << "\n";
+			m_lastError.reset() << "db PRAGMA failed (" << __LINE__ << "): " <<
+					       sqlite3_errstr(ret) << " -> " << err;
 			sqlite3_free(err);
 			return -1;
 		}
@@ -63,8 +62,8 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noe
 
 	ret = sqlite3_busy_handler(sqlHolder, busy_handler, nullptr);
 	if (ret != SQLITE_OK) {
-		std::cerr << "db busy_handler failed (" << __LINE__ << "): " <<
-				sqlite3_errstr(ret) << "\n";
+		m_lastError.reset() << "db busy_handler failed (" << __LINE__ << "): " <<
+				       sqlite3_errstr(ret);
 		return -1;
 	}
 
@@ -81,11 +80,12 @@ int SQLConn::createTables(const Tables &tables) const noexcept
 		ss << "CREATE TABLE IF NOT EXISTS " << c.first << '(';
 		joinVec(ss, c.second);
 		ss << ") STRICT;";
-		ret = sqlite3_exec(sqlHolder, ss.str().c_str(), NULL, NULL, &err);
+		const auto expr = ss.str();
+		ret = sqlite3_exec(sqlHolder, expr.c_str(), NULL, NULL, &err);
 		if (ret != SQLITE_OK) {
-			std::cerr << "db CREATE failed (" << __LINE__ << "): " <<
-					sqlite3_errstr(ret) << " -> " <<
-					err << "\n\t" << ss.str() << "\n";
+			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
+					       sqlite3_errstr(ret) << " -> " << err << "\n\t" <<
+					       expr;
 			sqlite3_free(err);
 			return -1;
 		}
@@ -104,9 +104,8 @@ int SQLConn::createIndices(const Indices &indices) const noexcept
 		s.append(c.first).append(" ON ").append(c.second);
 		ret = sqlite3_exec(sqlHolder, s.c_str(), NULL, NULL, &err);
 		if (ret != SQLITE_OK) {
-			std::cerr << "db CREATE failed (" << __LINE__ << "): " <<
-					sqlite3_errstr(ret) << " -> " <<
-					err << "\n\t" << s << "\n";
+			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
+					       sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
 			sqlite3_free(err);
 			return -1;
 		}
@@ -125,9 +124,8 @@ int SQLConn::createViews(const Views &views) const noexcept
 		s.append(c.first).append(" AS ").append(c.second);
 		ret = sqlite3_exec(sqlHolder, s.c_str(), NULL, NULL, &err);
 		if (ret != SQLITE_OK) {
-			std::cerr << "db CREATE failed (" << __LINE__ << "): " <<
-					sqlite3_errstr(ret) << " -> " <<
-					err << "\n\t" << s << "\n";
+			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
+					       sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
 			sqlite3_free(err);
 			return -1;
 		}
@@ -141,9 +139,9 @@ int SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const
 	sqlite3_stmt *SQLStmt;
 	int ret = sqlite3_prepare_v2(sqlHolder, sql.c_str(), -1, &SQLStmt, NULL);
 	if (ret != SQLITE_OK) {
-		std::cerr << "db prepare failed (" << __LINE__ << "): " <<
-			     sqlite3_errstr(ret) << " -> " <<
-			     sqlite3_errmsg(sqlHolder) << "\n";
+		m_lastError.reset() << "db prepare failed (" << __LINE__ << "): " <<
+				       sqlite3_errstr(ret) << " -> " <<
+				       sqlite3_errmsg(sqlHolder);
 		return -1;
 	}
 
@@ -157,8 +155,8 @@ int SQLConn::begin()
 	char *err;
 	int ret = sqlite3_exec(sqlHolder, "BEGIN;", NULL, NULL, &err);
 	if (ret != SQLITE_OK) {
-		std::cerr << "db BEGIN failed (" << __LINE__ << "): " <<
-			     sqlite3_errstr(ret) << " -> " << err << "\n";
+		m_lastError.reset() << "db BEGIN failed (" << __LINE__ << "): " <<
+				       sqlite3_errstr(ret) << " -> " << err;
 		sqlite3_free(err);
 		return -1;
 	}
@@ -171,8 +169,8 @@ int SQLConn::end()
 	char *err;
 	int ret = sqlite3_exec(sqlHolder, "END;", NULL, NULL, &err);
 	if (ret != SQLITE_OK) {
-		std::cerr << "db END failed (" << __LINE__ << "): " <<
-			     sqlite3_errstr(ret) << " -> " << err << "\n";
+		m_lastError.reset() << "db END failed (" << __LINE__ << "): " <<
+				       sqlite3_errstr(ret) << " -> " << err;
 		sqlite3_free(err);
 		return -1;
 	}
@@ -185,7 +183,7 @@ int SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 {
 	auto bindIdx = sqlite3_bind_parameter_index(ins, key.c_str());
 	if (!bindIdx) {
-		std::cerr << "no index found for key=" << key << "\n";
+		m_lastError.reset() << "no index found for key=" << key;
 		return -1;
 	}
 
@@ -204,10 +202,10 @@ int SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 	}
 
 	if (ret != SQLITE_OK) {
-		std::cerr << "db bind failed (" << __LINE__ << " key=\"" << key <<
-			     "\" val=\"" << valDesc << "\"): " <<
-			     sqlite3_errstr(ret) << " -> " <<
-			     sqlite3_errmsg(sqlHolder) << "\n";
+		m_lastError.reset() << "db bind failed (" << __LINE__ << " key=\"" << key <<
+				       "\" val=\"" << valDesc << "\"): " <<
+				       sqlite3_errstr(ret) << " -> " <<
+				       sqlite3_errmsg(sqlHolder);
 		return -1;
 	}
 
@@ -233,18 +231,17 @@ int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding) const noex
 
 	ret = sqlite3_step(ins);
 	if (ret != SQLITE_DONE && sqlite3_extended_errcode(sqlHolder) != SQLITE_CONSTRAINT_UNIQUE) {
-		std::cerr << "db step (INSERT) failed (" << __LINE__ << "): " <<
-			     sqlite3_errstr(ret) << " -> " <<
-			     sqlite3_errmsg(sqlHolder) << "\n";
+		m_lastError.reset() << "db step (INSERT) failed (" << __LINE__ << "): " <<
+				       sqlite3_errstr(ret) << " -> " <<
+				       sqlite3_errmsg(sqlHolder);
 		for (const auto &b : binding) {
-			std::cerr << '\t' << b.first << '=';
+			m_lastError << '\t' << b.first << '=';
 			if (std::holds_alternative<int>(b.second))
-				std::cerr << "I:" << std::get<int>(b.second);
+				m_lastError << "I:" << std::get<int>(b.second);
 			else if (std::holds_alternative<std::string>(b.second))
-				std::cerr << "T:" << std::get<std::string>(b.second);
+				m_lastError << "T:" << std::get<std::string>(b.second);
 			else
-				std::cerr << "NULL";
-			std::cerr << '\n';
+				m_lastError << "NULL";
 		}
 		return -1;
 	}
@@ -266,9 +263,9 @@ int SQLConn::select(const SQLStmtHolder &sel, const Binding &binding, const Colu
 		if (ret == SQLITE_DONE)
 			return 0;
 		if (ret != SQLITE_ROW) {
-			std::cerr << "db step (SELECT) failed (" << __LINE__ << "): " <<
-				     sqlite3_errstr(ret) << " -> " <<
-				     sqlite3_errmsg(sqlHolder) << "\n";
+			m_lastError.reset() << "db step (SELECT) failed (" << __LINE__ << "): " <<
+					       sqlite3_errstr(ret) << " -> " <<
+					       sqlite3_errmsg(sqlHolder);
 			return -1;
 		}
 

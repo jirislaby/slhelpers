@@ -3,6 +3,7 @@
 public_headers += [
   'helpers/Color.h',
   'helpers/HomeDir.h',
+  'helpers/LastError.h',
   'helpers/Misc.h',
   'helpers/Process.h',
   'helpers/PushD.h',

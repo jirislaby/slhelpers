@@ -9,6 +9,7 @@
 #include <variant>
 #include <vector>
 
+#include "../helpers/LastError.h"
 #include "SQLiteSmart.h"
 
 namespace SlSqlite {
@@ -37,6 +38,8 @@ public:
 	int begin();
 	int end();
 
+	std::string lastError() const { return m_lastError.lastError(); }
+
 protected:
 	SQLConn() {}
 
@@ -64,6 +67,7 @@ protected:
 		   SelectResult &result) const noexcept;
 
 	SQLHolder sqlHolder;
+	mutable SlHelpers::LastError m_lastError;
 };
 
 }
