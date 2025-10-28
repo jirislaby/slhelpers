@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef BRANCHES_H
-#define BRANCHES_H
+#ifndef SLKERNCVS_BRANCHES_H
+#define SLKERNCVS_BRANCHES_H
 
 #include <optional>
 #include <string>
@@ -23,4 +23,4 @@ private:
 
 }
 
-#endif // BRANCHES_H
+#endif

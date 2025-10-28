@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_OBJECT_H
-#define GIT_OBJECT_H
+#ifndef SLGIT_OBJECT_H
+#define SLGIT_OBJECT_H
 
 #include <string>
 

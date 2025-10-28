@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_HELPERS_H
-#define GIT_HELPERS_H
+#ifndef SLGIT_HELPERS_H
+#define SLGIT_HELPERS_H
 
 #include <string>
 

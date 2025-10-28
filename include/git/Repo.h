@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_REPO_H
-#define GIT_REPO_H
+#ifndef SLGIT_REPO_H
+#define SLGIT_REPO_H
 
 #include <filesystem>
 #include <optional>

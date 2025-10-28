@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_DIFF_H
-#define GIT_DIFF_H
+#ifndef SLGIT_DIFF_H
+#define SLGIT_DIFF_H
 
 #include <functional>
 

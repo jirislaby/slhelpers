@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_COMMIT_H
-#define GIT_COMMIT_H
+#ifndef SLGIT_COMMIT_H
+#define SLGIT_COMMIT_H
 
 #include <optional>
 #include <string>

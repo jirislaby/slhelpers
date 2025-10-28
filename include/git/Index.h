@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_INDEX_H
-#define GIT_INDEX_H
+#ifndef SLGIT_INDEX_H
+#define SLGIT_INDEX_H
 
 #include <filesystem>
 #include <functional>

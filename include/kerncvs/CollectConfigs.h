@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef COLLECTCONFIGS_H
-#define COLLECTCONFIGS_H
+#ifndef SLKERNCVS_COLLECTCONFIGS_H
+#define SLKERNCVS_COLLECTCONFIGS_H
 
 #include <functional>
 #include <string>

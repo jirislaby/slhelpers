@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef PUSHD_H
-#define PUSHD_H
+#ifndef SLHELPERS_PUSHD_H
+#define SLHELPERS_PUSHD_H
 
 #include <filesystem>
 

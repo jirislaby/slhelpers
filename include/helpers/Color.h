@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef COLOR_H
-#define COLOR_H
+#ifndef SLHELPERS_COLOR_H
+#define SLHELPERS_COLOR_H
 
 #include <iostream>
 #include <unistd.h>

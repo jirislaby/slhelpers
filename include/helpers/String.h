@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef STRING_H
-#define STRING_H
+#ifndef SLHELPERS_STRING_H
+#define SLHELPERS_STRING_H
 
 #include <algorithm>
 #include <cstring>

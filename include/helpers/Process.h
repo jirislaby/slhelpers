@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef PROCESS_H
-#define PROCESS_H
+#ifndef SLHELPERS_PROCESS_H
+#define SLHELPERS_PROCESS_H
 
 #include <filesystem>
 #include <string>

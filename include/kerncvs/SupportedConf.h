@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SUPPORTEDCONF_H
-#define SUPPORTEDCONF_H
+#ifndef SLKERNCVS_SUPPORTEDCONF_H
+#define SLKERNCVS_SUPPORTEDCONF_H
 
 #include <string>
 #include <utility>
@@ -34,4 +34,4 @@ private:
 
 }
 
-#endif // SUPPORTEDCONF_H
+#endif

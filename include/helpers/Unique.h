@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef UNIQUE_H
-#define UNIQUE_H
+#ifndef SLHELPERS_UNIQUE_H
+#define SLHELPERS_UNIQUE_H
 
 #include <memory>
 

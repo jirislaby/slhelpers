@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#ifndef DEFAULTFETCHCALLBACKS_H
-#define DEFAULTFETCHCALLBACKS_H
+#ifndef SLGIT_DEFAULTFETCHCALLBACKS_H
+#define SLGIT_DEFAULTFETCHCALLBACKS_H
 
 #include "../helpers/Ratelimit.h"
 #include "../helpers/SSH.h"

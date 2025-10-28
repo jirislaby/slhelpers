@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_FETCHCALLBACKS_H
-#define GIT_FETCHCALLBACKS_H
+#ifndef SLGIT_FETCHCALLBACKS_H
+#define SLGIT_FETCHCALLBACKS_H
 
 #include <optional>
 #include <string>

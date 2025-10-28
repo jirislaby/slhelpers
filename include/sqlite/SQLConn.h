@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SQLCONN_H
-#define SQLCONN_H
+#ifndef SLSQLITE_SQLCONN_H
+#define SLSQLITE_SQLCONN_H
 
 #include <filesystem>
 #include <string>
@@ -68,4 +68,4 @@ protected:
 
 }
 
-#endif // SQLCONN_H
+#endif

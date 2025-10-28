@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef GIT_REMOTE_H
-#define GIT_REMOTE_H
+#ifndef SLGIT_REMOTE_H
+#define SLGIT_REMOTE_H
 
 #include <string>
 #include <vector>

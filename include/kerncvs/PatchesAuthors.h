@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef PATCHESAUTHORS_H
-#define PATCHESAUTHORS_H
+#ifndef SLKERNCVS_PATCHESAUTHORS_H
+#define SLKERNCVS_PATCHESAUTHORS_H
 
 #include <filesystem>
 #include <functional>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef HOMEDIR_H
-#define HOMEDIR_H
+#ifndef SLHELPERS_HOMEDIR_H
+#define SLHELPERS_HOMEDIR_H
 
 #include <filesystem>
 #include <pwd.h>
