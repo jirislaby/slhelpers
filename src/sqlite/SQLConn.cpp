@@ -39,7 +39,9 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noe
 	int openFlags = SQLITE_OPEN_READWRITE;
 	int ret;
 
-	if (flags & CREATE)
+	m_flags = flags;
+
+	if (flags & OpenFlags::CREATE)
 		openFlags |= SQLITE_OPEN_CREATE;
 
 	ret = sqlite3_open_v2(dbFile.c_str(), &sql, openFlags, NULL);
@@ -49,7 +51,7 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noe
 		return -1;
 	}
 
-	if (!(flags & NO_FOREIGN_KEY)) {
+	if (!(flags & OpenFlags::NO_FOREIGN_KEY)) {
 		char *err;
 		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", NULL, NULL, &err);
 		if (ret != SQLITE_OK) {
@@ -230,23 +232,26 @@ int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding) const noex
 		return -1;
 
 	ret = sqlite3_step(ins);
-	if (ret != SQLITE_DONE && sqlite3_extended_errcode(sqlHolder) != SQLITE_CONSTRAINT_UNIQUE) {
-		m_lastError.reset() << "db step (INSERT) failed (" << __LINE__ << "): " <<
-				       sqlite3_errstr(ret) << " -> " <<
-				       sqlite3_errmsg(sqlHolder);
-		for (const auto &b : binding) {
-			m_lastError << '\t' << b.first << '=';
-			if (std::holds_alternative<int>(b.second))
-				m_lastError << "I:" << std::get<int>(b.second);
-			else if (std::holds_alternative<std::string>(b.second))
-				m_lastError << "T:" << std::get<std::string>(b.second);
-			else
-				m_lastError << "NULL";
-		}
-		return -1;
-	}
+	if (ret == SQLITE_DONE)
+		return 0;
 
-	return 0;
+	if (sqlite3_extended_errcode(sqlHolder) == SQLITE_CONSTRAINT_UNIQUE &&
+			!(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT))
+		return 0;
+
+	m_lastError.reset() << "db step (INSERT) failed (" << __LINE__ << "): " <<
+			       sqlite3_errstr(ret) << " -> " <<
+			       sqlite3_errmsg(sqlHolder);
+	for (const auto &b : binding) {
+		m_lastError << '\t' << b.first << '=';
+		if (std::holds_alternative<int>(b.second))
+			m_lastError << "I:" << std::get<int>(b.second);
+		else if (std::holds_alternative<std::string>(b.second))
+			m_lastError << "T:" << std::get<std::string>(b.second);
+		else
+			m_lastError << "NULL";
+	}
+	return -1;
 }
 
 int SQLConn::select(const SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,

@@ -14,9 +14,10 @@
 
 namespace SlSqlite {
 
-enum open_flags {
-	CREATE		= 1 << 0,
-	NO_FOREIGN_KEY	= 1 << 1,
+enum OpenFlags : unsigned {
+	CREATE				= 1 << 0,
+	NO_FOREIGN_KEY			= 1 << 1,
+	ERROR_ON_UNIQUE_CONSTRAINT	= 1 << 2,
 };
 
 class SQLConn {
@@ -41,7 +42,7 @@ public:
 	std::string lastError() const { return m_lastError.lastError(); }
 
 protected:
-	SQLConn() {}
+	SQLConn() : m_flags(0) {}
 
 	using Tables = std::vector<std::pair<std::string, std::vector<std::string>>>;
 	using Indices = std::vector<std::pair<std::string, std::string>>;
@@ -67,6 +68,7 @@ protected:
 		   SelectResult &result) const noexcept;
 
 	SQLHolder sqlHolder;
+	unsigned int m_flags;
 	mutable SlHelpers::LastError m_lastError;
 };
 
