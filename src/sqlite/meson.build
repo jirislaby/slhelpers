@@ -17,6 +17,10 @@ slsqlite = library('slsqlite++', [
   version: meson.project_version(),
 )
 
+slsqlite_lib = declare_dependency(
+  link_with: slsqlite,
+)
+
 pkg.generate(slsqlite,
   description: slsqlite.name() + ': c++ sqlite wrapper library',
 )
