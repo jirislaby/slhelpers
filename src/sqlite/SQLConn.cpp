@@ -223,7 +223,8 @@ int SQLConn::bind(const SQLStmtHolder &ins, const Binding &binding) const noexce
 	return 0;
 }
 
-int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding) const noexcept
+int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
+		    uint64_t *affected) const noexcept
 {
 	SQLStmtResetter insResetter(sqlHolder, ins);
 	int ret;
@@ -232,12 +233,18 @@ int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding) const noex
 		return -1;
 
 	ret = sqlite3_step(ins);
-	if (ret == SQLITE_DONE)
+	if (ret == SQLITE_DONE) {
+		if (affected)
+			*affected = sqlite3_changes64(sqlHolder);
 		return 0;
+	}
 
 	if (sqlite3_extended_errcode(sqlHolder) == SQLITE_CONSTRAINT_UNIQUE &&
-			!(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT))
+			!(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
+		if (affected)
+			*affected = 0;
 		return 0;
+	}
 
 	m_lastError.reset() << "db step (INSERT) failed (" << __LINE__ << "): " <<
 			       sqlite3_errstr(ret) << " -> " <<

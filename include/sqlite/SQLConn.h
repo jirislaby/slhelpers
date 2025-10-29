@@ -63,7 +63,8 @@ protected:
 
 	int bind(const SQLStmtHolder &ins, const std::string &key, const BindVal &val) const noexcept;
 	int bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
-	int insert(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
+	int insert(const SQLStmtHolder &ins, const Binding &binding,
+		   uint64_t *affected = nullptr) const noexcept;
 	int select(const SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
 		   SelectResult &result) const noexcept;
 
