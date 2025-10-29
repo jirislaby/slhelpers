@@ -14,7 +14,7 @@ namespace {
 
 class SQLConn : public SlSqlite::SQLConn {
 public:
-	virtual int createDB() override {
+	virtual bool createDB() override {
 		static const Tables create_tables {
 			{ "address", {
 				"id INTEGER PRIMARY KEY",
@@ -31,40 +31,40 @@ public:
 		return createTables(create_tables);
 	}
 
-	virtual int prepDB() override {
-		if (prepareStatement("INSERT INTO address(street) VALUES (:street);", insAddress))
-			return -1;
+	virtual bool prepDB() override {
+		if (!prepareStatement("INSERT INTO address(street) VALUES (:street);", insAddress))
+			return false;
 
-		if (prepareStatement("INSERT INTO person(name, age, address) "
+		if (!prepareStatement("INSERT INTO person(name, age, address) "
 				     "SELECT :name, :age, address.id "
 				     "FROM address "
 				     "WHERE address.street = :street;",
 				     insPerson))
-			return -1;
+			return false;
 
-		if (prepareStatement("SELECT person.name, age, address.street "
+		if (!prepareStatement("SELECT person.name, age, address.street "
 				     "FROM person "
 				     "LEFT JOIN address ON person.address = address.id "
 				     "WHERE person.name LIKE :name "
 				     "ORDER BY person.id;",
 				     selPerson))
-			return -1;
+			return false;
 
-		if (prepareStatement("DELETE FROM person;", delPerson))
-			return -1;
+		if (!prepareStatement("DELETE FROM person;", delPerson))
+			return false;
 
-		return 0;
+		return true;
 	}
 
-	int badInsertAddress(const std::string &street) const {
+	bool badInsertAddress(const std::string &street) const {
 		return insert(insAddress, { { ":streetFoo", street } });
 	}
 
-	int insertAddress(const std::string &street) const {
+	bool insertAddress(const std::string &street) const {
 		return insert(insAddress, { { ":street", street } });
 	}
 
-	int insertPerson(const std::string &name, const int age, const std::string &street,
+	bool insertPerson(const std::string &name, const int age, const std::string &street,
 			 uint64_t *affected = nullptr) const {
 		return insert(insPerson, {
 				      { ":name", name },
@@ -80,7 +80,7 @@ public:
 			      { typeid(std::string), typeid(int), typeid(std::string) });
 	}
 
-	int delPersons(uint64_t *affected = nullptr) const {
+	bool delPersons(uint64_t *affected = nullptr) const {
 		return insert(delPerson, {}, affected);
 	}
 
@@ -98,11 +98,11 @@ SQLConn testOpen(const std::filesystem::path &tmpDir)
 {
 	SQLConn db;
 
-	assert(db.open(tmpDir / "sql.db"));
+	assert(!db.open(tmpDir / "sql.db"));
 	std::cerr << "EXPECTED error: " << db.lastError() << '\n';
 	assert(db.lastError().find("unable to open database file") != std::string::npos);
 
-	assert(!db.open(tmpDir / "sql.db",
+	assert(db.open(tmpDir / "sql.db",
 			OpenFlags::CREATE | OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT));
 
 	return db;
@@ -122,25 +122,25 @@ void testInsert(const SQLConn &db)
 	uint64_t affected;
 	for (const auto &e: people) {
 		affected = ~0ULL;
-		assert(!db.insertAddress(e.addr));
-		assert(!db.insertPerson(e.name, e.age, e.addr, &affected));
+		assert(db.insertAddress(e.addr));
+		assert(db.insertPerson(e.name, e.age, e.addr, &affected));
 		assert(affected == 1);
 	}
 
-	assert(db.insertAddress(people[0].addr));
+	assert(!db.insertAddress(people[0].addr));
 	std::cerr << "EXPECTED error: " << db.lastError() << '\n';
 	assert(db.lastError().find("constraint failed") != std::string::npos);
 
-	assert(db.badInsertAddress("Some addr"));
+	assert(!db.badInsertAddress("Some addr"));
 	std::cerr << "EXPECTED error: " << db.lastError() << '\n';
 	assert(db.lastError().find("no index found") != std::string::npos);
 
 	affected = ~0ULL;
-	assert(db.insertPerson(people[0].name, people[0].age, people[0].addr, &affected));
+	assert(!db.insertPerson(people[0].name, people[0].age, people[0].addr, &affected));
 	assert(affected == ~0ULL);
 
 	affected = ~0ULL;
-	assert(!db.insertPerson(people[1].name, people[1].age, "non-existant", &affected));
+	assert(db.insertPerson(people[1].name, people[1].age, "non-existant", &affected));
 	assert(affected == 0);
 }
 
@@ -184,7 +184,7 @@ void testSelect(const SQLConn &db)
 void testDelete(const SQLConn &db)
 {
 	uint64_t affected;
-	assert(!db.delPersons(&affected));
+	assert(db.delPersons(&affected));
 	assert(affected == 2);
 }
 

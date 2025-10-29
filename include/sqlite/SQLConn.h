@@ -23,22 +23,22 @@ enum OpenFlags : unsigned {
 
 class SQLConn {
 public:
-	int open(const std::filesystem::path &dbFile, unsigned int flags = 0)
+	bool open(const std::filesystem::path &dbFile, unsigned int flags = 0)
 	{
-		if (openDB(dbFile, flags) ||
-				createDB() ||
-				prepDB())
-			return -1;
+		if (!openDB(dbFile, flags) ||
+				!createDB() ||
+				!prepDB())
+			return false;
 
-		return 0;
+		return true;
 	}
 
-	int openDB(const std::filesystem::path &dbFile, unsigned int flags = 0) noexcept;
-	virtual int createDB() { return 0; }
-	virtual int prepDB() { return 0; }
+	bool openDB(const std::filesystem::path &dbFile, unsigned int flags = 0) noexcept;
+	virtual bool createDB() { return true; }
+	virtual bool prepDB() { return true; }
 
-	int begin();
-	int end();
+	bool begin();
+	bool end();
 
 	std::string lastError() const { return m_lastError.lastError(); }
 
@@ -56,16 +56,17 @@ protected:
 	using Row = std::vector<Column>;
 	using SelectResult = std::vector<Row>;
 
-	int createTables(const Tables &tables) const noexcept;
-	int createIndices(const Indices &indices) const noexcept;
-	int createViews(const Views &views) const noexcept;
+	bool createTables(const Tables &tables) const noexcept;
+	bool createIndices(const Indices &indices) const noexcept;
+	bool createViews(const Views &views) const noexcept;
 
-	int prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
+	bool prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
 
-	int bind(const SQLStmtHolder &ins, const std::string &key, const BindVal &val) const noexcept;
-	int bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
-	int insert(const SQLStmtHolder &ins, const Binding &binding,
-		   uint64_t *affected = nullptr) const noexcept;
+	bool bind(const SQLStmtHolder &ins, const std::string &key,
+		  const BindVal &val) const noexcept;
+	bool bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
+	bool insert(const SQLStmtHolder &ins, const Binding &binding,
+		    uint64_t *affected = nullptr) const noexcept;
 
 	std::optional<SQLConn::SelectResult>
 	select(const SQLStmtHolder &sel, const Binding &binding,
