@@ -31,15 +31,15 @@ public:
 		       const InsertConfig &insertConfig) : repo(repo),
 		insertArchFlavor(insertArchFlavor), insertConfig(insertConfig) {}
 
-	int collectConfigs(const SlGit::Commit &commit);
+	bool collectConfigs(const SlGit::Commit &commit);
 
 private:
-	int processFlavor(const std::string &arch, const std::string &flavor,
-			  const SlGit::TreeEntry &treeEntry);
-	int processConfigFile(const std::string &arch, const std::string &flavor,
-			      const std::string &configFile);
-	int processConfig(const std::string &arch, const std::string &flavor,
-			  const std::string &line);
+	bool processFlavor(const std::string &arch, const std::string &flavor,
+			   const SlGit::TreeEntry &treeEntry);
+	bool processConfigFile(const std::string &arch, const std::string &flavor,
+			       const std::string &configFile);
+	bool processConfig(const std::string &arch, const std::string &flavor,
+			   const std::string &line);
 	const SlGit::Repo &repo;
 	const InsertArchFlavor insertArchFlavor;
 	const InsertConfig insertConfig;

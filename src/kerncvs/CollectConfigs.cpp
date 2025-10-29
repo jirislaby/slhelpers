@@ -8,57 +8,60 @@
 
 using namespace SlKernCVS;
 
- int CollectConfigs::collectConfigs(const SlGit::Commit &commit)
+bool CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 {
 	auto tree = commit.tree();
 
 	auto configTreeEntry = tree->treeEntryByPath("config/");
 	if (!configTreeEntry)
-		return -1;
+		return false;
 	if (configTreeEntry->type() != GIT_OBJECT_TREE)
-		return -1;
+		return false;
 
 	auto configTree = repo.treeLookup(*configTreeEntry);
 	if (!configTree)
-		return -1;
+		return false;
 
 	auto ret = configTree->walk([this](const std::string &root,
 				    const SlGit::TreeEntry &entry) -> int {
-		if (entry.type() == GIT_OBJECT_BLOB)
-			return processFlavor(root.substr(0, root.size() - 1), entry.name(), entry);
-
+		if (entry.type() != GIT_OBJECT_BLOB)
+			return 0;
+		if (!processFlavor(root.substr(0, root.size() - 1), entry.name(), entry))
+			return -1;
 		return 0;
 	});
-	return ret;
+	if (ret)
+		return false;
+	return true;
 }
 
-int CollectConfigs::processFlavor(const std::string &arch, const std::string &flavor,
-				  const SlGit::TreeEntry &treeEntry)
+bool CollectConfigs::processFlavor(const std::string &arch, const std::string &flavor,
+				   const SlGit::TreeEntry &treeEntry)
 {
 	auto config = treeEntry.catFile(repo);
 	if (!config)
-		return -1;
+		return false;
 
 	return processConfigFile(arch, flavor, *config);
 }
 
-int CollectConfigs::processConfigFile(const std::string &arch, const std::string &flavor,
-				      const std::string &configFile)
+bool CollectConfigs::processConfigFile(const std::string &arch, const std::string &flavor,
+				       const std::string &configFile)
 {
-	if (insertArchFlavor(arch, flavor))
-		return -1;
+	if (!insertArchFlavor(arch, flavor))
+		return false;
 
 	std::istringstream iss { configFile };
 	std::string line;
 
 	while (std::getline(iss, line))
-		if (processConfig(arch, flavor, line))
-			return -1;
+		if (!processConfig(arch, flavor, line))
+			return false;
 
-	return 0;
+	return true;
 }
 
-int CollectConfigs::processConfig(const std::string &arch, const std::string &flavor,
+bool CollectConfigs::processConfig(const std::string &arch, const std::string &flavor,
 				   const std::string &line)
 {
 	static const std::string commented{"# CONFIG_"};
@@ -69,13 +72,12 @@ int CollectConfigs::processConfig(const std::string &arch, const std::string &fl
 			std::cerr << __func__ <<
 				     "commented config without proper 'is not set' in: " <<
 				     line << '\n';
-			return -1;
+			return false;
 		}
 
 		const auto config = line.substr(2, end - 2);
 
 		return insertConfig(arch, flavor, config, Disabled);
-
 	}
 	if (SlHelpers::String::startsWith(line, "CONFIG_")) {
 		const auto end = line.find('=');
@@ -93,5 +95,5 @@ int CollectConfigs::processConfig(const std::string &arch, const std::string &fl
 		return insertConfig(arch, flavor, config, value);
 	}
 
-	return 0;
+	return true;
 }
