@@ -10,7 +10,7 @@
 
 using namespace SlSqlite;
 
-static int busy_handler(void *, int count)
+int SQLConn::busyHandler(void *, int count)
 {
 	static const auto WAIT_INTVAL = std::chrono::milliseconds(20);
 	static const auto WAIT_TIMEOUT = std::chrono::seconds(10) / WAIT_INTVAL;
@@ -62,7 +62,7 @@ int SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noe
 		}
 	}
 
-	ret = sqlite3_busy_handler(sqlHolder, busy_handler, nullptr);
+	ret = sqlite3_busy_handler(sqlHolder, busyHandler, nullptr);
 	if (ret != SQLITE_OK) {
 		m_lastError.reset() << "db busy_handler failed (" << __LINE__ << "): " <<
 				       sqlite3_errstr(ret);

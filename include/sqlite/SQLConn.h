@@ -74,6 +74,8 @@ protected:
 	SQLHolder sqlHolder;
 	unsigned int m_flags;
 	mutable SlHelpers::LastError m_lastError;
+private:
+	static int busyHandler(void *, int count);
 };
 
 }
