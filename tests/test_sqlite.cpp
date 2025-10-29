@@ -76,14 +76,8 @@ public:
 	std::optional<SlSqlite::SQLConn::SelectResult>
 	getPersons(const std::string &name) const
 	{
-		SlSqlite::SQLConn::SelectResult res;
-
-		if (select(selPerson, {
-				{ ":name", name },
-				}, { typeid(std::string), typeid(int), typeid(std::string) }, res))
-			return {};
-
-		return res;
+		return select(selPerson, { { ":name", name } },
+			      { typeid(std::string), typeid(int), typeid(std::string) });
 	}
 
 	int delPersons(uint64_t *affected = nullptr) const {

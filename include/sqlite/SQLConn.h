@@ -4,6 +4,7 @@
 #define SLSQLITE_SQLCONN_H
 
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <typeindex>
 #include <variant>
@@ -65,8 +66,10 @@ protected:
 	int bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
 	int insert(const SQLStmtHolder &ins, const Binding &binding,
 		   uint64_t *affected = nullptr) const noexcept;
-	int select(const SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
-		   SelectResult &result) const noexcept;
+
+	std::optional<SQLConn::SelectResult>
+	select(const SQLStmtHolder &sel, const Binding &binding,
+	       const ColumnTypes &columns) const noexcept;
 
 	SQLHolder sqlHolder;
 	unsigned int m_flags;

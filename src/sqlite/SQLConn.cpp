@@ -261,24 +261,26 @@ int SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 	return -1;
 }
 
-int SQLConn::select(const SQLStmtHolder &sel, const Binding &binding, const ColumnTypes &columns,
-		    SelectResult &result) const noexcept
+std::optional<SQLConn::SelectResult>
+SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
+		const ColumnTypes &columns) const noexcept
 {
 	SQLStmtResetter selResetter(sqlHolder, sel);
 	int ret;
 
 	if (bind(sel, binding))
-		return -1;
+		return std::nullopt;
 
+	SQLConn::SelectResult result;
 	while (true) {
 		ret = sqlite3_step(sel);
 		if (ret == SQLITE_DONE)
-			return 0;
+			return result;
 		if (ret != SQLITE_ROW) {
 			m_lastError.reset() << "db step (SELECT) failed (" << __LINE__ << "): " <<
 					       sqlite3_errstr(ret) << " -> " <<
 					       sqlite3_errmsg(sqlHolder);
-			return -1;
+			return std::nullopt;
 		}
 
 		Row row;
@@ -288,11 +290,9 @@ int SQLConn::select(const SQLStmtHolder &sel, const Binding &binding, const Colu
 			if (columns[i] == typeid(int))
 				col = sqlite3_column_int(sel, i);
 			else if (columns[i] == typeid(std::string))
-				col = Column{(char *)sqlite3_column_text(sel, i)};
+				col = Column{reinterpret_cast<const char *>(sqlite3_column_text(sel, i))};
 			row.push_back(std::move(col));
 		}
 		result.push_back(std::move(row));
 	}
-
-	return 0;
 }
