@@ -19,16 +19,16 @@ namespace SlKernCVS {
 class PatchesAuthors {
 public:
 	using Map = std::map<std::string, std::map<std::string, unsigned int>>;
-	using InsertUser = std::function<int (const std::string &)>;
-	using InsertUFMap = std::function<int (const std::string &, const std::filesystem::path &,
+	using InsertUser = std::function<bool (const std::string &)>;
+	using InsertUFMap = std::function<bool (const std::string &, const std::filesystem::path &,
 		unsigned, unsigned)>;
 
 	PatchesAuthors(const SlGit::Repo &repo, bool dumpRefs, bool reportUnhandled) :
 		repo(repo), dumpRefs(dumpRefs), reportUnhandled(reportUnhandled)
 	{}
 
-	int processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
-			   const InsertUFMap &insertUFMap);
+	bool processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
+			    const InsertUFMap &insertUFMap);
 private:
 	int processPatch(const std::filesystem::path &file, const std::string &content);
 

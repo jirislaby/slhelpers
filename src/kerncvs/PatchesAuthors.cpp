@@ -76,20 +76,20 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 	return 0;
 }
 
-int PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
+bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
 				   const InsertUFMap &insertUFMap)
 {
 	auto tree = *commit.tree();
 
 	auto patchesSuseTreeEntry = tree.treeEntryByPath("patches.suse/");
 	if (!patchesSuseTreeEntry)
-		return -1;
+		return false;
 	if (patchesSuseTreeEntry->type() != GIT_OBJECT_TREE)
-		return -1;
+		return false;
 
 	auto patchesSuseTree = repo.treeLookup(*patchesSuseTreeEntry);
 	if (!patchesSuseTree)
-		return -1;
+		return false;
 	auto ret = patchesSuseTree->walk([this](const std::string &root,
 					 const SlGit::TreeEntry &entry) -> int {
 		auto blob = repo.blobLookup(entry);
@@ -99,7 +99,7 @@ int PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUser
 		return processPatch(root + entry.name(), blob->content());
 	});
 	if (ret)
-		return -1;
+		return false;
 
 	for (const auto &pair : m_HoHRefs)
 		for (const auto &refPair : pair.second)
@@ -112,16 +112,16 @@ int PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUser
 	for (const auto &pair : m_HoH) {
 		const auto &email = pair.first;
 		const auto &realMap = m_HoHReal.at(email);
-		if (insertUser(email))
-			return -1;
+		if (!insertUser(email))
+			return false;
 
 		for (const auto &pairSrc : pair.second) {
 			std::filesystem::path path(pairSrc.first);
 
-			if (insertUFMap(email, path, pairSrc.second, realMap.at(pairSrc.first)))
-				return -1;
+			if (!insertUFMap(email, path, pairSrc.second, realMap.at(pairSrc.first)))
+				return false;
 		}
 	}
 
-	return 0;
+	return true;
 }
