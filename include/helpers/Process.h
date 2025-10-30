@@ -26,7 +26,15 @@ public:
 		m_lastErrorNo(UnknownError) {}
 	~Process();
 
-	/* spawn + read (if 'out' non-null) + wait */
+	/**
+	 * @brief Spawns a process, executes \p program with \p args, and waits for its termination
+	 * @param program Program to execute
+	 * @param args Arguments passed to the program (do not add \p program itself)
+	 * @param out stdout of the \p program
+	 * @return zero on success
+	 * If \p out is non-NULL, the stdout of the \p program is filled in there.
+	 * run() combines spawn(), readAll(), and waitForFinished().
+	 */
 	int run(const std::filesystem::path &program, const std::vector<std::string> &args = {},
 		std::string *out = nullptr);
 
