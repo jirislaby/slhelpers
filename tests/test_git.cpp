@@ -142,17 +142,42 @@ static void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 {
 	auto diff = repo.diff(aCommit, bCommit);
 	assert(diff);
+
+	std::cerr << "vvv diff->print output vvv\n";
+	bool found = false;
 	assert(!diff->print(GIT_DIFF_FORMAT_PATCH,
-			    [](const git_diff_delta &delta,
-			       const git_diff_hunk *hunk,
-			       const git_diff_line &line) -> int {
-		std::cout << delta.old_file.path << "->" << delta.new_file.path << '\n';
+			    [&found](const git_diff_delta &delta,
+			    const git_diff_hunk *hunk,
+			    const git_diff_line &line) -> int {
+		std::cerr << delta.old_file.path << "->" << delta.new_file.path << '\n';
+		if (std::string_view(delta.old_file.path) == "b.txt")
+			found = true;
 		if (hunk)
-			std::cout << "hunk=" << hunk->header << '\n';
+			std::cerr << "hunk=" << hunk->header << '\n';
 		std::string_view s(line.content, line.content_len);
-		std::cout << "origin=" << line.origin << " content=" << s << "=========\n";
+		std::cerr << "origin=" << line.origin << " content=" << s << "=========\n";
 		return 0;
 	}));
+	std::cerr << "^^^ diff->print output ^^^\n";
+	assert(found);
+
+	found = false;
+	class CB : public SlGit::Diff::ForEachCB {
+	public:
+		virtual int file(const git_diff_delta &delta, float) const override {
+			std::cerr << "Diff::ForEachCB: " << delta.old_file.path << "->" <<
+				     delta.new_file.path << '\n';
+			if (std::string_view(delta.old_file.path) == "b.txt")
+				m_found = true;
+			return 0;
+		}
+		explicit CB(bool &found) : m_found(found) {}
+	private:
+		bool &m_found;
+	} cb(found);
+
+	assert(!diff->forEach(cb));
+	assert(found);
 }
 
 static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
