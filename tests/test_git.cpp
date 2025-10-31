@@ -6,6 +6,8 @@
 
 #include "helpers.h"
 
+namespace {
+
 static SlGit::Repo testRepoInit()
 {
 	auto gitDir = THelpers::getTmpDir("testgitdir");
@@ -288,6 +290,46 @@ static void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
 	assert(originMaster == bCommit);
 }
 
+void testPathSpec(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+		  const SlGit::Commit &bCommit)
+{
+	{
+		const auto ps = SlGit::PathSpec::create({ "a*", "b*", });
+		assert(ps);
+		assert(ps->matchesPath("a"));
+		assert(ps->matchesPath("a.c"));
+		assert(ps->matchesPath("a/123/f.c"));
+		assert(ps->matchesPath("b.c"));
+
+		assert(!ps->matchesPath("x.c"));
+		assert(!ps->matchesPath("x/123/f.c"));
+
+		const auto list = ps->matchTree(*aCommit.tree(), GIT_PATHSPEC_NO_MATCH_ERROR);
+		assert(list);
+		bool found = false;
+		std::cerr << __func__ << ": entries:\n";
+		for (auto i = 0U; i < list->entrycount(); ++i) {
+			std::cerr << '\t' << list->entry(i) << '\n';
+			if (list->entry(i) == "a.txt") {
+				found = true;
+				break;
+			}
+		}
+		assert(found);
+
+	}
+	{
+		const auto ps = SlGit::PathSpec::create({ "b*" });
+
+		assert(!ps->matchTree(*aCommit.tree(), GIT_PATHSPEC_NO_MATCH_ERROR));
+		assert(ps->matchTree(*bCommit.tree(), GIT_PATHSPEC_NO_MATCH_ERROR));
+
+		assert(ps->matchWorkdir(repo, GIT_PATHSPEC_NO_MATCH_ERROR));
+	}
+}
+
+} // namespace
+
 int main()
 {
 	auto repo = testRepoInit();
@@ -306,6 +348,7 @@ int main()
 	testFilesOnFS(repo, aFile, aContent, bFile);
 	testCheckout(repo2, aCommit);
 	testFetch(repo2, bCommit);
+	testPathSpec(repo, aCommit, bCommit);
 
 	std::filesystem::remove_all(repo.workDir());
 	std::filesystem::remove_all(repo2.workDir());

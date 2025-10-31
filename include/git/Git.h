@@ -9,6 +9,7 @@
 #include "Helpers.h"
 #include "Index.h"
 #include "Misc.h"
+#include "PathSpec.h"
 #include "Remote.h"
 #include "Repo.h"
 #include "Tag.h"

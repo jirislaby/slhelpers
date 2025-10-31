@@ -154,6 +154,7 @@ private:
 
 	Holder m_repo;
 
+	friend class PathSpec;
 	template<class Class, typename FunTy, typename... Args>
 	static std::optional<Class> MakeGit(const FunTy &fun, Args&&... args)
 	{
