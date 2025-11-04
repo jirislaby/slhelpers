@@ -14,6 +14,7 @@ namespace {
 
 class SQLConn : public SlSqlite::SQLConn {
 public:
+	SQLConn() : selPerson(*this) {}
 	virtual bool createDB() override {
 		static const Tables create_tables {
 			{ "address", {
@@ -42,12 +43,12 @@ public:
 				     insPerson))
 			return false;
 
-		if (!prepareStatement("SELECT person.name, age, address.street "
+		if (!selPerson.prepare("SELECT person.name, age, address.street "
 				     "FROM person "
 				     "LEFT JOIN address ON person.address = address.id "
 				     "WHERE person.name LIKE :name "
 				     "ORDER BY person.id;",
-				     selPerson))
+				     { typeid(std::string), typeid(int), typeid(std::string) }))
 			return false;
 
 		if (!prepareStatement("DELETE FROM person;", delPerson))
@@ -76,8 +77,7 @@ public:
 	std::optional<SlSqlite::SQLConn::SelectResult>
 	getPersons(const std::string &name) const
 	{
-		return select(selPerson, { { ":name", name } },
-			      { typeid(std::string), typeid(int), typeid(std::string) });
+		return selPerson.select({ { ":name", name } });
 	}
 
 	bool delPersons(uint64_t *affected = nullptr) const {
@@ -89,7 +89,7 @@ public:
 private:
 	SlSqlite::SQLStmtHolder insAddress;
 	SlSqlite::SQLStmtHolder insPerson;
-	SlSqlite::SQLStmtHolder selPerson;
+	SlSqlite::Select selPerson;
 	SlSqlite::SQLStmtHolder delPerson;
 };
 

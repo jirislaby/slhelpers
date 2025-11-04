@@ -22,6 +22,7 @@ enum OpenFlags : unsigned {
 };
 
 class SQLConn {
+	friend class Select;
 public:
 	bool open(const std::filesystem::path &dbFile, unsigned int flags = 0)
 	{
@@ -77,6 +78,26 @@ protected:
 	mutable SlHelpers::LastError m_lastError;
 private:
 	static int busyHandler(void *, int count);
+};
+
+class Select {
+public:
+	Select() = delete;
+	Select(const SQLConn &sqlConn) : m_sqlConn(sqlConn) {}
+
+	bool prepare(const std::string &sql, const SQLConn::ColumnTypes &columns) noexcept {
+		m_resultTypes = columns;
+		return m_sqlConn.prepareStatement(sql, m_select);
+	}
+
+	std::optional<SQLConn::SelectResult>
+	select(const SQLConn::Binding &binding) const noexcept {
+		return m_sqlConn.select(m_select, binding, m_resultTypes);
+	}
+private:
+	const SQLConn &m_sqlConn;
+	SQLStmtHolder m_select;
+	SQLConn::ColumnTypes m_resultTypes;
 };
 
 }
