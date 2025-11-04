@@ -21,19 +21,16 @@ class Diff {
 public:
 	using PrintCB = std::function<int(const git_diff_delta &delta, const git_diff_hunk *hunk,
 		const git_diff_line &line)>;
-	class ForEachCB {
-	public:
-		virtual int file(const git_diff_delta &delta, float progress) const = 0;
-		virtual int binary(const git_diff_delta &, const git_diff_binary &) const {
-			return 0;
-		}
-		virtual int hunk(const git_diff_delta &, const git_diff_hunk &) const {
-			return 0;
-		}
-		virtual int line(const git_diff_delta &, const git_diff_hunk &,
-				 const git_diff_line &) const {
-			return 0;
-		}
+
+	struct ForEachCB {
+		const std::function<int(const git_diff_delta &delta,
+					float progress)> file = nullptr;
+		const std::function<int(const git_diff_delta &,
+					const git_diff_binary &)> binary = nullptr;
+		const std::function<int(const git_diff_delta &,
+					const git_diff_hunk &)> hunk = nullptr;
+		const std::function<int(const git_diff_delta &, const git_diff_hunk &,
+						const git_diff_line &)> line = nullptr;
 	};
 
 	Diff() = delete;

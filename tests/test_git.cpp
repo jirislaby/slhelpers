@@ -162,19 +162,15 @@ static void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	assert(found);
 
 	found = false;
-	class CB : public SlGit::Diff::ForEachCB {
-	public:
-		virtual int file(const git_diff_delta &delta, float) const override {
+	SlGit::Diff::ForEachCB cb = {
+		.file = [&found](const git_diff_delta &delta, float) {
 			std::cerr << "Diff::ForEachCB: " << delta.old_file.path << "->" <<
 				     delta.new_file.path << '\n';
 			if (std::string_view(delta.old_file.path) == "b.txt")
-				m_found = true;
+				found = true;
 			return 0;
-		}
-		explicit CB(bool &found) : m_found(found) {}
-	private:
-		bool &m_found;
-	} cb(found);
+		},
+	};
 
 	assert(!diff->forEach(cb));
 	assert(found);
