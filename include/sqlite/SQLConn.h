@@ -48,6 +48,7 @@ protected:
 
 	using Tables = std::vector<std::pair<std::string, std::vector<std::string>>>;
 	using Indices = std::vector<std::pair<std::string, std::string>>;
+	using Triggers = Indices;
 	using Views = Indices;
 
 	using BindVal = std::variant<std::monostate, int, std::string>;
@@ -59,6 +60,7 @@ protected:
 
 	bool createTables(const Tables &tables) const noexcept;
 	bool createIndices(const Indices &indices) const noexcept;
+	bool createTriggers(const Triggers &triggers) const noexcept;
 	bool createViews(const Views &views) const noexcept;
 
 	bool prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;

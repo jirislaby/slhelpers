@@ -112,6 +112,24 @@ bool SQLConn::createIndices(const Indices &indices) const noexcept
 	return true;
 }
 
+bool SQLConn::createTriggers(const Triggers &triggers) const noexcept
+{
+	for (const auto &c: triggers) {
+		std::string s("CREATE TRIGGER IF NOT EXISTS ");
+		s.append(c.first).append(" FOR EACH ROW BEGIN ").append(c.second).append("; END;");
+		char *err;
+		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
+		if (ret != SQLITE_OK) {
+			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
+					sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
+			sqlite3_free(err);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool SQLConn::createViews(const Views &views) const noexcept
 {
 	for (const auto &c: views) {
