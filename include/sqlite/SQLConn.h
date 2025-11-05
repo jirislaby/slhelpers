@@ -66,8 +66,9 @@ protected:
 	bool prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
 
 	bool bind(const SQLStmtHolder &ins, const std::string &key,
-		  const BindVal &val) const noexcept;
-	bool bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept;
+		  const BindVal &val, bool transient = false) const noexcept;
+	bool bind(const SQLStmtHolder &ins, const Binding &binding,
+		  bool transient = false) const noexcept;
 	bool insert(const SQLStmtHolder &ins, const Binding &binding,
 		    uint64_t *affected = nullptr) const noexcept;
 

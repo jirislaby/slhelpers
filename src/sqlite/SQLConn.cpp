@@ -193,7 +193,7 @@ bool SQLConn::end()
 }
 
 bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
-		   const BindVal &val) const noexcept
+		   const BindVal &val, bool transient) const noexcept
 {
 	auto bindIdx = sqlite3_bind_parameter_index(ins, key.c_str());
 	if (!bindIdx) {
@@ -201,6 +201,7 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 		return false;
 	}
 
+	auto flag = transient ? SQLITE_TRANSIENT : SQLITE_STATIC;
 	int ret;
 	std::string valDesc { "null" };
 	if (std::holds_alternative<int>(val)) {
@@ -210,11 +211,11 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 	} else if (std::holds_alternative<std::string>(val)) {
 		const auto &text = std::get<std::string>(val);
 		valDesc = text;
-		ret = sqlite3_bind_text(ins, bindIdx, text.data(), text.length(), SQLITE_STATIC);
+		ret = sqlite3_bind_text(ins, bindIdx, text.data(), text.length(), flag);
 	} else if (std::holds_alternative<std::string_view>(val)) {
 		const auto &text = std::get<std::string_view>(val);
 		valDesc = text;
-		ret = sqlite3_bind_text(ins, bindIdx, text.data(), text.length(), SQLITE_STATIC);
+		ret = sqlite3_bind_text(ins, bindIdx, text.data(), text.length(), flag);
 	} else { /* std::monostate */
 		ret = sqlite3_bind_null(ins, bindIdx);
 	}
@@ -230,10 +231,10 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 	return true;
 }
 
-bool SQLConn::bind(const SQLStmtHolder &ins, const Binding &binding) const noexcept
+bool SQLConn::bind(const SQLStmtHolder &ins, const Binding &binding, bool transient) const noexcept
 {
 	for (const auto &b : binding)
-		if (!bind(ins, b.first, b.second))
+		if (!bind(ins, b.first, b.second, transient))
 			return false;
 
 	return true;
