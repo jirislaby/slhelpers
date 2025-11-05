@@ -51,7 +51,7 @@ protected:
 	using Triggers = Indices;
 	using Views = Indices;
 
-	using BindVal = std::variant<std::monostate, int, std::string>;
+	using BindVal = std::variant<std::monostate, int, std::string, std::string_view>;
 	using Binding = std::vector<std::pair<std::string, BindVal>>;
 	using ColumnTypes = std::vector<std::type_index>;
 	using Column = std::variant<int, std::string>;
