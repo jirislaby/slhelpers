@@ -44,7 +44,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 	if (flags & OpenFlags::CREATE)
 		openFlags |= SQLITE_OPEN_CREATE;
 
-	auto ret = sqlite3_open_v2(dbFile.c_str(), &sql, openFlags, NULL);
+	auto ret = sqlite3_open_v2(dbFile.c_str(), &sql, openFlags, nullptr);
 	sqlHolder.reset(sql);
 	if (ret != SQLITE_OK) {
 		m_lastError.reset() << "db open failed: " << sqlite3_errstr(ret);
@@ -53,7 +53,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 
 	if (!(flags & OpenFlags::NO_FOREIGN_KEY)) {
 		char *err;
-		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", NULL, NULL, &err);
+		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
 			m_lastError.reset() << "db PRAGMA failed (" << __LINE__ << "): " <<
 					       sqlite3_errstr(ret) << " -> " << err;
@@ -81,7 +81,7 @@ bool SQLConn::createTables(const Tables &tables) const noexcept
 		ss << ") STRICT;";
 		const auto expr = ss.str();
 		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, expr.c_str(), NULL, NULL, &err);
+		const auto ret = sqlite3_exec(sqlHolder, expr.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
 			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
 					       sqlite3_errstr(ret) << " -> " << err << "\n\t" <<
@@ -100,7 +100,7 @@ bool SQLConn::createIndices(const Indices &indices) const noexcept
 		std::string s("CREATE INDEX IF NOT EXISTS ");
 		s.append(c.first).append(" ON ").append(c.second);
 		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), NULL, NULL, &err);
+		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
 			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
 					       sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
@@ -118,7 +118,7 @@ bool SQLConn::createViews(const Views &views) const noexcept
 		std::string s("CREATE VIEW IF NOT EXISTS ");
 		s.append(c.first).append(" AS ").append(c.second);
 		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), NULL, NULL, &err);
+		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
 			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
 					       sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
@@ -133,7 +133,7 @@ bool SQLConn::createViews(const Views &views) const noexcept
 bool SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept
 {
 	sqlite3_stmt *SQLStmt;
-	auto ret = sqlite3_prepare_v2(sqlHolder, sql.c_str(), -1, &SQLStmt, NULL);
+	auto ret = sqlite3_prepare_v2(sqlHolder, sql.c_str(), -1, &SQLStmt, nullptr);
 	if (ret != SQLITE_OK) {
 		m_lastError.reset() << "db prepare failed (" << __LINE__ << "): " <<
 				       sqlite3_errstr(ret) << " -> " <<
@@ -149,7 +149,7 @@ bool SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) cons
 bool SQLConn::begin()
 {
 	char *err;
-	const auto ret = sqlite3_exec(sqlHolder, "BEGIN;", NULL, NULL, &err);
+	const auto ret = sqlite3_exec(sqlHolder, "BEGIN;", nullptr, nullptr, &err);
 	if (ret != SQLITE_OK) {
 		m_lastError.reset() << "db BEGIN failed (" << __LINE__ << "): " <<
 				       sqlite3_errstr(ret) << " -> " << err;
@@ -163,7 +163,7 @@ bool SQLConn::begin()
 bool SQLConn::end()
 {
 	char *err;
-	const auto ret = sqlite3_exec(sqlHolder, "END;", NULL, NULL, &err);
+	const auto ret = sqlite3_exec(sqlHolder, "END;", nullptr, nullptr, &err);
 	if (ret != SQLITE_OK) {
 		m_lastError.reset() << "db END failed (" << __LINE__ << "): " <<
 				       sqlite3_errstr(ret) << " -> " << err;
