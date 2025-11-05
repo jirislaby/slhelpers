@@ -240,14 +240,8 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const Binding &binding, bool transi
 	return true;
 }
 
-bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
-		     uint64_t *affected) const noexcept
+bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected) const noexcept
 {
-	SQLStmtResetter insResetter(sqlHolder, ins);
-
-	if (!bind(ins, binding))
-		return false;
-
 	auto ret = sqlite3_step(ins);
 	if (ret == SQLITE_DONE) {
 		if (affected)
@@ -265,6 +259,21 @@ bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 	m_lastError.reset() << "db step (INSERT) failed (" << __LINE__ << "): " <<
 			       sqlite3_errstr(ret) << " -> " <<
 			       sqlite3_errmsg(sqlHolder);
+
+	return false;
+}
+
+bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
+		     uint64_t *affected) const noexcept
+{
+	SQLStmtResetter insResetter(sqlHolder, ins);
+
+	if (!bind(ins, binding))
+		return false;
+
+	if (step(ins, affected))
+		return true;
+
 	for (const auto &b : binding) {
 		m_lastError << '\t' << b.first << '=';
 		if (std::holds_alternative<int>(b.second))
