@@ -40,8 +40,8 @@ public:
 	std::vector<std::string> get_shas(const std::string &cve_number) const { //requires (S == ShaSize::Long)
 		std::vector<std::string> ret;
 		const auto range = m_cveHashMap.equal_range(cve_number);
-		for (auto it = range.first; it != range.second; ++it)
-			ret.push_back(it->second);
+		std::transform(range.first, range.second, std::back_inserter(ret),
+			       [](const auto &p) { return p.second; });
 		return ret;
 	}
 
@@ -49,9 +49,7 @@ public:
 		std::set<std::string> ret;
 		std::transform(m_cveHashMap.cbegin(), m_cveHashMap.cend(),
 			       std::inserter(ret, ret.end()),
-			       [](const auto &p) {
-			return p.first;
-		});
+			       [](const auto &p) { return p.first; });
 		return ret;
 	}
 
