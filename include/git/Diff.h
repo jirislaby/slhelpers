@@ -43,6 +43,10 @@ public:
 		return git_diff_get_delta(diff(), idx);
 	}
 
+	int findSimilar(const git_diff_find_options *options) const noexcept {
+		return git_diff_find_similar(diff(), options);
+	}
+
 	bool isSortedICase() const noexcept { return git_diff_is_sorted_icase(diff()); }
 
 	int forEach(const ForEachCB &forEachCB) const;
