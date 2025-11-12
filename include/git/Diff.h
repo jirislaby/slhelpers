@@ -6,8 +6,11 @@
 #include <functional>
 
 #include <git2.h>
+#include <optional>
 
 #include "../helpers/Unique.h"
+
+#include "Buf.h"
 
 namespace SlGit {
 
@@ -51,6 +54,8 @@ public:
 
 	int forEach(const ForEachCB &forEachCB) const;
 	int print(const git_diff_format_t &format, const PrintCB &printCB) const;
+
+	std::optional<Buf> toBuf(git_diff_format_t format) const noexcept;
 
 	GitTy *diff() const noexcept { return m_diff.get(); }
 	operator GitTy *() const noexcept { return diff(); }

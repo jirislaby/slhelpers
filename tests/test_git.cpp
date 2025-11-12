@@ -174,6 +174,20 @@ static void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 
 	assert(!diff->forEach(cb));
 	assert(found);
+
+	{
+		const auto bufOpt = diff->toBuf(GIT_DIFF_FORMAT_PATCH);
+		assert(bufOpt);
+		const auto sv = bufOpt->sv();
+		assert(sv.find("a/b.txt") != sv.npos);
+		assert(sv.find("new file mode") != sv.npos);
+		assert(sv.find("this is b.txt") != sv.npos);
+	}
+	{
+		const auto bufOpt = diff->toBuf(GIT_DIFF_FORMAT_NAME_ONLY);
+		assert(bufOpt);
+		assert(bufOpt->sv() == "b.txt\n");
+	}
 }
 
 static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,

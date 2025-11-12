@@ -27,6 +27,14 @@ int Diff::print(const git_diff_format_t &format, const PrintCB &printCB) const
 			      const_cast<void *>(static_cast<const void *>(&printCB)));
 }
 
+std::optional<Buf> Diff::toBuf(git_diff_format_t format) const noexcept
+{
+	Buf buf;
+	if (git_diff_to_buf(&buf.buf(), diff(), format))
+		return std::nullopt;
+	return buf;
+}
+
 int Diff::fileCB(const git_diff_delta *delta, float progress, void *payload)
 {
 	const auto &cb = *static_cast<const ForEachCB *>(payload);
