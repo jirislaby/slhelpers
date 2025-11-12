@@ -11,6 +11,7 @@ endif
 
 public_headers += [
     'git/Blob.h',
+    'git/Buf.h',
     'git/Commit.h',
     'git/DefaultFetchCallbacks.h',
     'git/Diff.h',
