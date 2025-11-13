@@ -15,6 +15,12 @@ void SlHelpers::Deleter<git_index>::operator()(git_index *idx) const
 	git_index_free(idx);
 }
 
+template<>
+void SlHelpers::Deleter<git_index_iterator>::operator()(git_index_iterator *it) const
+{
+	git_index_iterator_free(it);
+}
+
 std::optional<Index> Index::open(const std::filesystem::path &path) noexcept
 {
 	git_index *index;
@@ -61,6 +67,11 @@ int Index::updateAll(const std::vector<std::string> &paths, const MatchCB &cb) c
 {
 	return git_index_update_all(index(), StrArray(paths), matchCB,
 				    const_cast<void *>(static_cast<const void *>(&cb)));
+}
+
+IndexIterator Index::cbegin() const noexcept
+{
+	return *Repo::MakeGit<IndexIterator>(git_index_iterator_new, index());
 }
 
 int Index::matchCB(const char *path, const char *matched_pathspec, void *payload)

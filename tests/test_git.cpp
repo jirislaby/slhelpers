@@ -363,6 +363,34 @@ void testPathSpec(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	}
 }
 
+void testIndex(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+	       const SlGit::Commit &bCommit)
+{
+	const auto idx = repo.index();
+	assert(idx);
+
+	idx->readTree(*aCommit.tree());
+	assert(idx->entrycount() == 1);
+	assert(std::string_view(idx->entryByIndex(0)->path) == "a.txt");
+
+	{
+		unsigned cnt = 0;
+		for (auto it = idx->cbegin(); it != idx->cend(); ++it, ++cnt)
+			assert(it.pathSV() == "a.txt");
+		assert(cnt == 1);
+	}
+
+	idx->readTree(*bCommit.tree());
+	assert(idx->entrycount() == 2);
+
+	{
+		auto it = idx->cbegin();
+		assert(it.pathSV() == "a.txt");
+		assert((++it).pathSV() == "b.txt");
+		assert(++it == idx->cend());
+	}
+}
+
 } // namespace
 
 int main()
@@ -384,6 +412,7 @@ int main()
 	testCheckout(repo2, aCommit);
 	testFetch(repo2, bCommit);
 	testPathSpec(repo, aCommit, bCommit);
+	testIndex(repo, aCommit, bCommit);
 
 	std::filesystem::remove_all(repo.workDir());
 	std::filesystem::remove_all(repo2.workDir());
