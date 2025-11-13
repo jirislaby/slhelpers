@@ -10,6 +10,22 @@ using namespace SlHelpers;
 
 namespace {
 
+void testCmpVersions()
+{
+	CmpVersions cmp;
+
+	assert(cmp("1", "2"));
+	assert(cmp("2", "3"));
+	assert(cmp("1", "3"));
+	assert(cmp("1.1", "1.2"));
+	assert(cmp("1.1.1", "1.1.2"));
+	assert(cmp("1.1-rc1", "1.1-rc2"));
+
+	assert(!cmp("1", "1"));
+	assert(!cmp("2", "1"));
+	assert(!cmp("1.1-rc2", "1.1-rc1"));
+}
+
 void testHuman()
 {
 	assert(Unit::human(0) == "0.00 B");
@@ -59,6 +75,7 @@ void testEnv()
 
 int main()
 {
+	testCmpVersions();
 	testHuman();
 	testEnv();
 
