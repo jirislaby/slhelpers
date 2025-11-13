@@ -36,6 +36,7 @@ public:
 	int readTree(const Tree &tree) const noexcept;
 	std::optional<Tree> writeTree(const Repo &repo) const noexcept;
 
+	size_t entrycount() const noexcept { return git_index_entrycount(index()); }
 	const git_index_entry *entryByIndex(size_t idx) const noexcept {
 		return git_index_get_byindex(index(), idx);
 	}
