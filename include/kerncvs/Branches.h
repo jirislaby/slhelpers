@@ -5,19 +5,52 @@
 
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace SlKernCVS {
 
-class Branches {
-public:
+struct BranchProps {
 	using BranchesList = std::vector<std::string>;
 
+	bool isBuild;
+	bool isPublish;
+	bool isExcluded;
+	BranchesList merges;
+};
+
+class Branches {
+public:
+	enum Filter : unsigned {
+		BUILD		= 1U << 0,
+		PUBLISH		= 1U << 1,
+		EXCLUDED	= 1U << 2,
+		ANY 		= ~0U,
+	};
+
+	using BranchesList = BranchProps::BranchesList;
+	using BranchesMap = std::unordered_map<std::string, BranchProps>;
+
 	Branches() = delete;
+	static Branches create(const std::string &branchesConf);
+	static std::optional<Branches> create();
+
+	const BranchesMap &map() const noexcept { return m_map; }
+	auto begin() const noexcept { return m_map.begin(); }
+	auto end() const noexcept { return m_map.end(); }
+
+	BranchesList filter(unsigned included = ANY, unsigned exclude = EXCLUDED) const;
+	const BranchesList &merges(const std::string &branch) const {
+		return m_map.at(branch).merges;
+	}
 
 	static BranchesList getBuildBranches(const std::string &branchesConf);
 	static std::optional<BranchesList> getBuildBranches();
 private:
+	Branches(BranchesMap &map) : m_map(std::move(map)) {}
+
+	BranchesMap m_map;
+
 	static bool isExcluded(const std::string &branch);
 };
 
