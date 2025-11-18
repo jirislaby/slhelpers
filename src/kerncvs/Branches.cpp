@@ -32,28 +32,31 @@ Branches Branches::create(const std::string &branchesConf)
 	BranchesMap branches;
 
 	while (std::getline(iss, line)) {
-		const auto split = SlHelpers::String::split(line, " \t", '#');
+		auto split = SlHelpers::String::split(line, " \t", '#');
 		if (split.empty())
 			continue;
 
-		if (split[0][split[0].size() - 1] != ':') {
+		auto name = std::move(split[0]);
+		if (name.back() != ':') {
 			Clr(std::cerr, Clr::RED) << "bad line: " << line;
 			continue;
 		}
+		name.pop_back();
 
-		std::string name(split[0].data(), split[0].size() - 1);
 		BranchProps bp{};
 		bp.isExcluded = isExcluded(name);
 		for (auto i = 1U; i < split.size(); ++i) {
-			if (split[i] == "build")
+			static const std::string mergeStr("merge:");
+			auto cur = std::move(split[i]);
+			if (cur == "build")
 				bp.isBuild = true;
-			else if (split[i] == "publish")
+			else if (cur == "publish")
 				bp.isPublish = true;
-			else if (SlHelpers::String::startsWith(split[i], "merge:")) {
-				auto idx = 6;
-				if (split[i][idx] == '-')
-					idx++;
-				bp.merges.push_back(split[i].substr(idx));
+			else if (SlHelpers::String::startsWith(cur, mergeStr)) {
+				auto toErase = mergeStr.size();
+				if (cur[toErase] == '-')
+					toErase++;
+				bp.merges.push_back(std::move(cur.erase(0, toErase)));
 			}
 		}
 
