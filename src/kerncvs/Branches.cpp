@@ -72,6 +72,26 @@ std::optional<Branches> Branches::create()
 	return create(*branchesConf);
 }
 
+void Branches::dfs(const std::string &u, BranchesSet &visited) const
+{
+	const auto it = m_map.find(u);
+	if (it == m_map.end())
+		return;
+
+	for (auto const &v: it->second.merges)
+		if (visited.insert(v).second)
+			dfs(v, visited);
+}
+
+Branches::BranchesSet Branches::mergesClosure(const std::string &branch) const
+{
+	BranchesSet visited;
+
+	dfs(branch, visited);
+
+	return visited;
+}
+
 Branches::BranchesList Branches::filter(unsigned int include, unsigned int exclude) const
 {
 	Branches::BranchesList ret;

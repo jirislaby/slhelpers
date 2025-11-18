@@ -81,6 +81,13 @@ int main()
 		assert(set.find("master") != set.end());
 	}
 
+	{
+		const auto set = branches.mergesClosure("SLE12-SP5-RT");
+		assert(set.size() == 2);
+		assert(set.find("SLE12-SP5") != set.end());
+		assert(set.find("scripts") != set.end());
+	}
+
 	return 0;
 }
 

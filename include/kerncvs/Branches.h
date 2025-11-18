@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace SlKernCVS {
@@ -28,6 +29,7 @@ public:
 		ANY 		= ~0U,
 	};
 
+	using BranchesSet = std::unordered_set<std::string>;
 	using BranchesList = BranchProps::BranchesList;
 	using BranchesMap = std::unordered_map<std::string, BranchProps>;
 
@@ -43,11 +45,14 @@ public:
 	const BranchesList &merges(const std::string &branch) const {
 		return m_map.at(branch).merges;
 	}
+	BranchesSet mergesClosure(const std::string &branch) const;
 
 	static BranchesList getBuildBranches(const std::string &branchesConf);
 	static std::optional<BranchesList> getBuildBranches();
 private:
 	Branches(BranchesMap &map) : m_map(std::move(map)) {}
+
+	void dfs(const std::string &u, BranchesSet &visited) const;
 
 	BranchesMap m_map;
 
