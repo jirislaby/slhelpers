@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -56,7 +57,7 @@ private:
 
 	BranchesMap m_map;
 
-	static bool isExcluded(const std::string &branch);
+	static bool isExcluded(const std::string_view &branch);
 };
 
 }

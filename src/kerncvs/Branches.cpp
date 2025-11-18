@@ -115,9 +115,9 @@ Branches::BranchesList Branches::filter(unsigned int include, unsigned int exclu
 	return ret;
 }
 
-bool Branches::isExcluded(const std::string &branch)
+bool Branches::isExcluded(const std::string_view &branch)
 {
-	static const std::set<std::string> excludes {
+	static const std::set<std::string_view> excludes {
 		"master",
 		"vanilla",
 		"linux-next",
