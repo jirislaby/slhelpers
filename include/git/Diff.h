@@ -46,7 +46,7 @@ public:
 		return git_diff_get_delta(diff(), idx);
 	}
 
-	int findSimilar(const git_diff_find_options *options) const noexcept {
+	int findSimilar(const git_diff_find_options *options = nullptr) const noexcept {
 		return git_diff_find_similar(diff(), options);
 	}
 
