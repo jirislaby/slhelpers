@@ -47,6 +47,8 @@ class RevWalk {
 public:
 	RevWalk() = delete;
 
+	int push(const git_oid &oid) const noexcept { return git_revwalk_push(revWalk(), &oid); }
+	int push(const std::string &id) const noexcept;
 	int pushHead() const noexcept { return git_revwalk_push_head(revWalk()); }
 	int pushRef(const std::string &ref) const noexcept {
 		return git_revwalk_push_ref(revWalk(), ref.c_str());
@@ -60,6 +62,7 @@ public:
 
 	/* Hiding marks stopping points */
 	int hide(const git_oid &oid) const noexcept { return git_revwalk_hide(revWalk(), &oid); }
+	int hide(const std::string &id) const noexcept;
 	int hideGlob(const std::string &glob) const noexcept {
 		return git_revwalk_hide_glob(revWalk(), glob.c_str());
 	}
