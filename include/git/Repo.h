@@ -147,6 +147,8 @@ public:
 	std::filesystem::path path() const noexcept { return git_repository_path(repo()); }
 	std::filesystem::path workDir() const noexcept { return git_repository_workdir(repo()); }
 
+	static std::pair<std::string, int> lastError() noexcept;
+
 	GitTy *repo() const noexcept { return m_repo.get(); }
 	operator GitTy *() const noexcept { return repo(); }
 private:

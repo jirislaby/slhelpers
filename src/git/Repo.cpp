@@ -344,6 +344,12 @@ std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const noe
 	return MakeGit<TreeBuilder>(git_treebuilder_new, repo(), source ? source->tree() : nullptr);
 }
 
+std::pair<std::string, int> Repo::lastError() noexcept
+{
+	const auto err = git_error_last();
+	return { err->message, err->klass };
+}
+
 void Repo::checkoutProgress(const char *path, size_t completed_steps, size_t total_steps,
 			    void *payload)
 {
