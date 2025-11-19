@@ -164,7 +164,7 @@ bool SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) cons
 	return true;
 }
 
-bool SQLConn::begin()
+bool SQLConn::begin() const noexcept
 {
 	char *err;
 	const auto ret = sqlite3_exec(sqlHolder, "BEGIN;", nullptr, nullptr, &err);
@@ -178,7 +178,7 @@ bool SQLConn::begin()
 	return true;
 }
 
-bool SQLConn::end()
+bool SQLConn::end() const noexcept
 {
 	char *err;
 	const auto ret = sqlite3_exec(sqlHolder, "END;", nullptr, nullptr, &err);

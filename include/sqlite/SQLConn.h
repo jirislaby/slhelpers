@@ -38,8 +38,8 @@ public:
 	virtual bool createDB() { return true; }
 	virtual bool prepDB() { return true; }
 
-	bool begin();
-	bool end();
+	bool begin() const noexcept;
+	bool end() const noexcept;
 
 	std::string lastError() const { return m_lastError.lastError(); }
 
