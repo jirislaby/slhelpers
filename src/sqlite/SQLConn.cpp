@@ -249,7 +249,10 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected) const noexcept
 		return true;
 	}
 
-	if (sqlite3_extended_errcode(sqlHolder) == SQLITE_CONSTRAINT_UNIQUE &&
+	m_lastErrorCode = sqlite3_errcode(sqlHolder);
+	m_lastErrorCodeExt = sqlite3_extended_errcode(sqlHolder);
+
+	if (m_lastErrorCodeExt == SQLITE_CONSTRAINT_UNIQUE &&
 			!(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
 		if (affected)
 			*affected = 0;

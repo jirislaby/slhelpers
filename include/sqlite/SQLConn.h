@@ -42,9 +42,11 @@ public:
 	bool end() const noexcept;
 
 	std::string lastError() const { return m_lastError.lastError(); }
+	int lastErrorCode() const { return m_lastErrorCode; }
+	int lastErrorCodeExt() const { return m_lastErrorCodeExt; }
 
 protected:
-	SQLConn() : m_flags(0) {}
+	SQLConn() : m_flags(0), m_lastErrorCode(0), m_lastErrorCodeExt(0) {}
 
 	using Tables = std::vector<std::pair<std::string, std::vector<std::string>>>;
 	using Indices = std::vector<std::pair<std::string, std::string>>;
@@ -80,6 +82,8 @@ protected:
 	SQLHolder sqlHolder;
 	unsigned int m_flags;
 	mutable SlHelpers::LastError m_lastError;
+	mutable int m_lastErrorCode;
+	mutable int m_lastErrorCodeExt;
 private:
 	static int busyHandler(void *, int count);
 };
