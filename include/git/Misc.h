@@ -67,6 +67,10 @@ public:
 		return git_revwalk_hide_glob(revWalk(), glob.c_str());
 	}
 
+	int sorting(unsigned int mode) const noexcept {
+		return git_revwalk_sorting(revWalk(), mode);
+	}
+
 	std::optional<Commit> next() const noexcept;
 
 	GitTy *revWalk() const noexcept { return m_revWalk.get(); }
