@@ -158,6 +158,7 @@ private:
 
 	friend class Index;
 	friend class PathSpec;
+
 	template<class Class, typename FunTy, typename... Args>
 	static std::optional<Class> MakeGit(const FunTy &fun, Args&&... args)
 	{
@@ -165,6 +166,15 @@ private:
 		if (fun(&gitEntry, std::forward<Args>(args)...))
 			return std::nullopt;
 		return Class(gitEntry);
+	}
+
+	template<class Class, typename FunTy, typename... Args>
+	static std::optional<Class> MakeGitRepo(const Repo &repo, const FunTy &fun, Args&&... args)
+	{
+		typename Class::GitTy *gitEntry;
+		if (fun(&gitEntry, std::forward<Args>(args)...))
+			return std::nullopt;
+		return Class(repo, gitEntry);
 	}
 
 	static void checkoutProgress(const char *path, size_t completed_steps, size_t total_steps,

@@ -46,13 +46,15 @@ public:
 		return git_commit_parent_id(commit(), nth);
 	}
 
-	std::optional<std::string> catFile(const Repo &repo,
-					   const std::string &file) const noexcept;
+	std::optional<std::string> catFile(const std::string &file) const noexcept;
 
 	GitTy *commit() const noexcept { return typed(); }
 	operator GitTy *() const noexcept { return commit(); }
 private:
-	explicit Commit(GitTy *commit) noexcept : TypedObject(commit) { }
+	explicit Commit(const Repo &repo, GitTy *commit) noexcept :
+		TypedObject(commit), m_repo(&repo) { }
+
+	const Repo *m_repo;
 };
 
 }

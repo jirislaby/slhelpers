@@ -80,7 +80,7 @@ std::optional<std::string> Repo::catFile(const std::string &branch,
 					 const std::string &file) const noexcept
 {
 	if (auto commit = commitRevparseSingle(branch))
-		return commit->catFile(*this, file);
+		return commit->catFile(file);
 
 	return std::nullopt;
 }
@@ -129,7 +129,7 @@ std::optional<Blob> Repo::blobRevparseSingle(const std::string &rev) const noexc
 
 std::optional<Commit> Repo::commitLookup(const git_oid &oid) const noexcept
 {
-	return MakeGit<Commit>(git_commit_lookup, repo(), &oid);
+	return MakeGitRepo<Commit>(*this, git_commit_lookup, repo(), &oid);
 }
 
 std::optional<Commit> Repo::commitCreate(const Signature &author, const Signature &committer,
@@ -238,11 +238,11 @@ Repo::revparseSingle(const std::string &rev) const noexcept
 	case GIT_OBJECT_BLOB:
 		return Blob(reinterpret_cast<git_blob *>(obj));
 	case GIT_OBJECT_COMMIT:
-		return Commit(reinterpret_cast<git_commit *>(obj));
+		return Commit(*this, reinterpret_cast<git_commit *>(obj));
 	case GIT_OBJECT_TAG:
 		return Tag(reinterpret_cast<git_tag *>(obj));
 	case GIT_OBJECT_TREE:
-		return Tree(reinterpret_cast<git_tree *>(obj));
+		return Tree(*this, reinterpret_cast<git_tree *>(obj));
 	default:
 		git_object_free(obj);
 		return std::monostate{};
@@ -251,7 +251,7 @@ Repo::revparseSingle(const std::string &rev) const noexcept
 
 std::optional<Tree> Repo::treeLookup(const git_oid &oid) const noexcept
 {
-	return MakeGit<Tree>(git_tree_lookup, repo(), &oid);
+	return MakeGitRepo<Tree>(*this, git_tree_lookup, repo(), &oid);
 }
 
 std::optional<Tree> Repo::treeLookup(const TreeEntry &tentry) const noexcept
@@ -285,7 +285,7 @@ std::optional<Remote> Repo::remoteLookup(const std::string &name) const noexcept
 
 std::optional<RevWalk> Repo::revWalkCreate() const noexcept
 {
-	return MakeGit<RevWalk>(git_revwalk_new, repo());
+	return MakeGitRepo<RevWalk>(*this, git_revwalk_new, repo());
 }
 
 std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &target,

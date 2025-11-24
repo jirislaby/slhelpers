@@ -256,15 +256,15 @@ static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	auto revWalk = repo.revWalkCreate();
 	assert(revWalk);
 	revWalk->pushHead();
-	auto nextCommit = revWalk->next(repo);
+	auto nextCommit = revWalk->next();
 	assert(nextCommit);
 	assert(nextCommit == bCommit);
 	std::cout << __func__ << ": top-0=" << nextCommit->idStr() << '\n';
-	nextCommit = revWalk->next(repo);
+	nextCommit = revWalk->next();
 	assert(nextCommit);
 	assert(nextCommit == aCommit);
 	std::cout << __func__ << ": top-1=" << nextCommit->idStr() << '\n';
-	nextCommit = revWalk->next(repo);
+	nextCommit = revWalk->next();
 	assert(!nextCommit);
 }
 
@@ -272,11 +272,11 @@ static void testCatFile(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 			const std::filesystem::path &aFile, const std::string &aContent,
 			const std::filesystem::path &bFile, const std::string &bContent)
 {
-	auto aContentRead = aCommit.catFile(repo, aFile);
+	auto aContentRead = aCommit.catFile(aFile);
 	assert(aContentRead);
 	assert(aContent == *aContentRead);
 
-	auto noBFile = aCommit.catFile(repo, bFile);
+	auto noBFile = aCommit.catFile(bFile);
 	assert(!noBFile);
 
 	auto bContentRead = repo.catFile("HEAD", bFile);

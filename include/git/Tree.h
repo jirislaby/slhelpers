@@ -39,14 +39,15 @@ public:
 	std::optional<TreeEntry> treeEntryByPath(const std::string &path) const noexcept;
 	TreeEntry treeEntryByIndex(size_t idx) const noexcept;
 
-	std::optional<std::string> catFile(const Repo &repo,
-					   const std::string &file) const noexcept;
+	std::optional<std::string> catFile(const std::string &file) const noexcept;
 
 	GitTy *tree() const noexcept { return typed(); }
 private:
 	static int walkCB(const char *root, const git_tree_entry *entry, void *payload);
 
-	explicit Tree(GitTy *tree) noexcept : TypedObject(tree) {}
+	explicit Tree(const Repo &repo, GitTy *tree) noexcept : TypedObject(tree), m_repo(repo) {}
+
+	const Repo &m_repo;
 };
 
 class TreeBuilder {

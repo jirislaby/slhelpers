@@ -64,13 +64,15 @@ public:
 		return git_revwalk_hide_glob(revWalk(), glob.c_str());
 	}
 
-	std::optional<Commit> next(const Repo &repo) const noexcept;
+	std::optional<Commit> next() const noexcept;
 
 	GitTy *revWalk() const noexcept { return m_revWalk.get(); }
 	operator GitTy *() const noexcept { return revWalk(); }
 private:
-	explicit RevWalk(GitTy *revWalk) noexcept : m_revWalk(revWalk) { }
+	explicit RevWalk(const Repo &repo, GitTy *revWalk) noexcept :
+		m_repo(repo), m_revWalk(revWalk) { }
 
+	const Repo &m_repo;
 	Holder m_revWalk;
 };
 

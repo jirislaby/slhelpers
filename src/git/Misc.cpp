@@ -34,12 +34,12 @@ std::optional<Reference> Reference::resolve() const noexcept
 	return Reference(out);
 }
 
-std::optional<Commit> RevWalk::next(const Repo &repo) const noexcept
+std::optional<Commit> RevWalk::next() const noexcept
 {
 	git_oid oid;
 	if (git_revwalk_next(&oid, revWalk()))
 		return std::nullopt;
-	return repo.commitLookup(oid);
+	return m_repo.commitLookup(oid);
 }
 
 std::optional<Signature> Signature::now(const std::string &name, const std::string &email) {
