@@ -164,6 +164,15 @@ bool SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) cons
 	return true;
 }
 
+bool SQLConn::prepareStatements(const Statements &stmts) const noexcept
+{
+	for (const auto &e: stmts)
+		if (!prepareStatement(e.second, e.first))
+			return false;
+
+	return true;
+}
+
 bool SQLConn::begin() const noexcept
 {
 	char *err;

@@ -33,28 +33,22 @@ public:
 	}
 
 	virtual bool prepDB() override {
-		if (!prepareStatement("INSERT INTO address(street) VALUES (:street);", insAddress))
-			return false;
-
-		if (!prepareStatement("INSERT INTO person(name, age, address) "
+		static const Statements stmts {
+			{ insAddress, "INSERT INTO address(street) VALUES (:street);" },
+			{ insPerson, "INSERT INTO person(name, age, address) "
 				     "SELECT :name, :age, address.id "
 				     "FROM address "
-				     "WHERE address.street = :street;",
-				     insPerson))
-			return false;
+				     "WHERE address.street = :street;" },
+			{ delPerson, "DELETE FROM person;" },
+		};
 
-		if (!selPerson.prepare("SELECT person.name, age, address.street "
-				     "FROM person "
-				     "LEFT JOIN address ON person.address = address.id "
-				     "WHERE person.name LIKE :name "
-				     "ORDER BY person.id;",
-				     { typeid(std::string), typeid(int), typeid(std::string) }))
-			return false;
-
-		if (!prepareStatement("DELETE FROM person;", delPerson))
-			return false;
-
-		return true;
+		return  prepareStatements(stmts) &&
+			selPerson.prepare("SELECT person.name, age, address.street "
+					  "FROM person "
+					  "LEFT JOIN address ON person.address = address.id "
+					  "WHERE person.name LIKE :name "
+					  "ORDER BY person.id;",
+					  { typeid(std::string), typeid(int), typeid(std::string) });
 	}
 
 	bool badInsertAddress(const std::string &street) const {

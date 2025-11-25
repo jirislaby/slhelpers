@@ -52,6 +52,7 @@ protected:
 	using Indices = std::vector<std::pair<std::string, std::string>>;
 	using Triggers = Indices;
 	using Views = Indices;
+	using Statements = std::vector<std::pair<std::reference_wrapper<SQLStmtHolder>, std::string>>;
 
 	using BindVal = std::variant<std::monostate, int, std::string, std::string_view>;
 	using Binding = std::vector<std::pair<std::string, BindVal>>;
@@ -66,6 +67,7 @@ protected:
 	bool createViews(const Views &views) const noexcept;
 
 	bool prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
+	bool prepareStatements(const Statements &stmts) const noexcept;
 
 	bool bind(const SQLStmtHolder &ins, const std::string &key,
 		  const BindVal &val, bool transient = false) const noexcept;
