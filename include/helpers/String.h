@@ -8,6 +8,7 @@
 #include <cctype>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace SlHelpers {
@@ -82,6 +83,20 @@ public:
 
 	static bool isHex(const std::string_view &s) {
 		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
+	}
+
+	template <typename T>
+	static void join(std::ostream &out, const T &iterable,
+			 const std::string_view &sep = ", ",
+			 const std::string_view &quote = "") {
+		bool first = true;
+		for (const auto &e: iterable) {
+			if (!first)
+			    out << sep;
+			first = false;
+
+			out << quote << e << quote;
+		}
 	}
 };
 

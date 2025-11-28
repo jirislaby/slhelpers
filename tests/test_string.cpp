@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <cassert>
-#include <iostream>
+#include <sstream>
 
 #include "helpers/String.h"
 
@@ -84,7 +84,31 @@ void testIFind()
 	assert(String::iFind(std::string_view("abc"), std::string_view("b")) == 1);
 }
 
+void testJoin()
+{
+	{
+		std::ostringstream ss;
+		String::join(ss, std::vector<std::string_view>());
+		assert(ss.str() == "");
+	}
+	{
+		std::ostringstream ss;
+		String::join(ss, std::vector<std::string_view>({"a"}));
+		assert(ss.str() == "a");
+	}
+	{
+		std::ostringstream ss;
+		String::join(ss, std::vector<std::string_view>({"a", "b", "c"}));
+		assert(ss.str() == "a, b, c");
+	}
+	{
+		std::ostringstream ss;
+		String::join(ss, std::vector<std::string_view>({"a", "b", "c"}), ",", "x");
+		assert(ss.str() == "xax,xbx,xcx");
+	}
 }
+
+} // namespace
 
 int main()
 {
@@ -94,6 +118,7 @@ int main()
 	testIsHex();
 	testTrim();
 	testIFind();
+	testJoin();
 
 	return 0;
 }

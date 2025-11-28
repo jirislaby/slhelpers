@@ -5,8 +5,8 @@
 #include <sqlite3.h>
 #include <thread>
 #include <typeindex>
-#include <vector>
 
+#include "helpers/String.h"
 #include "sqlite/SQLConn.h"
 
 using namespace SlSqlite;
@@ -22,16 +22,6 @@ int SQLConn::busyHandler(void *, int count)
 	std::this_thread::sleep_for(WAIT_INTVAL);
 
 	return 1;
-}
-
-static void joinVec(std::ostringstream &ss, const std::vector<std::string> &vec,
-		    const std::string &sep = ", ")
-{
-	for (auto i = vec.begin(), end = vec.end(); i != end; ++i) {
-		ss << *i;
-		if (i != end - 1)
-			ss << sep;
-	}
 }
 
 bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noexcept
@@ -77,7 +67,7 @@ bool SQLConn::createTables(const Tables &tables) const noexcept
 	for (const auto &c: tables) {
 		std::ostringstream ss;
 		ss << "CREATE TABLE IF NOT EXISTS " << c.first << '(';
-		joinVec(ss, c.second);
+		SlHelpers::String::join(ss, c.second);
 		ss << ") STRICT;";
 		const auto expr = ss.str();
 		char *err;
