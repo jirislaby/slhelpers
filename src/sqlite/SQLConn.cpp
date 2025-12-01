@@ -37,7 +37,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 	auto ret = sqlite3_open_v2(dbFile.c_str(), &sql, openFlags, nullptr);
 	sqlHolder.reset(sql);
 	if (ret != SQLITE_OK) {
-		m_lastError.reset() << "db open failed: " << sqlite3_errstr(ret);
+		setError(ret, "db open failed");
 		return false;
 	}
 
@@ -45,8 +45,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 		char *err;
 		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
-			m_lastError.reset() << "db PRAGMA failed (" << __LINE__ << "): " <<
-					       sqlite3_errstr(ret) << " -> " << err;
+			setError(ret, "db PRAGMA failed") << " -> " << err;
 			sqlite3_free(err);
 			return false;
 		}
@@ -54,8 +53,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 
 	ret = sqlite3_busy_handler(sqlHolder, busyHandler, nullptr);
 	if (ret != SQLITE_OK) {
-		m_lastError.reset() << "db busy_handler failed (" << __LINE__ << "): " <<
-				       sqlite3_errstr(ret);
+		setError(ret, "db busy_handler failed");
 		return false;
 	}
 
@@ -73,9 +71,7 @@ bool SQLConn::createTables(const Tables &tables) const noexcept
 		char *err;
 		const auto ret = sqlite3_exec(sqlHolder, expr.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
-			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
-					       sqlite3_errstr(ret) << " -> " << err << "\n\t" <<
-					       expr;
+			setError(ret, "db CREATE TABLE failed") << " -> " << err << "\n\t" << expr;
 			sqlite3_free(err);
 			return false;
 		}
@@ -92,8 +88,7 @@ bool SQLConn::createIndices(const Indices &indices) const noexcept
 		char *err;
 		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
-			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
-					       sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
+			setError(ret, "db CREATE INDEX failed") << " -> " << err << "\n\t" << s;
 			sqlite3_free(err);
 			return false;
 		}
@@ -110,8 +105,7 @@ bool SQLConn::createTriggers(const Triggers &triggers) const noexcept
 		char *err;
 		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
-			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
-					sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
+			setError(ret, "db CREATE TRIGGER failed") << " -> " << err << "\n\t" << s;
 			sqlite3_free(err);
 			return false;
 		}
@@ -128,8 +122,7 @@ bool SQLConn::createViews(const Views &views) const noexcept
 		char *err;
 		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
 		if (ret != SQLITE_OK) {
-			m_lastError.reset() << "db CREATE failed (" << __LINE__ << "): " <<
-					       sqlite3_errstr(ret) << " -> " << err << "\n\t" << s;
+			setError(ret, "db CREATE VIEW failed") << " -> " << err << "\n\t" << s;
 			sqlite3_free(err);
 			return false;
 		}
@@ -143,9 +136,7 @@ bool SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) cons
 	sqlite3_stmt *SQLStmt;
 	auto ret = sqlite3_prepare_v2(sqlHolder, sql.c_str(), -1, &SQLStmt, nullptr);
 	if (ret != SQLITE_OK) {
-		m_lastError.reset() << "db prepare failed (" << __LINE__ << "): " <<
-				       sqlite3_errstr(ret) << " -> " <<
-				       sqlite3_errmsg(sqlHolder);
+		setError(ret, "db prepare failed", true) << "\n\t" << sql;
 		return false;
 	}
 
@@ -168,8 +159,7 @@ bool SQLConn::begin() const noexcept
 	char *err;
 	const auto ret = sqlite3_exec(sqlHolder, "BEGIN;", nullptr, nullptr, &err);
 	if (ret != SQLITE_OK) {
-		m_lastError.reset() << "db BEGIN failed (" << __LINE__ << "): " <<
-				       sqlite3_errstr(ret) << " -> " << err;
+		setError(ret, "db BEGIN failed") << " -> " << err;
 		sqlite3_free(err);
 		return false;
 	}
@@ -182,8 +172,7 @@ bool SQLConn::end() const noexcept
 	char *err;
 	const auto ret = sqlite3_exec(sqlHolder, "END;", nullptr, nullptr, &err);
 	if (ret != SQLITE_OK) {
-		m_lastError.reset() << "db END failed (" << __LINE__ << "): " <<
-				       sqlite3_errstr(ret) << " -> " << err;
+		setError(ret, "db END failed") << " -> " << err;
 		sqlite3_free(err);
 		return false;
 	}
@@ -220,10 +209,8 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 	}
 
 	if (ret != SQLITE_OK) {
-		m_lastError.reset() << "db bind failed (" << __LINE__ << " key=\"" << key <<
-				       "\" val=\"" << valDesc << "\"): " <<
-				       sqlite3_errstr(ret) << " -> " <<
-				       sqlite3_errmsg(sqlHolder);
+		setError(ret, "db bind failed") << "\n\tkey=\"" << key << "\" val=\"" <<
+						   valDesc << '"';
 		return false;
 	}
 
@@ -248,8 +235,7 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected) const noexcept
 		return true;
 	}
 
-	m_lastErrorCode = sqlite3_errcode(sqlHolder);
-	m_lastErrorCodeExt = sqlite3_extended_errcode(sqlHolder);
+	setError(ret, "db step (INSERT) failed", true);
 
 	if (m_lastErrorCodeExt == SQLITE_CONSTRAINT_UNIQUE &&
 			!(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
@@ -257,10 +243,6 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected) const noexcept
 			*affected = 0;
 		return true;
 	}
-
-	m_lastError.reset() << "db step (INSERT) failed (" << __LINE__ << "): " <<
-			       sqlite3_errstr(ret) << " -> " <<
-			       sqlite3_errmsg(sqlHolder);
 
 	return false;
 }
@@ -307,9 +289,7 @@ SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
 		if (ret == SQLITE_DONE)
 			return result;
 		if (ret != SQLITE_ROW) {
-			m_lastError.reset() << "db step (SELECT) failed (" << __LINE__ << "): " <<
-					       sqlite3_errstr(ret) << " -> " <<
-					       sqlite3_errmsg(sqlHolder);
+			setError(ret, "db step (SELECT) failed", true);
 			return std::nullopt;
 		}
 
@@ -325,4 +305,15 @@ SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
 		}
 		result.push_back(std::move(row));
 	}
+}
+
+SlHelpers::LastError &SQLConn::setError(int ret, const std::string_view &error, bool errmsg) const
+{
+	m_lastErrorCode = sqlite3_errcode(sqlHolder);
+	m_lastErrorCodeExt = sqlite3_extended_errcode(sqlHolder);
+	m_lastError.reset() << error << ": " << sqlite3_errstr(ret);
+	if (errmsg)
+		m_lastError << " -> " << sqlite3_errmsg(sqlHolder);
+
+	return m_lastError;
 }

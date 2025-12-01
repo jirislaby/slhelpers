@@ -81,6 +81,9 @@ protected:
 	select(const SQLStmtHolder &sel, const Binding &binding,
 	       const ColumnTypes &columns) const noexcept;
 
+	SlHelpers::LastError &setError(int ret, const std::string_view &error,
+				       bool errmsg = false) const;
+
 	SQLHolder sqlHolder;
 	unsigned int m_flags;
 	mutable SlHelpers::LastError m_lastError;
