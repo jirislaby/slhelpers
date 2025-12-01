@@ -21,6 +21,12 @@ enum OpenFlags : unsigned {
 	ERROR_ON_UNIQUE_CONSTRAINT	= 1 << 2,
 };
 
+enum struct TransactionType {
+	DEFERRED,
+	IMMEDIATE,
+	EXCLUSIVE,
+};
+
 class Select;
 
 class SQLConn {
@@ -40,7 +46,7 @@ public:
 	virtual bool createDB() { return true; }
 	virtual bool prepDB() { return true; }
 
-	bool begin() const noexcept;
+	bool begin(TransactionType type = TransactionType::DEFERRED) const noexcept;
 	bool end() const noexcept;
 
 	std::string lastError() const { return m_lastError.lastError(); }

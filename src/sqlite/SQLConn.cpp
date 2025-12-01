@@ -166,10 +166,24 @@ bool SQLConn::prepareSelects(const Selects &sels) const noexcept
 	return true;
 }
 
-bool SQLConn::begin() const noexcept
+bool SQLConn::begin(TransactionType type) const noexcept
 {
+	std::string stmt("BEGIN ");
+	switch (type) {
+	default:
+		stmt.append("DEFERRED");
+		break;
+	case TransactionType::IMMEDIATE:
+		stmt.append("IMMEDIATE");
+		break;
+	case TransactionType::EXCLUSIVE:
+		stmt.append("EXCLUSIVE");
+		break;
+	}
+	stmt.append(";");
+
 	char *err;
-	const auto ret = sqlite3_exec(sqlHolder, "BEGIN;", nullptr, nullptr, &err);
+	const auto ret = sqlite3_exec(sqlHolder, stmt.c_str(), nullptr, nullptr, &err);
 	if (ret != SQLITE_OK) {
 		setError(ret, "db BEGIN failed") << " -> " << err;
 		sqlite3_free(err);
