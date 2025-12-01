@@ -4,11 +4,13 @@
 #include <iostream>
 #include <optional>
 
+#include "helpers/Color.h"
 #include "sqlite/SQLConn.h"
 
 #include "helpers.h"
 
 using namespace SlSqlite;
+using Clr = SlHelpers::Color;
 
 namespace {
 
@@ -60,7 +62,7 @@ public:
 	}
 
 	bool insertPerson(const std::string &name, const int age, const std::string &street,
-			 uint64_t *affected = nullptr) const {
+			  uint64_t *affected = nullptr) const {
 		return insert(insPerson, {
 				      { ":name", name },
 				      { ":age", age },
@@ -93,11 +95,15 @@ SQLConn testOpen(const std::filesystem::path &tmpDir)
 	SQLConn db;
 
 	assert(!db.open(tmpDir / "sql.db"));
-	std::cerr << "EXPECTED error: " << db.lastError() << '\n';
+	Clr(std::cerr, Clr::GREEN) << "EXPECTED error: " << db.lastError();
 	assert(db.lastError().find("unable to open database file") != std::string::npos);
 
-	assert(db.open(tmpDir / "sql.db",
-			OpenFlags::CREATE | OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT));
+	auto ret = db.open(tmpDir / "sql.db",
+			   OpenFlags::CREATE | OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT);
+	if (!ret) {
+		Clr(std::cerr, Clr::RED) << db.lastError();
+		assert(false);
+	}
 
 	return db;
 }
@@ -122,11 +128,11 @@ void testInsert(const SQLConn &db)
 	}
 
 	assert(!db.insertAddress(people[0].addr));
-	std::cerr << "EXPECTED error: " << db.lastError() << '\n';
+	Clr(std::cerr, Clr::GREEN) << "EXPECTED error: " << db.lastError();
 	assert(db.lastError().find("constraint failed") != std::string::npos);
 
 	assert(!db.badInsertAddress("Some addr"));
-	std::cerr << "EXPECTED error: " << db.lastError() << '\n';
+	Clr(std::cerr, Clr::GREEN) << "EXPECTED error: " << db.lastError();
 	assert(db.lastError().find("no index found") != std::string::npos);
 
 	affected = ~0ULL;
