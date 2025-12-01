@@ -48,6 +48,13 @@ public:
 protected:
 	SQLConn() : m_flags(0), m_lastErrorCode(0), m_lastErrorCodeExt(0) {}
 
+	using BindVal = std::variant<std::monostate, int, std::string, std::string_view>;
+	using Binding = std::vector<std::pair<std::string, BindVal>>;
+	using ColumnTypes = std::vector<std::type_index>;
+	using Column = std::variant<int, std::string>;
+	using Row = std::vector<Column>;
+	using SelectResult = std::vector<Row>;
+
 	enum TableFlags : unsigned {
 		TABLE_TEMPORARY = 1u << 0,
 	};
@@ -63,13 +70,6 @@ protected:
 	using Triggers = Indices;
 	using Views = Indices;
 	using Statements = std::vector<std::pair<std::reference_wrapper<SQLStmtHolder>, std::string>>;
-
-	using BindVal = std::variant<std::monostate, int, std::string, std::string_view>;
-	using Binding = std::vector<std::pair<std::string, BindVal>>;
-	using ColumnTypes = std::vector<std::type_index>;
-	using Column = std::variant<int, std::string>;
-	using Row = std::vector<Column>;
-	using SelectResult = std::vector<Row>;
 
 	bool createTables(const Tables &tables) const noexcept;
 	bool createIndices(const Indices &indices) const noexcept;
