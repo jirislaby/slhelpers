@@ -56,7 +56,7 @@ public:
 protected:
 	SQLConn() : m_flags(0), m_lastErrorCode(0), m_lastErrorCodeExt(0) {}
 
-	using BindVal = std::variant<std::monostate, int, std::string, std::string_view>;
+	using BindVal = std::variant<std::monostate, int, unsigned, std::string, std::string_view>;
 	using Binding = std::vector<std::pair<std::string, BindVal>>;
 	using ColumnTypes = std::vector<std::type_index>;
 	using Column = std::variant<int, std::string>;

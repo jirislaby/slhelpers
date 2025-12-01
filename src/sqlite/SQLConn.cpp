@@ -222,6 +222,10 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
 		const auto &i = std::get<int>(val);
 		valDesc = std::to_string(i);
 		ret = sqlite3_bind_int(ins, bindIdx, i);
+	} else if (std::holds_alternative<unsigned>(val)) {
+		const auto &i = std::get<unsigned>(val);
+		valDesc = std::to_string(i);
+		ret = sqlite3_bind_int(ins, bindIdx, i);
 	} else if (std::holds_alternative<std::string>(val)) {
 		const auto &text = std::get<std::string>(val);
 		valDesc = text;
@@ -288,6 +292,8 @@ bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 		m_lastError << '\t' << b.first << '=';
 		if (std::holds_alternative<int>(b.second))
 			m_lastError << "I:" << std::get<int>(b.second);
+		if (std::holds_alternative<unsigned>(b.second))
+			m_lastError << "U:" << std::get<unsigned>(b.second);
 		else if (std::holds_alternative<std::string>(b.second))
 			m_lastError << "T:" << std::get<std::string>(b.second);
 		else if (std::holds_alternative<std::string_view>(b.second))
