@@ -48,7 +48,17 @@ public:
 protected:
 	SQLConn() : m_flags(0), m_lastErrorCode(0), m_lastErrorCodeExt(0) {}
 
-	using Tables = std::vector<std::pair<std::string, std::vector<std::string>>>;
+	enum TableFlags : unsigned {
+		TABLE_TEMPORARY = 1u << 0,
+	};
+
+	struct TableEntry {
+		std::string name;
+		std::vector<std::string> columns;
+		unsigned flags = 0u;
+	};
+
+	using Tables = std::vector<TableEntry>;
 	using Indices = std::vector<std::pair<std::string, std::string>>;
 	using Triggers = Indices;
 	using Views = Indices;

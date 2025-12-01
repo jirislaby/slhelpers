@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iostream>
 #include <optional>
+#include <sqlite3.h>
 
 #include "helpers/Color.h"
 #include "sqlite/SQLConn.h"
@@ -14,7 +15,23 @@ using Clr = SlHelpers::Color;
 
 namespace {
 
-class SQLConn : public SlSqlite::SQLConn {
+class SQLConnTemp : public SlSqlite::SQLConn {
+public:
+	SQLConnTemp() : selPersonTemp(*this) {}
+
+	virtual bool prepDB() override {
+		return selPersonTemp.prepare("SELECT 1 FROM personTemp;", { typeid(int) });
+	}
+
+	std::optional<SlSqlite::SQLConn::SelectResult> getPersonsTemp() const {
+		return selPersonTemp.select({});
+	}
+
+private:
+	SlSqlite::Select selPersonTemp;
+};
+
+class SQLConn : public SQLConnTemp {
 public:
 	SQLConn() : selPerson(*this) {}
 	virtual bool createDB() override {
@@ -29,6 +46,13 @@ public:
 				"age INTEGER NOT NULL",
 				"address INTEGER NOT NULL REFERENCES address(id)",
 			}},
+			{ "personTemp", {
+				"id INTEGER PRIMARY KEY",
+				"name TEXT NOT NULL",
+				"age INTEGER NOT NULL",
+				"street TEXT NOT NULL",
+				"UNIQUE(name, street)"
+			}, TABLE_TEMPORARY },
 		};
 
 		return createTables(create_tables);
@@ -41,10 +65,18 @@ public:
 				     "SELECT :name, :age, address.id "
 				     "FROM address "
 				     "WHERE address.street = :street;" },
+			{ insPersonTemp,	"INSERT INTO personTemp(name, age, street) "
+						"SELECT :name, :age, :street;" },
+			{ moveAddress,	"INSERT INTO address(street) "
+					"SELECT DISTINCT street FROM personTemp;" },
+			{ movePerson,	"INSERT INTO person(name, age, address) "
+					"SELECT personTemp.name, personTemp.age, address.id "
+					"FROM personTemp "
+					"JOIN address ON personTemp.street = address.street;" },
 			{ delPerson, "DELETE FROM person;" },
 		};
 
-		return  prepareStatements(stmts) &&
+		return  SQLConnTemp::prepDB() && prepareStatements(stmts) &&
 			selPerson.prepare("SELECT person.name, age, address.street "
 					  "FROM person "
 					  "LEFT JOIN address ON person.address = address.id "
@@ -70,6 +102,23 @@ public:
 			      }, affected);
 	}
 
+	bool insertPersonTemp(const std::string &name, const int age, const std::string &street,
+			      uint64_t *affected = nullptr) const {
+		return insert(insPersonTemp, {
+				      { ":name", name },
+				      { ":age", age },
+				      { ":street", street },
+			      }, affected);
+	}
+
+	bool movePersonTemp(uint64_t *affected = nullptr) const {
+		uint64_t aff1, aff2;
+		auto ret = insert(moveAddress, {}, &aff1) && insert(movePerson, {}, &aff2);
+		if (ret && affected)
+			*affected = aff1 + aff2;
+		return ret;
+	}
+
 	std::optional<SlSqlite::SQLConn::SelectResult>
 	getPersons(const std::string &name) const
 	{
@@ -85,6 +134,9 @@ public:
 private:
 	SlSqlite::SQLStmtHolder insAddress;
 	SlSqlite::SQLStmtHolder insPerson;
+	SlSqlite::SQLStmtHolder insPersonTemp;
+	SlSqlite::SQLStmtHolder moveAddress;
+	SlSqlite::SQLStmtHolder movePerson;
 	SlSqlite::Select selPerson;
 	SlSqlite::SQLStmtHolder delPerson;
 };
@@ -115,6 +167,9 @@ const struct {
 } people[] = {
 	{ "John Smith", 21, "Whale street 21" },
 	{ "John Cagliari", 25, "Down street 105" },
+}, peopleTemp[] = {
+	{ "Jane Smoth", 18, "Whole street 30" },
+	{ "Jane Caliari", 35, "Dawn street 55" },
 };
 
 unsigned persons;
@@ -147,6 +202,23 @@ void testInsert(const SQLConn &db)
 	assert(affected == 0);
 }
 
+void testTemp(const SQLConn &db)
+{
+	uint64_t affected;
+	unsigned rows = 0;
+	for (const auto &e: peopleTemp) {
+		affected = ~0ULL;
+		assert(db.insertPersonTemp(e.name, e.age, e.addr, &affected));
+		assert(affected == 1);
+		persons += affected;
+		rows += affected;
+	}
+
+	affected = ~0ULL;
+	assert(db.movePersonTemp(&affected));
+	assert(affected == rows * 2); // one addr, one person
+}
+
 void testSelect(const SQLConn &db)
 {
 	{
@@ -175,12 +247,20 @@ void testSelect(const SQLConn &db)
 		assert(res[1].size() == 3);
 
 		assert(std::get<std::string>(res[1][0]) == people[1].name);
+		assert(std::get<std::string>(res[3][0]) == peopleTemp[1].name);
 	}
 
 	{
 		const auto resOpt = db.getPersons("non-existant");
 		assert(resOpt);
 		assert(resOpt->size() == 0);
+	}
+
+	{
+		auto resOpt = db.getPersonsTemp();
+		assert(resOpt);
+		const auto res = std::move(*resOpt);
+		assert(std::get<int>(res[0][0]) == 1);
 	}
 }
 
@@ -196,10 +276,19 @@ void testDelete(const SQLConn &db)
 int main()
 {
 	const auto tmpDir = THelpers::getTmpDir();
-	const auto db = testOpen(tmpDir);
-	testInsert(db);
-	testSelect(db);
-	testDelete(db);
+	{
+		const auto db = testOpen(tmpDir);
+		testInsert(db);
+		testTemp(db);
+		testSelect(db);
+		testDelete(db);
+	}
+	{
+		SQLConnTemp db;
+		assert(!db.open(tmpDir / "sql.db"));
+		assert(db.lastErrorCode() == SQLITE_ERROR);
+		assert(db.lastError().find("no such table: personTemp") != std::string::npos);
+	}
 	std::filesystem::remove_all(tmpDir);
 
 	return 0;

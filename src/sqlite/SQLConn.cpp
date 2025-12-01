@@ -64,8 +64,11 @@ bool SQLConn::createTables(const Tables &tables) const noexcept
 {
 	for (const auto &c: tables) {
 		std::ostringstream ss;
-		ss << "CREATE TABLE IF NOT EXISTS " << c.first << '(';
-		SlHelpers::String::join(ss, c.second);
+		ss << "CREATE";
+		if (c.flags & TABLE_TEMPORARY)
+			ss << " TEMPORARY";
+		ss << " TABLE IF NOT EXISTS " << c.name << '(';
+		SlHelpers::String::join(ss, c.columns);
 		ss << ") STRICT;";
 		const auto expr = ss.str();
 		char *err;
