@@ -75,14 +75,16 @@ public:
 					"JOIN address ON personTemp.street = address.street;" },
 			{ delPerson, "DELETE FROM person;" },
 		};
+		static const Selects sels {
+			{ selPerson, "SELECT person.name, age, address.street "
+				     "FROM person "
+				     "LEFT JOIN address ON person.address = address.id "
+				     "WHERE person.name LIKE :name "
+				     "ORDER BY person.id;",
+				{ typeid(std::string), typeid(int), typeid(std::string) }},
+		};
 
-		return  SQLConnTemp::prepDB() && prepareStatements(stmts) &&
-			selPerson.prepare("SELECT person.name, age, address.street "
-					  "FROM person "
-					  "LEFT JOIN address ON person.address = address.id "
-					  "WHERE person.name LIKE :name "
-					  "ORDER BY person.id;",
-					  { typeid(std::string), typeid(int), typeid(std::string) });
+		return	SQLConnTemp::prepDB() && prepareStatements(stmts) && prepareSelects(sels);
 	}
 
 	bool badInsertAddress(const std::string &street) const {

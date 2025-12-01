@@ -157,6 +157,15 @@ bool SQLConn::prepareStatements(const Statements &stmts) const noexcept
 	return true;
 }
 
+bool SQLConn::prepareSelects(const Selects &sels) const noexcept
+{
+	for (const auto &e: sels)
+		if (!e.ref.get().prepare(e.stmt, e.columnTypes))
+			return false;
+
+	return true;
+}
+
 bool SQLConn::begin() const noexcept
 {
 	char *err;

@@ -21,6 +21,8 @@ enum OpenFlags : unsigned {
 	ERROR_ON_UNIQUE_CONSTRAINT	= 1 << 2,
 };
 
+class Select;
+
 class SQLConn {
 	friend class Select;
 public:
@@ -65,11 +67,18 @@ protected:
 		unsigned flags = 0u;
 	};
 
+	struct SelectEntry {
+		std::reference_wrapper<Select> ref;
+		std::string stmt;
+		ColumnTypes columnTypes;
+	};
+
 	using Tables = std::vector<TableEntry>;
 	using Indices = std::vector<std::pair<std::string, std::string>>;
 	using Triggers = Indices;
 	using Views = Indices;
 	using Statements = std::vector<std::pair<std::reference_wrapper<SQLStmtHolder>, std::string>>;
+	using Selects = std::vector<SelectEntry>;
 
 	bool createTables(const Tables &tables) const noexcept;
 	bool createIndices(const Indices &indices) const noexcept;
@@ -78,6 +87,7 @@ protected:
 
 	bool prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
 	bool prepareStatements(const Statements &stmts) const noexcept;
+	bool prepareSelects(const Selects &sels) const noexcept;
 
 	bool bind(const SQLStmtHolder &ins, const std::string &key,
 		  const BindVal &val, bool transient = false) const noexcept;
