@@ -117,6 +117,8 @@ const struct {
 	{ "John Cagliari", 25, "Down street 105" },
 };
 
+unsigned persons;
+
 void testInsert(const SQLConn &db)
 {
 	uint64_t affected;
@@ -125,6 +127,7 @@ void testInsert(const SQLConn &db)
 		assert(db.insertAddress(e.addr));
 		assert(db.insertPerson(e.name, e.age, e.addr, &affected));
 		assert(affected == 1);
+		persons += affected;
 	}
 
 	assert(!db.insertAddress(people[0].addr));
@@ -167,7 +170,7 @@ void testSelect(const SQLConn &db)
 		auto resOpt = db.getPersons("%");
 		assert(resOpt);
 		const auto res = std::move(*resOpt);
-		assert(res.size() == 2);
+		assert(res.size() == persons);
 		assert(res[0].size() == 3);
 		assert(res[1].size() == 3);
 
@@ -185,7 +188,7 @@ void testDelete(const SQLConn &db)
 {
 	uint64_t affected;
 	assert(db.delPersons(&affected));
-	assert(affected == 2);
+	assert(affected == persons);
 }
 
 }
