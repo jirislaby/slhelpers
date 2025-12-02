@@ -142,6 +142,10 @@ protected:
 	select(const SQLStmtHolder &sel, const Binding &binding,
 	       const ColumnTypes &columns) const noexcept;
 
+	static BindVal valueOrNull(bool cond, BindVal val) {
+		return cond ? std::move(val) : std::monostate();
+	}
+
 	SlHelpers::LastError &setError(int ret, const std::string_view &error,
 				       bool errmsg = false) const;
 
