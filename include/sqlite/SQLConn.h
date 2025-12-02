@@ -28,6 +28,38 @@ enum struct TransactionType {
 };
 
 class Select;
+class SQLConn;
+
+class AutoTransaction {
+public:
+	AutoTransaction() = delete;
+	AutoTransaction(const SQLConn &conn,
+			TransactionType type = TransactionType::DEFERRED);
+	~AutoTransaction() { end(); }
+
+	AutoTransaction(const AutoTransaction &) = delete;
+	AutoTransaction &operator=(const AutoTransaction &) = delete;
+
+	AutoTransaction(AutoTransaction &&other) noexcept : m_conn(other.m_conn) {
+		other.m_conn = nullptr;
+	}
+
+	AutoTransaction &operator=(AutoTransaction &&other) noexcept {
+		if (this != &other) {
+			end();
+			m_conn = other.m_conn;
+			other.m_conn = nullptr;
+		}
+
+		return *this;
+	}
+
+	bool operator!() const { return !m_conn; }
+	operator bool() const { return m_conn; }
+private:
+	void end();
+	const SQLConn *m_conn;
+};
 
 class SQLConn {
 	friend class Select;
@@ -48,6 +80,9 @@ public:
 
 	bool begin(TransactionType type = TransactionType::DEFERRED) const noexcept;
 	bool end() const noexcept;
+	AutoTransaction beginAuto(TransactionType type = TransactionType::DEFERRED) const noexcept {
+		return AutoTransaction(*this, type);
+	}
 
 	std::string lastError() const { return m_lastError.lastError(); }
 	int lastErrorCode() const { return m_lastErrorCode; }
@@ -138,6 +173,19 @@ private:
 	SQLStmtHolder m_select;
 	SQLConn::ColumnTypes m_resultTypes;
 };
+
+inline AutoTransaction::AutoTransaction(const SQLConn &conn, TransactionType type)
+	: m_conn(conn.begin(type) ? &conn : nullptr)
+{
+}
+
+inline void AutoTransaction::end()
+{
+	if (m_conn) {
+		m_conn->end();
+		m_conn = nullptr;
+	}
+}
 
 }
 

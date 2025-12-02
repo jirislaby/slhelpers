@@ -179,12 +179,17 @@ unsigned persons;
 void testInsert(const SQLConn &db)
 {
 	uint64_t affected;
-	for (const auto &e: people) {
-		affected = ~0ULL;
-		assert(db.insertAddress(e.addr));
-		assert(db.insertPerson(e.name, e.age, e.addr, &affected));
-		assert(affected == 1);
-		persons += affected;
+	{
+		auto trans = db.beginAuto();
+		assert(trans);
+		assert(!!trans);
+		for (const auto &e: people) {
+			affected = ~0ULL;
+			assert(db.insertAddress(e.addr));
+			assert(db.insertPerson(e.name, e.age, e.addr, &affected));
+			assert(affected == 1);
+			persons += affected;
+		}
 	}
 
 	assert(!db.insertAddress(people[0].addr));
