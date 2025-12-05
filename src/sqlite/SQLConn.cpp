@@ -9,6 +9,8 @@
 #include "helpers/String.h"
 #include "sqlite/SQLConn.h"
 
+#include "PtrStore.h"
+
 using namespace SlSqlite;
 
 int SQLConn::busyHandler(void *, int count)
@@ -42,11 +44,11 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 	}
 
 	if (!(flags & OpenFlags::NO_FOREIGN_KEY)) {
-		char *err;
-		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", nullptr, nullptr, &err);
+		CharPtrStore err;
+		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", nullptr, nullptr,
+				   err.ptr());
 		if (ret != SQLITE_OK) {
 			setError(ret, "db PRAGMA failed") << " -> " << err;
-			sqlite3_free(err);
 			return false;
 		}
 	}
@@ -71,11 +73,10 @@ bool SQLConn::createTables(const Tables &tables) const noexcept
 		SlHelpers::String::join(ss, c.columns);
 		ss << ") STRICT;";
 		const auto expr = ss.str();
-		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, expr.c_str(), nullptr, nullptr, &err);
+		CharPtrStore err;
+		const auto ret = sqlite3_exec(sqlHolder, expr.c_str(), nullptr, nullptr, err.ptr());
 		if (ret != SQLITE_OK) {
 			setError(ret, "db CREATE TABLE failed") << " -> " << err << "\n\t" << expr;
-			sqlite3_free(err);
 			return false;
 		}
 	}
@@ -88,11 +89,10 @@ bool SQLConn::createIndices(const Indices &indices) const noexcept
 	for (const auto &c: indices) {
 		std::string s("CREATE INDEX IF NOT EXISTS ");
 		s.append(c.first).append(" ON ").append(c.second);
-		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
+		CharPtrStore err;
+		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, err.ptr());
 		if (ret != SQLITE_OK) {
 			setError(ret, "db CREATE INDEX failed") << " -> " << err << "\n\t" << s;
-			sqlite3_free(err);
 			return false;
 		}
 	}
@@ -105,11 +105,10 @@ bool SQLConn::createTriggers(const Triggers &triggers) const noexcept
 	for (const auto &c: triggers) {
 		std::string s("CREATE TRIGGER IF NOT EXISTS ");
 		s.append(c.first).append(" FOR EACH ROW BEGIN ").append(c.second).append("; END;");
-		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
+		CharPtrStore err;
+		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, err.ptr());
 		if (ret != SQLITE_OK) {
 			setError(ret, "db CREATE TRIGGER failed") << " -> " << err << "\n\t" << s;
-			sqlite3_free(err);
 			return false;
 		}
 	}
@@ -122,11 +121,10 @@ bool SQLConn::createViews(const Views &views) const noexcept
 	for (const auto &c: views) {
 		std::string s("CREATE VIEW IF NOT EXISTS ");
 		s.append(c.first).append(" AS ").append(c.second);
-		char *err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, &err);
+		CharPtrStore err;
+		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, err.ptr());
 		if (ret != SQLITE_OK) {
 			setError(ret, "db CREATE VIEW failed") << " -> " << err << "\n\t" << s;
-			sqlite3_free(err);
 			return false;
 		}
 	}
@@ -182,11 +180,10 @@ bool SQLConn::begin(TransactionType type) const noexcept
 	}
 	stmt.append(";");
 
-	char *err;
-	const auto ret = sqlite3_exec(sqlHolder, stmt.c_str(), nullptr, nullptr, &err);
+	CharPtrStore err;
+	const auto ret = sqlite3_exec(sqlHolder, stmt.c_str(), nullptr, nullptr, err.ptr());
 	if (ret != SQLITE_OK) {
 		setError(ret, "db BEGIN failed") << " -> " << err;
-		sqlite3_free(err);
 		return false;
 	}
 
@@ -195,11 +192,10 @@ bool SQLConn::begin(TransactionType type) const noexcept
 
 bool SQLConn::end() const noexcept
 {
-	char *err;
-	const auto ret = sqlite3_exec(sqlHolder, "END;", nullptr, nullptr, &err);
+	CharPtrStore err;
+	const auto ret = sqlite3_exec(sqlHolder, "END;", nullptr, nullptr, err.ptr());
 	if (ret != SQLITE_OK) {
 		setError(ret, "db END failed") << " -> " << err;
-		sqlite3_free(err);
 		return false;
 	}
 
