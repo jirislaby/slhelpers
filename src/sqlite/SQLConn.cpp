@@ -284,17 +284,8 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected) const noexcept
 	return false;
 }
 
-bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
-		     uint64_t *affected) const noexcept
+void SQLConn::dumpBinding(const Binding &binding) const noexcept
 {
-	SQLStmtResetter insResetter(sqlHolder, ins);
-
-	if (!bind(ins, binding))
-		return false;
-
-	if (step(ins, affected))
-		return true;
-
 	for (const auto &b : binding) {
 		m_lastError << '\t' << b.first << '=';
 		if (std::holds_alternative<int>(b.second))
@@ -308,8 +299,29 @@ bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 		else
 			m_lastError << "NULL";
 	}
+}
 
-	return false;
+bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
+		     uint64_t *affected) const noexcept
+{
+	SQLStmtResetter insResetter(sqlHolder, ins);
+
+	if (!bind(ins, binding))
+		return false;
+
+	if (!step(ins, affected)) {
+		dumpBinding(binding);
+		return false;
+	}
+
+	auto ret = insResetter.reset();
+	if (ret != SQLITE_OK) {
+		setError(ret, "db stmt reset (INSERT) failed", true);
+		dumpBinding(binding);
+		return false;
+	}
+
+	return true;
 }
 
 std::optional<SQLConn::SelectResult>

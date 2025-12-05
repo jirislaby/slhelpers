@@ -16,6 +16,8 @@ using SQLStmtHolder = SlHelpers::UniqueHolder<sqlite3_stmt>;
 struct SQLStmtResetter {
 	SQLStmtResetter(sqlite3 *sql, sqlite3_stmt *stmt) : sql(sql), stmt(stmt) { }
 	~SQLStmtResetter();
+
+	int reset();
 private:
 	sqlite3 *sql;
 	sqlite3_stmt *stmt;

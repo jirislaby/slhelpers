@@ -159,6 +159,7 @@ protected:
 	mutable int m_lastErrorCodeExt;
 private:
 	static int busyHandler(void *, int count);
+	void dumpBinding(const Binding &binding) const noexcept;
 };
 
 class Select {
