@@ -62,6 +62,17 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 	return true;
 }
 
+bool SQLConn::attach(const std::filesystem::path &dbFile,
+		     const std::string_view &dbName) const noexcept
+{
+	SQLStmtHolder attach;
+	return prepareStatement("ATTACH DATABASE :db AS :dbName", attach) &&
+			insert(attach, {
+				       { ":db", dbFile.string() },
+				       { ":dbName", dbName }
+			       });
+}
+
 bool SQLConn::createTables(const Tables &tables) const noexcept
 {
 	for (const auto &c: tables) {

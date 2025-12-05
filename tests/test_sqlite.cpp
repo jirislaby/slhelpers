@@ -273,6 +273,11 @@ void testSelect(const SQLConn &db)
 	}
 }
 
+void testAttach(const SQLConn &db)
+{
+	assert(db.attach("", "my_temp"));
+}
+
 void testDelete(const SQLConn &db)
 {
 	uint64_t affected;
@@ -306,6 +311,7 @@ int main()
 		testInsert(db);
 		testTemp(db);
 		testSelect(db);
+		testAttach(db);
 		testDelete(db);
 	}
 	{

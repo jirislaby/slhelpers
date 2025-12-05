@@ -78,6 +78,9 @@ public:
 	virtual bool createDB() { return true; }
 	virtual bool prepDB() { return true; }
 
+	bool attach(const std::filesystem::path &dbFile,
+		    const std::string_view &dbName) const noexcept;
+
 	bool begin(TransactionType type = TransactionType::DEFERRED) const noexcept;
 	bool end() const noexcept;
 	AutoTransaction beginAuto(TransactionType type = TransactionType::DEFERRED) const noexcept {
