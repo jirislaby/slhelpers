@@ -138,7 +138,7 @@ protected:
 	bool bind(const SQLStmtHolder &ins, const Binding &binding,
 		  bool transient = false) const noexcept;
 	bool step(const SQLStmtHolder &ins, uint64_t *affected = nullptr) const noexcept;
-	bool insert(const SQLStmtHolder &ins, const Binding &binding,
+	bool insert(const SQLStmtHolder &ins, const Binding &binding = {},
 		    uint64_t *affected = nullptr) const noexcept;
 
 	std::optional<SQLConn::SelectResult>
