@@ -16,8 +16,6 @@ namespace SlGit {
 class Repo;
 
 class Object {
-protected:
-	Object() = default;
 public:
 	virtual ~Object() = default;
 
@@ -29,6 +27,8 @@ public:
 
 	virtual git_object *object() const noexcept = 0;
 
+	const Repo &repo() const { return *m_repo; }
+
 	bool operator==(const Object &other) const noexcept {
 	    if (object() == other.object())
 		    return true;
@@ -38,6 +38,11 @@ public:
 	}
 
 	bool operator!=(const Object &other) const noexcept { return !(*this == other); }
+protected:
+	Object() = delete;
+	explicit Object(const Repo &repo) : m_repo(&repo) {}
+private:
+	const Repo *m_repo;
 };
 
 template<typename T>
@@ -52,10 +57,10 @@ public:
 	operator T *() const noexcept { return typed(); }
 
 protected:
-	explicit TypedObject(T* typed) noexcept : m_typed(typed) { }
+	explicit TypedObject(const Repo &repo, T* typed) noexcept :
+		Object(repo), m_typed(typed) { }
 
 	T *typed() const noexcept { return m_typed.get(); }
-
 private:
 	Holder m_typed;
 };

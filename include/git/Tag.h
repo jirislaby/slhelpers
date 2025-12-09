@@ -31,7 +31,7 @@ public:
 
 	GitTy *tag() const noexcept { return typed(); }
 private:
-	explicit Tag(GitTy *tag) noexcept;
+	explicit Tag(const Repo &repo, GitTy *tag) noexcept;
 };
 
 }

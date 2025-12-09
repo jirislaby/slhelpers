@@ -30,7 +30,7 @@ private:
 	git_object_size_t rawsize() const noexcept { return git_blob_rawsize(blob()); }
 	const void *rawcontent() const noexcept { return git_blob_rawcontent(blob()); }
 
-	explicit Blob(GitTy *blob) noexcept;
+	explicit Blob(const Repo &repo, GitTy *blob) noexcept;
 };
 
 }

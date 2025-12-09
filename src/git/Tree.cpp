@@ -52,7 +52,7 @@ TreeEntry Tree::treeEntryByIndex(size_t idx) const noexcept
 std::optional<std::string> Tree::catFile(const std::string &file) const noexcept
 {
 	if (auto treeEntry = treeEntryByPath(file))
-		return treeEntry->catFile(m_repo);
+		return treeEntry->catFile(repo());
 
 	return std::nullopt;
 }

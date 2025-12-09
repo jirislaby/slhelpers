@@ -45,9 +45,7 @@ public:
 private:
 	static int walkCB(const char *root, const git_tree_entry *entry, void *payload);
 
-	explicit Tree(const Repo &repo, GitTy *tree) noexcept : TypedObject(tree), m_repo(repo) {}
-
-	const Repo &m_repo;
+	explicit Tree(const Repo &repo, GitTy *tree) noexcept : TypedObject(repo, tree) {}
 };
 
 class TreeBuilder {

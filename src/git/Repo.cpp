@@ -111,7 +111,7 @@ std::optional<Blob> Repo::blobCreateFromBuffer(const std::string &buf) const noe
 
 std::optional<Blob> Repo::blobLookup(const git_oid &oid) const noexcept
 {
-	return MakeGit<Blob>(git_blob_lookup, repo(), &oid);
+	return MakeGitRepo<Blob>(*this, git_blob_lookup, repo(), &oid);
 }
 
 std::optional<Blob> Repo::blobLookup(const TreeEntry &tentry) const noexcept
@@ -236,11 +236,11 @@ Repo::revparseSingle(const std::string &rev) const noexcept
 
 	switch (git_object_type(obj)) {
 	case GIT_OBJECT_BLOB:
-		return Blob(reinterpret_cast<git_blob *>(obj));
+		return Blob(*this, reinterpret_cast<git_blob *>(obj));
 	case GIT_OBJECT_COMMIT:
 		return Commit(*this, reinterpret_cast<git_commit *>(obj));
 	case GIT_OBJECT_TAG:
-		return Tag(reinterpret_cast<git_tag *>(obj));
+		return Tag(*this, reinterpret_cast<git_tag *>(obj));
 	case GIT_OBJECT_TREE:
 		return Tree(*this, reinterpret_cast<git_tree *>(obj));
 	default:
@@ -301,7 +301,7 @@ std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &tar
 
 std::optional<Tag> Repo::tagLookup(const git_oid &oid) const noexcept
 {
-	return MakeGit<Tag>(git_tag_lookup, repo(), &oid);
+	return MakeGitRepo<Tag>(*this, git_tag_lookup, repo(), &oid);
 }
 
 std::optional<Tag> Repo::tagLookup(const TreeEntry &tentry) const noexcept

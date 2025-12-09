@@ -52,9 +52,7 @@ public:
 	operator GitTy *() const noexcept { return commit(); }
 private:
 	explicit Commit(const Repo &repo, GitTy *commit) noexcept :
-		TypedObject(commit), m_repo(&repo) { }
-
-	const Repo *m_repo;
+		TypedObject(repo, commit) { }
 };
 
 }
