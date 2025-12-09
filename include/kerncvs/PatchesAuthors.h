@@ -24,15 +24,18 @@ public:
 		unsigned, unsigned)>;
 
 	PatchesAuthors(const SlGit::Repo &repo, bool dumpRefs, bool reportUnhandled) :
-		repo(repo), dumpRefs(dumpRefs), reportUnhandled(reportUnhandled)
+		repo(&repo), dumpRefs(dumpRefs), reportUnhandled(reportUnhandled)
 	{}
 
 	bool processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
 			    const InsertUFMap &insertUFMap);
 private:
+	PatchesAuthors() : repo(nullptr), dumpRefs(false), reportUnhandled(false) {}
+	friend void testProcessPatch();
+
 	int processPatch(const std::filesystem::path &file, const std::string &content);
 
-	const SlGit::Repo &repo;
+	const SlGit::Repo *repo;
 	const bool dumpRefs;
 	const bool reportUnhandled;
 	static const std::regex REInteresting;

@@ -8,6 +8,7 @@ tests = {
   'git' : { 'libs' : [ slgit_lib ] },
   'helpers' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
   'misc' : {},
+  'PatchesAuthors' : { 'libs' : [ slkerncvs_lib ] },
   'ratelimit' : {},
   'sqlite' : { 'libs' : [ slsqlite_lib, sqlite3_lib ] },
   'string' : {},

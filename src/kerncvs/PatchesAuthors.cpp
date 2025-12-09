@@ -87,12 +87,12 @@ bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUse
 	if (patchesSuseTreeEntry->type() != GIT_OBJECT_TREE)
 		return false;
 
-	auto patchesSuseTree = repo.treeLookup(*patchesSuseTreeEntry);
+	auto patchesSuseTree = repo->treeLookup(*patchesSuseTreeEntry);
 	if (!patchesSuseTree)
 		return false;
 	auto ret = patchesSuseTree->walk([this](const std::string &root,
 					 const SlGit::TreeEntry &entry) -> int {
-		auto blob = repo.blobLookup(entry);
+		auto blob = repo->blobLookup(entry);
 		if (!blob)
 			return -1000;
 
