@@ -9,6 +9,7 @@ tests = {
   'helpers' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
   'misc' : {},
   'PatchesAuthors' : { 'libs' : [ slkerncvs_lib ] },
+  'PCRE2' : { 'libs' : [ slpcre2_lib ] },
   'ratelimit' : {},
   'sqlite' : { 'libs' : [ slsqlite_lib, sqlite3_lib ] },
   'string' : {},

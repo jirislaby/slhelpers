@@ -3,6 +3,7 @@
 subdir('curl')
 subdir('git')
 subdir('kerncvs')
+subdir('pcre2')
 subdir('sqlite')
 
 subdir('cves') # needs git
