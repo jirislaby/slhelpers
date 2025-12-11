@@ -14,7 +14,7 @@ slkerncvs = library('slkerncvs++', [
     'SupportedConf.cpp',
   ],
   include_directories : global_inc,
-  dependencies: [ slcurl_lib, slgit_lib ],
+  dependencies: [ slcurl_lib, slgit_lib, slpcre2_lib ],
   install: true,
   version: meson.project_version(),
 )

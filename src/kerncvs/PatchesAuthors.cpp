@@ -1,39 +1,50 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <iostream>
+#include <mutex>
 #include <set>
 
 #include "helpers/String.h"
 #include "kerncvs/PatchesAuthors.h"
 #include "git/Git.h"
+#include "pcre2/PCRE2.h"
 
 using namespace SlKernCVS;
 
-const std::regex PatchesAuthors::REInteresting("^\\s*(?:From|Cc|Co-developed-by|Acked|Acked-by|Modified-by|Reviewed-by|Reviewed-and-tested-by|Signed-off-by):.*[\\s<]([a-z0-9_.-]+\\@suse\\.[a-z]+)",
-	      std::regex_constants::icase);
-const std::regex PatchesAuthors::REFalse("(?:lore|lkml)\\.kernel|patchwork\\.ozlabs|^\\[|^(?:Debugged-by|Evaluated-by|Improvements-by|Link|Message-ID|Patch-mainline|Reported-and-tested-by|Reported-by|Return-path|Suggested-by|Tested-by):|thanks|:$",
-	      std::regex_constants::icase);
-const std::regex PatchesAuthors::REGitFixes("^References:.*(?:(?:git|stable)[- ]fixes|stable-\\d|b[ns]c[#](?:1012628|1051510|1151927|1152489))",
-	   std::regex_constants::icase);
-const std::regex PatchesAuthors::REInvalRef("FATE#|CVE-|jsc#|XSA-", std::regex_constants::icase);
 
 int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::string &content)
 {
+	static PCRE2::PCRE2 REInteresting;
+	static PCRE2::PCRE2 REFalse;
+	static PCRE2::PCRE2 REGitFixes;
+	static PCRE2::PCRE2 REInvalRef;
+	static std::once_flag flag;
+
+	std::call_once(flag, [](){
+		REInteresting.compile("^\\s*(?:From|Cc|Co-developed-by|Acked|Acked-by|Modified-by|Reviewed-by|Reviewed-and-tested-by|Signed-off-by):.*[\\s<]([a-z0-9_.-]+\\@suse\\.[a-z]+)",
+				      PCRE2_CASELESS);
+		REFalse.compile("(?:lore|lkml)\\.kernel|patchwork\\.ozlabs|^\\[|^(?:Debugged-by|Evaluated-by|Improvements-by|Link|Message-ID|Patch-mainline|Reported-and-tested-by|Reported-by|Return-path|Suggested-by|Tested-by):|thanks|:$",
+				PCRE2_CASELESS);
+		REGitFixes.compile("^References:.*(?:(?:git|stable)[- ]fixes|stable-\\d|b[ns]c#(?:1012628|1051510|1151927|1152489))",
+				   PCRE2_CASELESS);
+		REInvalRef.compile("FATE#|CVE-|jsc#|XSA-", PCRE2_CASELESS);
+	});
+
 	std::set<std::string> patchEmails;
 	std::set<std::string> patchRefs;
 	bool gitFixes = false;
 	std::istringstream iss(content);
 	std::string line;
-	std::smatch m;
 
 	while (std::getline(iss, line)) {
-		if (std::regex_search(line, m, REInteresting)) {
-			patchEmails.insert(m[1]);
+		auto m = REInteresting.match(line);
+		if (m > 1) {
+			patchEmails.emplace(REInteresting.matchByIdx(line, 1));
 			continue;
 		}
 		if (SlHelpers::String::startsWith(line, "---"))
 			break;
-		if (std::regex_search(line, REGitFixes)) {
+		if (REGitFixes.match(line) > 0) {
 			gitFixes = true;
 		} else if (dumpRefs) {
 			static const std::string references { "References:" };
@@ -44,13 +55,13 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		}
 
 		if (reportUnhandled && line.find("@suse.") != std::string::npos &&
-				!std::regex_search(line, REFalse))
+				REFalse.match(line) == PCRE2_ERROR_NOMATCH)
 			std::cerr << file << ": unhandled e-mail in '" << line << "'\n";
 	}
 
 	for (const auto &ref : patchRefs)
 		for (const auto &email : patchEmails)
-			if (!std::regex_search(ref, REInvalRef))
+			if (REInvalRef.match(ref) == PCRE2_ERROR_NOMATCH)
 				m_HoHRefs[email][ref]++;
 
 	while (std::getline(iss, line)) {

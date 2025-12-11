@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <functional>
 #include <map>
-#include <regex>
 #include <string>
 
 namespace SlGit {
@@ -38,10 +37,6 @@ private:
 	const SlGit::Repo *repo;
 	const bool dumpRefs;
 	const bool reportUnhandled;
-	static const std::regex REInteresting;
-	static const std::regex REFalse;
-	static const std::regex REGitFixes;
-	static const std::regex REInvalRef;
 	Map m_HoH;
 	Map m_HoHReal;
 	Map m_HoHRefs;
