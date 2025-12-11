@@ -43,7 +43,6 @@ private:
 	const SlGit::Repo &repo;
 	const InsertArchFlavor insertArchFlavor;
 	const InsertConfig insertConfig;
-	//static const std::regex REInvalRef;
 };
 
 }
