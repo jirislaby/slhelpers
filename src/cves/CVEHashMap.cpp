@@ -8,6 +8,7 @@
 #include "git/Tree.h"
 #include "helpers/String.h"
 
+#include "cves/CVE.h"
 #include "cves/CVEHashMap.h"
 
 using namespace SlCVEs;
@@ -35,14 +36,12 @@ std::optional<CVEHashMap> CVEHashMap::create(const std::filesystem::path &vsourc
 	if (!subTree)
 		return std::nullopt;
 
-	const auto regex_cve_number = std::regex("CVE-[0-9][0-9][0-9][0-9]-[0-9]+",
-						 std::regex::optimize);
 	const bool isShort = shaSize == ShaSize::Short;
 	CVEHashMapTy cveMap;
 	SHAHashMapTy shaMap;
 
-	vulns_repo->treeLookup(*subTree)->walk([&regex_cve_number, &vulns_repo, &isShort, &shaMap,
-					       &cveMap](const std::string &,
+	vulns_repo->treeLookup(*subTree)->walk([&vulns_repo, &isShort, &shaMap, &cveMap]
+					       (const std::string &,
 					       const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
@@ -50,11 +49,9 @@ std::optional<CVEHashMap> CVEHashMap::create(const std::filesystem::path &vsourc
 		if (!SlHelpers::String::endsWith(file, ".sha1"))
 			return 0;
 
-		std::smatch match;
-		std::regex_search(file, match, regex_cve_number);
-		std::string cve_number = match.str();
-		if (cve_number.size() < 10) {
-			std::cerr << cve_number << " doesn't seem to be a cve number!\n";
+		auto cve_number = CVE::getCVENumber(file);
+		if (!cve_number) {
+			std::cerr << file << " doesn't seem to be a cve_number.sha1!\n";
 			return 0;
 		}
 		std::istringstream iss(vulns_repo->blobLookup(entry)->content());
@@ -67,10 +64,10 @@ std::optional<CVEHashMap> CVEHashMap::create(const std::filesystem::path &vsourc
 				continue;
 			}
 			if (isShort)
-				shaMap.insert(std::make_pair(sha_hash.substr(0, 12), cve_number));
+				shaMap.insert(std::make_pair(sha_hash.substr(0, 12), *cve_number));
 			else {
-				cveMap.insert(std::make_pair(cve_number, sha_hash));
-				shaMap.insert(std::make_pair(std::move(sha_hash), cve_number));
+				cveMap.insert(std::make_pair(*cve_number, sha_hash));
+				shaMap.insert(std::make_pair(std::move(sha_hash), *cve_number));
 			}
 		}
 		return 0;

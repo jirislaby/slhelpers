@@ -5,6 +5,7 @@ crash = executable('crash', 'crash.cpp')
 tests = {
   'branches' : { 'libs' : [ slkerncvs_lib ] },
   'curl' : { 'libs' : [ slcurl_lib ] },
+  'CVE' : { 'libs' : [ slcves_lib ] },
   'git' : { 'libs' : [ slgit_lib ] },
   'helpers' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
   'misc' : {},
