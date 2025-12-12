@@ -8,6 +8,7 @@ tests = {
   'CVE' : { 'libs' : [ slcves_lib ] },
   'git' : { 'libs' : [ slgit_lib ] },
   'helpers' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
+  'maintainers' : { 'libs' : [ slgit_lib, slkerncvs_lib ] },
   'misc' : {},
   'PatchesAuthors' : { 'libs' : [ slkerncvs_lib ] },
   'PCRE2' : { 'libs' : [ slpcre2_lib ] },

@@ -3,14 +3,21 @@
 public_headers += [
   'kerncvs/Branches.h',
   'kerncvs/CollectConfigs.h',
+  'kerncvs/Maintainers.h',
   'kerncvs/PatchesAuthors.h',
+  'kerncvs/Pattern.h',
+  'kerncvs/Person.h',
+  'kerncvs/Stanza.h',
   'kerncvs/SupportedConf.h',
 ]
 
 slkerncvs = library('slkerncvs++', [
     'Branches.cpp',
     'CollectConfigs.cpp',
+    'Maintainers.cpp',
     'PatchesAuthors.cpp',
+    'Pattern.cpp',
+    'Person.cpp',
     'SupportedConf.cpp',
   ],
   include_directories : global_inc,
