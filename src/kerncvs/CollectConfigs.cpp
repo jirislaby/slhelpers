@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "helpers/String.h"
 #include "kerncvs/CollectConfigs.h"
 #include "git/Git.h"
 
@@ -66,7 +65,7 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 {
 	static const std::string commented{"# CONFIG_"};
 
-	if (SlHelpers::String::startsWith(line, commented)) {
+	if (line.starts_with(commented)) {
 		const auto end = line.find(" is not set");
 		if (end == std::string::npos) {
 			std::cerr << __func__ <<
@@ -79,7 +78,7 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 
 		return insertConfig(arch, flavor, config, Disabled);
 	}
-	if (SlHelpers::String::startsWith(line, "CONFIG_")) {
+	if (line.starts_with("CONFIG_")) {
 		const auto end = line.find('=');
 		if (end == std::string::npos) {
 			std::cerr << __func__ << "value of config cannot be identified in: " <<

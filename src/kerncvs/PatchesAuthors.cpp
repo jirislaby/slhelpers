@@ -42,13 +42,13 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 			patchEmails.emplace(REInteresting.matchByIdx(line, 1));
 			continue;
 		}
-		if (SlHelpers::String::startsWith(line, "---"))
+		if (line.starts_with("---"))
 			break;
 		if (REGitFixes.match(line) > 0) {
 			gitFixes = true;
 		} else if (dumpRefs) {
 			static const std::string references { "References:" };
-			if (SlHelpers::String::startsWith(line, references))
+			if (line.starts_with(references))
 				for (const auto &ref: SlHelpers::String::split(line.substr(references.size()),
 									" \t,;"))
 					patchRefs.insert(ref);
@@ -66,14 +66,13 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 
 	while (std::getline(iss, line)) {
 		static const std::string prefix { "+++ b/" };
-		if (!SlHelpers::String::startsWith(line, prefix))
+		if (!line.starts_with(prefix))
 			continue;
-		if (!SlHelpers::String::endsWith(line, ".c") &&
-				!SlHelpers::String::endsWith(line, ".h"))
+		if (!line.ends_with(".c") && !line.ends_with(".h"))
 			continue;
 
 		auto cfile = line.substr(prefix.length());
-		if (SlHelpers::String::startsWith(cfile, "/dev"))
+		if (cfile.starts_with("/dev"))
 			std::cerr << __func__ << ": " << file << ": " << cfile << '\n';
 		for (const auto &email : patchEmails) {
 			m_HoH[email][cfile]++;

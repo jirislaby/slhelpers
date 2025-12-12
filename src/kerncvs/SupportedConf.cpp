@@ -21,7 +21,7 @@ void SupportedConf::parseLine(std::string &line)
 		const auto &suppFlag = vec[0];
 		switch (suppFlag[0]) {
 		case '+':
-			if (SlHelpers::String::endsWith(suppFlag, "-kmp"))
+			if (suppFlag.ends_with("-kmp"))
 				supp = SupportState::KMPSupported;
 			else if (suppFlag == "+external")
 				supp = SupportState::ExternallySupported;
@@ -43,7 +43,7 @@ void SupportedConf::parseLine(std::string &line)
 	}
 
 	auto module = vec.back();
-	if (SlHelpers::String::endsWith(module, ".ko"))
+	if (module.ends_with(".ko"))
 		module.resize(module.size() - 3);
 	entries.push_back({ module, supp });
 }

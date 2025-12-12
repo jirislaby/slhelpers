@@ -16,16 +16,6 @@ class String {
 public:
 	String() = delete;
 
-	static bool startsWith(const std::string_view &what, const std::string_view &startsWith) {
-		return !what.compare(0, startsWith.length(), startsWith);
-	}
-
-	static bool endsWith(const std::string_view &what, const std::string_view &endsWith) {
-		auto wlen = what.length();
-		auto elen = endsWith.length();
-		return wlen >= elen && !what.compare(wlen - elen, std::string::npos, endsWith);
-	}
-
 	/**
 	 * @brief Like string::find() but ignoring case
 	 * @param str string to search in

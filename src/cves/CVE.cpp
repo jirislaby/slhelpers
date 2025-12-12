@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include "helpers/String.h"
+#include <cctype>
 
 #include "cves/CVE.h"
 
@@ -12,7 +12,7 @@ std::optional<std::string_view> CVE::getCVENumber(const std::string_view &sv) no
 		return std::nullopt;
 
 	static constexpr std::string_view CVE("CVE-");
-	if (!SlHelpers::String::startsWith(sv, CVE))
+	if (!sv.starts_with(CVE))
 		return std::nullopt;
 
 	auto endYear = CVE.length() + 4;

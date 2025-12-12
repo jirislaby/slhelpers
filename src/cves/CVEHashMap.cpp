@@ -46,7 +46,7 @@ std::optional<CVEHashMap> CVEHashMap::create(const std::filesystem::path &vsourc
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
 		const std::string file = entry.name();
-		if (!SlHelpers::String::endsWith(file, ".sha1"))
+		if (!file.ends_with(".sha1"))
 			return 0;
 
 		auto cve_number = CVE::getCVENumber(file);

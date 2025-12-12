@@ -52,7 +52,7 @@ Branches Branches::create(const std::string &branchesConf)
 				bp.isBuild = true;
 			else if (cur == "publish")
 				bp.isPublish = true;
-			else if (SlHelpers::String::startsWith(cur, mergeStr)) {
+			else if (cur.starts_with(mergeStr)) {
 				auto toErase = mergeStr.size();
 				if (cur[toErase] == '-')
 					toErase++;

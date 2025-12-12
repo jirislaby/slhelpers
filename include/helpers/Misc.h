@@ -37,7 +37,7 @@ struct CmpVersions {
 
 private:
 	static unsigned int getSublevel(const std::string &s) {
-		if (String::startsWith(s, "rc")) {
+		if (s.starts_with("rc")) {
 			unsigned int i = 0;
 			std::from_chars(s.data() + 2, s.data() + s.size(), i);
 			return i;

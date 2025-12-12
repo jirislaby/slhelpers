@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include "String.h"
-
 namespace SlHelpers {
 
 struct SUSE {
@@ -16,9 +14,9 @@ struct SUSE {
 	 * @return true if likely SUSE address
 	 */
 	static bool isSUSEAddress(const std::string &email) {
-		return String::endsWith(email, "@suse.com") ||
-		       String::endsWith(email, "@suse.cz") ||
-		       String::endsWith(email, "@suse.de");
+		return email.ends_with("@suse.com") ||
+		       email.ends_with("@suse.cz") ||
+		       email.ends_with("@suse.de");
 	}
 };
 
