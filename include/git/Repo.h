@@ -5,7 +5,6 @@
 
 #include <filesystem>
 #include <optional>
-#include <regex>
 #include <string>
 #include <variant>
 #include <vector>
@@ -62,7 +61,6 @@ public:
 	 */
 	static bool update(const std::filesystem::path &path, const std::string &remote = "origin");
 
-	int grepBranch(const std::string &branch, const std::regex &regex) const noexcept;
 	int checkout(const std::string &branch) const noexcept;
 	int checkout(const Reference &reference) const noexcept;
 	int checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE) const noexcept;
