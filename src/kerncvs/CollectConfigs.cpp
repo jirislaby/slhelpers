@@ -63,7 +63,7 @@ bool CollectConfigs::processConfigFile(const std::string &arch, const std::strin
 bool CollectConfigs::processConfig(const std::string &arch, const std::string &flavor,
 				   const std::string &line)
 {
-	static const std::string commented{"# CONFIG_"};
+	static constexpr const std::string_view commented("# CONFIG_");
 
 	if (line.starts_with(commented)) {
 		const auto end = line.find(" is not set");

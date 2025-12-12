@@ -237,7 +237,7 @@ static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 
 static void testRemote(const SlGit::Repo &repo)
 {
-	const std::string url = "https://localhost";
+	static const std::string url = "https://localhost";
 	auto remote1 = repo.remoteCreate("origin", url);
 	assert(remote1);
 	auto remote2 = repo.remoteLookup("origin");

@@ -47,7 +47,7 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		if (REGitFixes.match(line) > 0) {
 			gitFixes = true;
 		} else if (dumpRefs) {
-			static const std::string references { "References:" };
+			static constexpr const std::string_view references("References:");
 			if (line.starts_with(references))
 				for (const auto &ref: SlHelpers::String::split(line.substr(references.size()),
 									" \t,;"))
@@ -65,7 +65,7 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 				m_HoHRefs[email][ref]++;
 
 	while (std::getline(iss, line)) {
-		static const std::string prefix { "+++ b/" };
+		static constexpr const std::string_view prefix("+++ b/");
 		if (!line.starts_with(prefix))
 			continue;
 		if (!line.ends_with(".c") && !line.ends_with(".h"))

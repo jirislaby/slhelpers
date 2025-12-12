@@ -46,7 +46,7 @@ Branches Branches::create(const std::string &branchesConf)
 		BranchProps bp{};
 		bp.isExcluded = isExcluded(name);
 		for (auto i = 1U; i < split.size(); ++i) {
-			static const std::string mergeStr("merge:");
+			static constexpr const std::string_view mergeStr("merge:");
 			auto cur = std::move(split[i]);
 			if (cur == "build")
 				bp.isBuild = true;
