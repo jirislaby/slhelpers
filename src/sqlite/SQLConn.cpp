@@ -263,23 +263,28 @@ bool SQLConn::bind(const SQLStmtHolder &ins, const Binding &binding, bool transi
 	return true;
 }
 
-bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected) const noexcept
+bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected, bool *uniqueError) const noexcept
 {
 	auto ret = sqlite3_step(ins);
 	if (ret == SQLITE_DONE) {
 		if (affected)
 			*affected = sqlite3_changes64(sqlHolder);
+		if (uniqueError)
+			*uniqueError = false;
 		return true;
 	}
 
-	setError(ret, "db step (INSERT) failed", true);
+	const auto uniqueErrorLoc = sqlite3_extended_errcode(sqlHolder) == SQLITE_CONSTRAINT_UNIQUE;
+	if (uniqueError)
+		*uniqueError = uniqueErrorLoc;
 
-	if (m_lastErrorCodeExt == SQLITE_CONSTRAINT_UNIQUE &&
-			!(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
+	if (uniqueErrorLoc && !(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
 		if (affected)
 			*affected = 0;
 		return true;
 	}
+
+	setError(ret, "db step (INSERT) failed", true);
 
 	return false;
 }
@@ -309,13 +314,14 @@ bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 	if (!bind(ins, binding))
 		return false;
 
-	if (!step(ins, affected)) {
+	bool uniqueError;
+	if (!step(ins, affected, &uniqueError)) {
 		dumpBinding(binding);
 		return false;
 	}
 
 	auto ret = insResetter.reset();
-	if (ret != SQLITE_OK) {
+	if (!uniqueError && ret != SQLITE_OK) {
 		setError(ret, "db stmt reset (INSERT) failed", true);
 		dumpBinding(binding);
 		return false;
