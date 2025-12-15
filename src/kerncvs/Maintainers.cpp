@@ -36,7 +36,7 @@ bool Maintainers::loadSUSE(const std::filesystem::path &filename,
 		} else {
 			if (!st.empty())
 				m_maintainers.push_back(std::move(st));
-			st.new_entry(tmp);
+			st.new_entry(std::move(tmp));
 		}
 	}
 	if (!st.empty())

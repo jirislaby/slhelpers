@@ -20,9 +20,10 @@ public:
 	using Maintainers = std::vector<Person>;
 
 	Stanza() = default;
-	Stanza(const std::string &name) : m_name(name) {}
-	Stanza(const std::string &n, const std::string &name, const std::string &email)
-		: m_name(n), m_maintainers{Person(Role::Maintainer, name, email)} { }
+	Stanza(std::string name) : m_name(std::move(name)) {}
+	Stanza(std::string n, std::string name, std::string email)
+		: m_name(std::move(n)), m_maintainers{Person(Role::Maintainer, std::move(name),
+							     std::move(email))} { }
 
 	unsigned match_path(const std::filesystem::path &path) const {
 		return std::accumulate(m_patterns.cbegin(), m_patterns.cend(), 0u,
@@ -51,7 +52,7 @@ public:
 					       /*TODO*/ translateEmail(email), cnt));
 	}
 
-	void add_maintainer_if(const std::string_view maintainer,
+	void add_maintainer_if(const std::string_view &maintainer,
 			       const std::set<std::string> &suse_users,
 			       const TranslateEmail &translateEmail) {
 		if (auto m = Person::parsePerson(maintainer, Role::Upstream)) {
@@ -79,13 +80,13 @@ public:
 
 	const Maintainers &maintainers() const { return m_maintainers; }
 
-	void new_entry(const std::string_view &n) {
-		m_name = n;
+	void new_entry(std::string n) {
+		m_name = std::move(n);
 		m_maintainers.clear();
 		m_patterns.clear();
 	}
 
-	const std::string name() const { return m_name; }
+	const std::string &name() const { return m_name; }
 private:
 	std::string m_name;
 	Maintainers m_maintainers;
