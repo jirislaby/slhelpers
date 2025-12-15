@@ -32,8 +32,10 @@ public:
 		TestedBy,
 		ReportedBy,
 		Maintainer,
-		Upstream
+		Upstream,
+		Last
 	};
+	static_assert(Last == std::size(roleNames));
 
 	Role() = delete;
 	Role(size_t index) : m_role(static_cast<RoleType>(index)) {}
