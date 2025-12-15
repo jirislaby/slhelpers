@@ -19,7 +19,7 @@ struct Pattern {
 		return 0;
 	}
 
-	static std::optional<Pattern> create(const std::string_view &p);
+	static std::optional<Pattern> create(std::string pattern);
 private:
 	SlGit::PathSpec m_pathspec;
 	unsigned m_weight;
@@ -27,7 +27,7 @@ private:
 	Pattern(SlGit::PathSpec pathspec, unsigned weight) : m_pathspec(std::move(pathspec)),
 		m_weight(weight) {}
 
-	static constexpr unsigned pattern_weight(const std::string &pattern);
+	static constexpr unsigned pattern_weight(std::string_view pattern);
 };
 
 }

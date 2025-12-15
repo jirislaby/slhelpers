@@ -99,11 +99,11 @@ bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 				st.add_maintainer_if(line, m_suse_users, translateEmail);
 				break;
 			case 'F':
-				const auto fpattern = SlHelpers::String::trim(std::string_view(line).substr(2));
+				std::string fpattern(SlHelpers::String::trim(std::string_view(line).substr(2)));
 				if (fpattern.empty())
 					std::cerr << "Upstream MAINTAINERS entry: " << line << '\n';
 				else
-					st.add_pattern(fpattern);
+					st.add_pattern(std::move(fpattern));
 				break;
 			}
 		else {

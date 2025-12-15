@@ -65,8 +65,8 @@ public:
 				     " cannot be parsed into name and email!\n";
 	}
 
-	bool add_pattern(const std::string_view &pattern) {
-		auto p = Pattern::create(pattern);
+	bool add_pattern(std::string pattern) {
+		auto p = Pattern::create(std::move(pattern));
 		if (!p)
 			return false;
 		m_patterns.push_back(std::move(*p));

@@ -6,15 +6,14 @@
 
 using namespace SlKernCVS;
 
-constexpr unsigned int Pattern::pattern_weight(const std::string &pattern)
+constexpr unsigned int Pattern::pattern_weight(std::string_view pattern)
 {
 	unsigned ret = 1;
 	bool seen = false;
-	std::string_view pattern2{pattern};
 	// "fs/udf/" and "fs/*" would have the same weight otherwise
-	if (pattern2.ends_with('*'))
-		pattern2.remove_suffix(1);
-	for (const char c: pattern2) {
+	if (pattern.ends_with('*'))
+		pattern.remove_suffix(1);
+	for (const char c: pattern) {
 		switch (c) {
 		case '/':
 			seen = true;
@@ -35,18 +34,18 @@ constexpr unsigned int Pattern::pattern_weight(const std::string &pattern)
 	return ret;
 }
 
-std::optional<Pattern> Pattern::create(const std::string_view &p)
+std::optional<Pattern> Pattern::create(std::string pattern)
 {
-	std::string pattern{p};
 	if (!pattern.empty() && pattern.back() == '/' &&
 			pattern.find_first_of('*') != std::string::npos)
 		pattern.push_back('*');
 
-	auto pathspec = SlGit::PathSpec::create({pattern});
+	auto weight = pattern_weight(pattern);
+	auto pathspec = SlGit::PathSpec::create({ std::move(pattern) });
 	if (!pathspec) {
 		std::cerr << git_error_last()->message << '\n';
 		return std::nullopt;
 	}
 
-	return Pattern(std::move(*pathspec), pattern_weight(pattern));
+	return Pattern(std::move(*pathspec), weight);
 }
