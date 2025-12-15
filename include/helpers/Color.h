@@ -10,7 +10,7 @@ namespace SlHelpers {
 
 class Color {
 public:
-	enum C {
+	enum C : unsigned {
 		BLACK = 30,
 		RED = 31,
 		GREEN = 32,
@@ -27,18 +27,19 @@ public:
 		NL,
 	};
 
-	Color(const enum C &c) : Color(std::cout, c) {}
-	Color(std::ostream &os, const enum C &c) : m_NL(true), m_os(os) {
+	explicit Color(enum C c = DEFAULT) noexcept : Color(std::cout, c) {}
+	explicit Color(std::ostream &os, enum C c = DEFAULT) noexcept : m_NL(true), m_os(os) {
 		if (doColor(os))
-			m_os << seqBegin << toUnsigned(c) << 'm';
+			m_os << seqBegin << c << 'm';
 	}
 
-	Color(unsigned char r, unsigned char g, unsigned char b) : Color(std::cout, r, g, b) {}
-	Color(std::ostream &os, unsigned char r, unsigned char g, unsigned char b) :
-		m_NL(true), m_os(os) {
+	Color(unsigned char r, unsigned char g, unsigned char b) noexcept
+		: Color(std::cout, r, g, b) {}
+	Color(std::ostream &os, unsigned char r, unsigned char g, unsigned char b) noexcept
+		: m_NL(true), m_os(os) {
 		if (!doColor(os))
 			return;
-		m_os << seqBegin << toUnsigned(COL256) << ";2;" <<
+		m_os << seqBegin << COL256 << ";2;" <<
 			toUnsigned(r) << ';' <<
 			toUnsigned(g) << ';' <<
 			toUnsigned(b) << 'm';
@@ -56,7 +57,7 @@ public:
 
 	std::ostream &os() { return m_os; }
 
-	void ctrl(const Color::Ctrl &ctrl) {
+	void ctrl(Ctrl ctrl) {
 		switch (ctrl) {
 		case NL:
 		case NoNL:
@@ -84,8 +85,9 @@ private:
 		return m_doColor[idx];
 	}
 
-	inline static std::string seqBegin = "\033[01;";
-	inline static std::string seqEnd = "\033[0m";
+	friend void testColor();
+	inline static std::string_view seqBegin = "\033[01;";
+	inline static std::string_view seqEnd = "\033[0m";
 	inline static signed char m_doColor[] = { -1, -1, 1 };
 	inline static bool m_forceColor = false;
 	inline static bool m_forceColorValue = false;

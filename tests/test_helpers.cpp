@@ -2,12 +2,62 @@
 
 #include <cassert>
 
+#include "helpers/Color.h"
 #include "helpers/HomeDir.h"
 #include "helpers/Process.h"
 
 #include "helpers.h"
 
 using namespace SlHelpers;
+
+namespace SlHelpers {
+
+void testColor()
+{
+	using Clr = Color;
+
+	{
+		std::ostringstream oss;
+		std::ostringstream oss2;
+
+		static constexpr const std::string_view texts[] = {
+			"Test print",
+			"Test print NoNL",
+			" .. continued",
+		};
+		oss2 << Clr::seqBegin << Clr::DEFAULT << 'm' << texts[0] << Color::seqEnd << '\n' <<
+			Clr::seqBegin << Clr::DEFAULT << 'm' << texts[1] << Color::seqEnd <<
+			Clr::seqBegin << Clr::DEFAULT << 'm' << texts[2] << Color::seqEnd << '\n';
+		Clr(oss) << texts[0];
+		Clr(oss) << texts[1] << Color::NoNL;
+		Clr(oss) << texts[2];
+		std::cerr << oss.str();
+		assert(oss.str() == oss2.str());
+	}
+	{
+		std::ostringstream oss;
+		std::ostringstream oss2;
+
+		static constexpr const std::string_view text("Test print in RED");
+		oss2 << Clr::seqBegin << Clr::RED << 'm' << text << Color::seqEnd << '\n';
+		Clr(oss, Clr::RED) << text;
+		std::cerr << oss.str();
+		assert(oss.str() == oss2.str());
+	}
+	{
+		std::ostringstream oss;
+		std::ostringstream oss2;
+
+		static constexpr const std::string_view text("Test print in RGB(0, 255, 255)");
+		oss2 << Clr::seqBegin << Clr::COL256 << ";2;0;255;255m" << text <<
+			Color::seqEnd << '\n';
+		Clr(oss, 0, 255, 255) << text;
+		std::cerr << oss.str();
+		assert(oss.str() == oss2.str());
+	}
+}
+
+} // namespace
 
 namespace {
 
@@ -67,6 +117,7 @@ void testProcess(const std::filesystem::path &crash)
 int main(int argc, char **argv)
 {
 	assert(argc > 1);
+	testColor();
 	testHomeDir();
 	testProcess(argv[1]);
 
