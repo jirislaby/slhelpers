@@ -9,7 +9,7 @@ namespace SlKernCVS {
 
 class Role {
 private:
-	static constexpr const std::string roleNames[] = {
+	static constexpr const std::string_view roleNames[] = {
 		"Author",
 		"Signed-off-by",
 		"Co-developed-by",
@@ -37,12 +37,12 @@ public:
 
 	Role() = delete;
 	Role(size_t index) : m_role(static_cast<RoleType>(index)) {}
-	Role(const RoleType &role) : m_role(role) {}
+	Role(RoleType role) : m_role(role) {}
 
 	RoleType role() const { return m_role; }
 
-	constexpr std::size_t index() const { return static_cast<std::size_t>(m_role); }
-	const constexpr std::string &toString() const { return roleNames[index()]; }
+	constexpr auto index() const { return static_cast<std::size_t>(m_role); }
+	constexpr const auto &toString() const { return roleNames[index()]; }
 private:
 	RoleType m_role;
 };
@@ -50,9 +50,9 @@ private:
 class Person {
 public:
 	Person() = delete;
-	Person(const Role &r, const std::string &name, const std::string &email,
-	       unsigned count = 0) :
-		m_role(r), m_name(name), m_email(email), m_count(count) {}
+	Person(Role r, std::string name, std::string email, unsigned count = 0) :
+		m_role(std::move(r)), m_name(std::move(name)), m_email(std::move(email)),
+		m_count(count) {}
 
 	const Role &role() const { return m_role; }
 	const std::string &name() const { return m_name; }
@@ -74,8 +74,8 @@ public:
 
 	void setEmail(const std::string &email) { m_email = email; }
 
-	static std::optional<Person> parsePerson(const std::string_view &src, const Role &role);
-	static std::optional<Person> parse(const std::string &src)
+	static std::optional<Person> parsePerson(const std::string_view &src, Role role);
+	static std::optional<Person> parse(const std::string_view &src)
 	{
 		for (std::size_t i = Role::FirstRole; i < Role::LastRole; ++i) {
 			Role r(i);

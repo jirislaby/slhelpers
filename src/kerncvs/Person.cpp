@@ -17,7 +17,7 @@ using namespace SlKernCVS;
  * M: First LastName <email@somewhere.com>
  * M: email@somewhere.com
  */
-std::optional<Person> Person::parsePerson(const std::string_view &src, const Role &role)
+std::optional<Person> Person::parsePerson(const std::string_view &src, Role role)
 {
 	const auto atSign = src.find_last_of("@");
 	if (atSign == std::string::npos)
@@ -39,7 +39,7 @@ std::optional<Person> Person::parsePerson(const std::string_view &src, const Rol
 		if (email.find_first_of(" \n\t\r") != std::string::npos)
 			return std::nullopt;
 
-		return Person(role, "", std::string(email));
+		return Person(std::move(role), "", std::string(email));
 	}
 
 	// 1st form: name <email>
@@ -60,5 +60,5 @@ std::optional<Person> Person::parsePerson(const std::string_view &src, const Rol
 	if (email.empty())
 		return std::nullopt;
 
-	return Person(role, std::string(name), std::string(email));
+	return Person(std::move(role), std::string(name), std::string(email));
 }
