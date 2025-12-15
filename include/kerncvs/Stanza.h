@@ -14,6 +14,12 @@
 
 namespace SlKernCVS {
 
+/**
+ * @brief Stanza (a subsystem) from MAINTAINERS file.
+ *
+ * It usually contains maintainer(s) (list of Person) and file/pattern(s) (list of Pattern) they
+ * maintain.
+ */
 class Stanza {
 public:
 	using TranslateEmail = std::function<std::string (const std::string_view &sv)>;

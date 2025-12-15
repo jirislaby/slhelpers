@@ -16,6 +16,16 @@ class Maintainers {
 public:
 	using MaintainersType = std::vector<Stanza>;
 
+	/**
+	 * @brief load maintainers info
+	 * @param SUSE path to SUSE's MAINTAINERS file
+	 * @param linuxRepo path to upstream linux repository (LINUX_GIT)
+	 * @param origin name of branch (of LINUX_GIT) to load upstream MAINTAINERS from
+	 * @param translateEmail a function translating emails (eg. to map login -> bugzilla)
+	 * @return Maintainers if load was successful, otherwise std::nullopt
+	 *
+	 * \p SUSE is usually fetched from kerncvs.
+	 */
 	static std::optional<Maintainers> load(const std::filesystem::path &SUSE,
 					       const std::filesystem::path &linuxRepo,
 					       const std::string &origin,

@@ -52,6 +52,14 @@ private:
 class Person {
 public:
 	Person() = delete;
+
+	/**
+	 * @brief Create a Person with Role \p r, \p name, \p email and \p count of changes
+	 * @param r Role of this Person
+	 * @param name Name of this Person
+	 * @param email E-mail of this Person
+	 * @param count Count of changes historically done by this Person (in $KSOURCE_GIT)
+	 */
 	Person(Role r, std::string name, std::string email, unsigned count = 0) :
 		m_role(std::move(r)), m_name(std::move(name)), m_email(std::move(email)),
 		m_count(count) {}
@@ -60,7 +68,7 @@ public:
 	const std::string &name() const { return m_name; }
 	const std::string &email() const { return m_email; }
 	const std::string userName() const { return m_email.substr(0, m_email.find("@")); }
-	int count() const { return m_count; }
+	auto count() const { return m_count; }
 
 	std::string pretty(bool includeName = true) const {
 		if (includeName && !name().empty())
@@ -77,6 +85,11 @@ public:
 	void setEmail(const std::string &email) { m_email = email; }
 
 	static std::optional<Person> parsePerson(const std::string_view &src, Role role);
+	/**
+	 * @brief Try to parse a line
+	 * @param src Line to parse
+	 * @return A Person if successful, std::nullopt otherwise.
+	 */
 	static std::optional<Person> parse(const std::string_view &src)
 	{
 		for (std::size_t i = Role::FirstRole; i <= Role::LastRole; ++i) {
