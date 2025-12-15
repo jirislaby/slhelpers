@@ -28,8 +28,8 @@ public:
 		CoDevelopedBy,
 		SuggestedBy,
 		ReviewedBy,
-		AckedBy,
-		TestedBy, LastRole = TestedBy,
+		AckedBy, LastRole = AckedBy,
+		TestedBy,
 		ReportedBy,
 		Maintainer,
 		Upstream
@@ -77,7 +77,7 @@ public:
 	static std::optional<Person> parsePerson(const std::string_view &src, Role role);
 	static std::optional<Person> parse(const std::string_view &src)
 	{
-		for (std::size_t i = Role::FirstRole; i < Role::LastRole; ++i) {
+		for (std::size_t i = Role::FirstRole; i <= Role::LastRole; ++i) {
 			Role r(i);
 			if (src.starts_with(r.toString()))
 				if (auto p = parsePerson(src, std::move(r)))
