@@ -56,6 +56,41 @@ public:
 		return res;
 	}
 
+	/**
+	 * @brief Split \p str by \p delim into a vector, ignoring everything after \p comment
+	 * @param str String to parse
+	 * @param delim Delimeter to split by
+	 * @param comment Ignore string after character
+	 * @return Vector built of \p str.
+	 *
+	 * Note \p str must outlive the use of the return value!
+	 */
+	static constexpr std::vector<std::string_view>
+	splitSV(std::string_view str,
+		std::string_view delim,
+		std::optional<char> comment = std::nullopt)
+	{
+		constexpr const auto npos = std::string_view::npos;
+		std::vector<std::string_view> res;
+		std::size_t end = 0;
+
+		do {
+			const auto start = str.find_first_not_of(delim, end);
+			if (start == npos)
+				break;
+
+			end = str.find_first_of(delim, start);
+			const auto len = (end == npos) ? (str.length() - start) : (end - start);
+			auto token = str.substr(start, len);
+			if (comment && !token.empty() && token[0] == *comment)
+				break;
+
+			res.push_back(token);
+		} while (end != npos);
+
+		return res;
+	}
+
 	template <typename T>
 	static T trim(const T &line)
 	{
