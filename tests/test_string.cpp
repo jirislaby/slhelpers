@@ -11,20 +11,26 @@ namespace {
 
 void testSplit()
 {
-	std::string toSplit {"first second    third\t\tfourth  " };
+	static const constexpr std::string_view toSplit("  \t first second    third\t\tfourth  # ignore ");
 
-	auto split1 = String::split(toSplit, " \t");
-	assert(split1.size() == 4);
-	assert(split1[0] == "first");
-	assert(split1[1] == "second");
-	assert(split1[2] == "third");
-	assert(split1[3] == "fourth");
-
-	auto split2 = String::split(toSplit, " ");
-	assert(split2.size() == 3);
-	assert(split2[0] == "first");
-	assert(split2[1] == "second");
-	assert(split2[2] == "third\t\tfourth");
+	{
+		const auto split = String::split(std::string(toSplit), " \t");
+		assert(split.size() == 6);
+		assert(split[0] == "first");
+		assert(split[1] == "second");
+		assert(split[2] == "third");
+		assert(split[3] == "fourth");
+		assert(split[4] == "#");
+		assert(split[5] == "ignore");
+	}
+	{
+		const auto split = String::split(std::string(toSplit), " ", '#');
+		assert(split.size() == 4);
+		assert(split[0] == "\t");
+		assert(split[1] == "first");
+		assert(split[2] == "second");
+		assert(split[3] == "third\t\tfourth");
+	}
 }
 
 void testIsHex()

@@ -41,12 +41,11 @@ public:
 		return iFind(std::string_view(str), std::string_view(sub));
 	}
 
-	static std::vector<std::string> split(const std::string &str, const std::string &delim,
+	static std::vector<std::string> split(std::string str, const std::string &delim,
 					      const std::optional<char> &comment = std::nullopt) {
 		std::vector<std::string> res;
-		std::string copy(str);
 
-		auto tok = ::strtok(copy.data(), delim.c_str());
+		auto tok = ::strtok(str.data(), delim.c_str());
 		while (tok) {
 			if (comment && tok[0] == *comment)
 				break;
