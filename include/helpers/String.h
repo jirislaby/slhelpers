@@ -14,13 +14,16 @@ namespace SlHelpers {
 
 class String {
 public:
+	inline static constinit const auto npos = std::string_view::npos;
+	static_assert(std::string_view::npos == std::string::npos);
+
 	String() = delete;
 
 	/**
 	 * @brief Like string::find() but ignoring case
 	 * @param str string to search in
 	 * @param sub string to search for
-	 * @return position of \p sub in \p str if found, std::string_view::npos otherwise
+	 * @return position of \p sub in \p str if found, npos otherwise
 	 */
 	static constexpr std::string_view::size_type
 	iFind(std::string_view str, std::string_view sub) {
@@ -32,7 +35,7 @@ public:
 					      std::tolower(static_cast<unsigned char>(ch2));
 		});
 		if (it == str.end())
-			return std::string_view::npos;
+			return npos;
 		return it - str.begin();
 	}
 
@@ -65,7 +68,6 @@ public:
 		std::string_view delim,
 		std::optional<char> comment = std::nullopt)
 	{
-		constexpr const auto npos = std::string_view::npos;
 		std::vector<std::string_view> res;
 		std::size_t end = 0;
 
@@ -93,7 +95,7 @@ public:
 		const auto pos1 = line.find_first_not_of(spaces);
 		const auto pos2 = line.find_last_not_of(spaces);
 
-		if (pos1 == std::string::npos)
+		if (pos1 == npos)
 			return {};
 
 		return line.substr(pos1, pos2 - pos1 + 1);
