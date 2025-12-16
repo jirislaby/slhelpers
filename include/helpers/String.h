@@ -23,7 +23,7 @@ public:
 	 * @return position of \p sub in \p str if found, std::string_view::npos otherwise
 	 */
 	static constexpr std::string_view::size_type
-	iFind(const std::string_view &str, const std::string_view &sub) {
+	iFind(std::string_view str, std::string_view sub) {
 		if (str.empty() && sub.empty())
 			return 0;
 		const auto it = std::search(str.begin(), str.end(), sub.begin(), sub.end(),
@@ -34,11 +34,6 @@ public:
 		if (it == str.end())
 			return std::string_view::npos;
 		return it - str.begin();
-	}
-
-	template <typename T1, typename T2>
-	static constexpr std::string_view::size_type iFind(const T1 &str, const T2 &sub) {
-		return iFind(std::string_view(str), std::string_view(sub));
 	}
 
 	static std::vector<std::string> split(std::string str, const std::string &delim,
@@ -104,14 +99,14 @@ public:
 		return line.substr(pos1, pos2 - pos1 + 1);
 	}
 
-	static bool isHex(const std::string_view &s) {
+	static bool isHex(std::string_view s) {
 		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
 	}
 
 	template <typename T>
 	static void join(std::ostream &out, const T &iterable,
-			 const std::string_view &sep = ", ",
-			 const std::string_view &quote = "") {
+			 std::string_view sep = ", ",
+			 std::string_view quote = "") {
 		bool first = true;
 		for (const auto &e: iterable) {
 			if (!first)
