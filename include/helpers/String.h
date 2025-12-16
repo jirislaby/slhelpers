@@ -26,7 +26,7 @@ public:
 	 * @return position of \p sub in \p str if found, npos otherwise
 	 */
 	static constexpr std::string_view::size_type
-	iFind(std::string_view str, std::string_view sub) {
+	iFind(std::string_view str, std::string_view sub) noexcept {
 		if (str.empty() && sub.empty())
 			return 0;
 		const auto it = std::search(str.begin(), str.end(), sub.begin(), sub.end(),
@@ -39,8 +39,9 @@ public:
 		return it - str.begin();
 	}
 
-	static std::vector<std::string> split(std::string str, const std::string &delim,
-					      const std::optional<char> &comment = std::nullopt) {
+	static std::vector<std::string>
+	split(std::string str, const std::string &delim,
+	      const std::optional<char> &comment = std::nullopt) noexcept {
 		std::vector<std::string> res;
 
 		auto tok = ::strtok(str.data(), delim.c_str());
@@ -66,7 +67,7 @@ public:
 	static constexpr std::vector<std::string_view>
 	splitSV(std::string_view str,
 		std::string_view delim,
-		std::optional<char> comment = std::nullopt)
+		std::optional<char> comment = std::nullopt) noexcept
 	{
 		std::vector<std::string_view> res;
 		std::size_t end = 0;
@@ -89,9 +90,9 @@ public:
 	}
 
 	template <typename T>
-	static T trim(const T &line)
+	static constexpr T trim(const T &line) noexcept
 	{
-		static constexpr const std::string_view spaces{" \n\t\r"};
+		constexpr const std::string_view spaces{" \n\t\r"};
 		const auto pos1 = line.find_first_not_of(spaces);
 		const auto pos2 = line.find_last_not_of(spaces);
 
@@ -101,14 +102,14 @@ public:
 		return line.substr(pos1, pos2 - pos1 + 1);
 	}
 
-	static bool isHex(std::string_view s) {
+	static constexpr bool isHex(std::string_view s) noexcept {
 		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
 	}
 
 	template <typename T>
-	static void join(std::ostream &out, const T &iterable,
-			 std::string_view sep = ", ",
-			 std::string_view quote = "") {
+	static constexpr void join(std::ostream &out, const T &iterable,
+				   std::string_view sep = ", ",
+				   std::string_view quote = "") noexcept {
 		bool first = true;
 		for (const auto &e: iterable) {
 			if (!first)
