@@ -12,6 +12,39 @@
 
 namespace SlHelpers {
 
+/**
+ * @brief Parses a string view into lines.
+ *
+ * Use like:
+ * @code
+ * GetLine g("str");
+ * while (auto line = g.get()) {}
+ * @endcode
+ */
+class GetLine {
+public:
+	GetLine(std::string_view str) noexcept : m_str(str) {}
+
+	/**
+	 * @brief Read one line
+	 * @return Line if one was read, otherwise nullopt.
+	 */
+	std::optional<std::string_view> get() noexcept {
+		if (m_str.empty())
+			return std::nullopt;
+
+		const auto eol = m_str.find('\n');
+		const auto last = eol == std::string_view::npos;
+		auto line = last ? m_str : m_str.substr(0, eol);
+
+		m_str.remove_prefix(last ? m_str.size() : eol + 1);
+
+		return line;
+	}
+private:
+	std::string_view m_str;
+};
+
 class String {
 public:
 	inline static constinit const auto npos = std::string_view::npos;

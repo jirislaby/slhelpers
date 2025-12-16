@@ -112,6 +112,35 @@ void testJoin()
 	}
 }
 
+void testGetLine()
+{
+	{
+		static const constexpr std::string_view lines[] = {
+			"one", "two", "three", "four"
+		};
+		std::ostringstream ss;
+		for (const auto &l: lines)
+			ss << l << '\n';
+
+		GetLine gl(ss.view());
+		auto i = 0U;
+		while (auto line = gl.get())
+			assert(lines[i++] == line);
+		assert(i == 4);
+	}
+	{
+		assert(!GetLine("").get());
+
+	}
+	{
+		GetLine gl("one\ntwo");
+		assert(gl.get() == "one");
+		assert(gl.get() == "two");
+		assert(!gl.get());
+
+	}
+}
+
 } // namespace
 
 int main()
@@ -121,6 +150,7 @@ int main()
 	testTrim();
 	testIFind();
 	testJoin();
+	testGetLine();
 
 	return 0;
 }
