@@ -33,10 +33,9 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 	std::set<std::string> patchEmails;
 	std::set<std::string> patchRefs;
 	bool gitFixes = false;
-	std::istringstream iss(content);
-	std::string line;
-
-	while (std::getline(iss, line)) {
+	SlHelpers::GetLine gl(content);
+	while (auto lineOpt = gl.get()) {
+		auto line = *lineOpt;
 		auto m = REInteresting.match(line);
 		if (m > 1) {
 			patchEmails.emplace(REInteresting.matchByIdx(line, 1));
@@ -49,9 +48,9 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		} else if (dumpRefs) {
 			static constexpr const std::string_view references("References:");
 			if (line.starts_with(references))
-				for (const auto &ref: SlHelpers::String::split(line.substr(references.size()),
+				for (const auto &ref: SlHelpers::String::splitSV(line.substr(references.size()),
 									" \t,;"))
-					patchRefs.insert(ref);
+					patchRefs.emplace(ref);
 		}
 
 		if (reportUnhandled && line.find("@suse.") != std::string::npos &&
@@ -64,22 +63,23 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 			if (REInvalRef.match(ref) == PCRE2_ERROR_NOMATCH)
 				m_HoHRefs[email][ref]++;
 
-	while (std::getline(iss, line)) {
+	while (auto lineOpt = gl.get()) {
+		auto line = *lineOpt;
 		static constexpr const std::string_view prefix("+++ b/");
 		if (!line.starts_with(prefix))
 			continue;
 		if (!line.ends_with(".c") && !line.ends_with(".h"))
 			continue;
 
-		auto cfile = line.substr(prefix.length());
+		auto cfile = std::string(line.substr(prefix.length()));
 		if (cfile.starts_with("/dev"))
 			std::cerr << __func__ << ": " << file << ": " << cfile << '\n';
 		for (const auto &email : patchEmails) {
 			m_HoH[email][cfile]++;
 			if (gitFixes)
-				m_HoHReal[email][cfile]; // add so it exists
+				m_HoHReal[email].try_emplace(std::move(cfile), 0);
 			else
-				m_HoHReal[email][cfile]++;
+				m_HoHReal[email][std::move(cfile)]++;
 		}
 	}
 
