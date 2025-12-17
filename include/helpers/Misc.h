@@ -15,13 +15,16 @@
 namespace SlHelpers {
 
 struct CmpVersions {
-	bool operator()(const std::string &ver1, const std::string &ver2) const
+	bool operator()(std::string_view ver1, std::string_view ver2) const
 	{
-		const auto arr1 = String::split(ver1, ".-");
-		const auto arr2 = String::split(ver2, ".-");
+		const auto arr1 = String::splitSV(ver1, ".-");
+		const auto arr2 = String::splitSV(ver2, ".-");
 		for (auto i = 0U; i < 2U; ++i) {
-			const unsigned int ver1 = std::stoi(arr1[i]);
-			const unsigned int ver2 = std::stoi(arr2[i]);
+			unsigned int ver1 = 0;
+			unsigned int ver2 = 0;
+			std::from_chars(arr1[i].data(), arr1[i].data() + arr1[i].size(), ver1);
+			std::from_chars(arr2[i].data(), arr2[i].data() + arr2[i].size(), ver2);
+
 			if (ver1 != ver2)
 				return ver1 < ver2;
 			const auto arr1Last = arr1.size() == i + 1;
@@ -36,13 +39,11 @@ struct CmpVersions {
 	}
 
 private:
-	static unsigned int getSublevel(const std::string &s) {
-		if (s.starts_with("rc")) {
-			unsigned int i = 0;
-			std::from_chars(s.data() + 2, s.data() + s.size(), i);
-			return i;
-		} else
-			return std::stoi(s);
+	static unsigned int getSublevel(std::string_view s) {
+		const auto off = s.starts_with("rc") ? 2U : 0U;
+		unsigned int i = 0;
+		std::from_chars(s.data() + off, s.data() + s.size(), i);
+		return i;
 	}
 };
 
