@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <set>
-#include <sstream>
 
 #include "curl/Curl.h"
 #include "helpers/Color.h"
@@ -26,41 +25,39 @@ std::optional<Branches::BranchesList> Branches::getBuildBranches()
 
 Branches Branches::create(const std::string &branchesConf)
 {
-	std::istringstream iss { branchesConf };
-
-	std::string line;
 	BranchesMap branches;
 
-	while (std::getline(iss, line)) {
-		auto split = SlHelpers::String::split(line, " \t", '#');
+	SlHelpers::GetLine gl(branchesConf);
+	while (auto line = gl.get()) {
+		auto split = SlHelpers::String::splitSV(*line, " \t", '#');
 		if (split.empty())
 			continue;
 
-		auto name = std::move(split[0]);
+		auto name = split[0];
 		if (name.back() != ':') {
-			Clr(std::cerr, Clr::RED) << "bad line: " << line;
+			Clr(std::cerr, Clr::RED) << "bad line: " << *line;
 			continue;
 		}
-		name.pop_back();
+		name.remove_suffix(1);
 
 		BranchProps bp{};
 		bp.isExcluded = isExcluded(name);
 		for (auto i = 1U; i < split.size(); ++i) {
 			static constexpr const std::string_view mergeStr("merge:");
-			auto cur = std::move(split[i]);
+			auto cur = split[i];
 			if (cur == "build")
 				bp.isBuild = true;
 			else if (cur == "publish")
 				bp.isPublish = true;
 			else if (cur.starts_with(mergeStr)) {
-				auto toErase = mergeStr.size();
-				if (cur[toErase] == '-')
-					toErase++;
-				bp.merges.push_back(std::move(cur.erase(0, toErase)));
+				cur.remove_prefix(mergeStr.size());
+				if (!cur.empty() && cur.front() == '-')
+					cur.remove_prefix(1);
+				bp.merges.emplace_back(cur);
 			}
 		}
 
-		branches.emplace(std::move(name), std::move(bp));
+		branches.emplace(name, std::move(bp));
 	}
 
 	return Branches(branches);
