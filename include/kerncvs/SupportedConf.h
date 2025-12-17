@@ -23,11 +23,11 @@ public:
 	};
 
 	SupportedConf() = delete;
-	SupportedConf(const std::string &conf);
+	SupportedConf(std::string_view conf);
 
 	SupportState supportState(const std::string &module) const;
 private:
-	void parseLine(std::string &line);
+	void parseLine(std::string_view line) noexcept;
 
 	std::vector<std::pair<std::string, SupportState>> entries;
 };

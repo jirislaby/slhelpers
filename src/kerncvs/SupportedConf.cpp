@@ -2,17 +2,19 @@
 
 #include <fnmatch.h>
 #include <iostream>
-#include <sstream>
 #include <vector>
 
+#include "helpers/Color.h"
 #include "helpers/String.h"
 #include "kerncvs/SupportedConf.h"
 
 using namespace SlKernCVS;
 
-void SupportedConf::parseLine(std::string &line)
+using Clr = SlHelpers::Color;
+
+void SupportedConf::parseLine(std::string_view line) noexcept
 {
-	auto vec = SlHelpers::String::split(line, " \t", '#');
+	auto vec = SlHelpers::String::splitSV(line, " \t", '#');
 	if (vec.empty())
 		return;
 
@@ -37,24 +39,22 @@ void SupportedConf::parseLine(std::string &line)
 				supp = SupportState::Unsupported;
 			break;
 		default:
-			std::cerr << __func__ << ": bad vec from: " << line << "\n";
+			Clr(std::cerr, Clr::RED) << __func__ << ": bad vec from: " << line;
 			return;
 		}
 	}
 
 	auto module = vec.back();
 	if (module.ends_with(".ko"))
-		module.resize(module.size() - 3);
-	entries.push_back({ module, supp });
+		module.remove_suffix(3);
+	entries.emplace_back(module, supp);
 }
 
-SupportedConf::SupportedConf(const std::string &conf)
+SupportedConf::SupportedConf(std::string_view conf)
 {
-	std::istringstream iss { conf };
-	std::string line;
-
-	while (std::getline(iss, line))
-		parseLine(line);
+	SlHelpers::GetLine gl(conf);
+	while (auto line = gl.get())
+		parseLine(*line);
 }
 
 SupportedConf::SupportState SupportedConf::supportState(const std::string &module) const
