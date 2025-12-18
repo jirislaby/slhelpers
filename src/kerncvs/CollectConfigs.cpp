@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "helpers/String.h"
 #include "kerncvs/CollectConfigs.h"
 #include "git/Git.h"
 
@@ -45,23 +46,21 @@ bool CollectConfigs::processFlavor(const std::string &arch, const std::string &f
 }
 
 bool CollectConfigs::processConfigFile(const std::string &arch, const std::string &flavor,
-				       const std::string &configFile)
+				       std::string_view configFile)
 {
 	if (!insertArchFlavor(arch, flavor))
 		return false;
 
-	std::istringstream iss { configFile };
-	std::string line;
-
-	while (std::getline(iss, line))
-		if (!processConfig(arch, flavor, line))
+	SlHelpers::GetLine gl(configFile);
+	while (auto line = gl.get())
+		if (!processConfig(arch, flavor, *line))
 			return false;
 
 	return true;
 }
 
 bool CollectConfigs::processConfig(const std::string &arch, const std::string &flavor,
-				   const std::string &line)
+				   std::string_view line)
 {
 	static constexpr const std::string_view commented("# CONFIG_");
 
@@ -74,9 +73,9 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 			return false;
 		}
 
-		const auto config = line.substr(2, end - 2);
+		std::string config(line.substr(2, end - 2));
 
-		return insertConfig(arch, flavor, config, Disabled);
+		return insertConfig(arch, flavor, std::move(config), Disabled);
 	}
 	if (line.starts_with("CONFIG_")) {
 		const auto end = line.find('=');
@@ -85,13 +84,13 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 				     line << '\n';
 			return -1;
 		}
-		const auto config = line.substr(0, end);
+		std::string config(line.substr(0, end));
 		ConfigValue value = WithValue;
 		if (line[end + 1] == 'y')
 			value = BuiltIn;
 		else if (line[end + 1] == 'm')
 			value = Module;
-		return insertConfig(arch, flavor, config, value);
+		return insertConfig(arch, flavor, std::move(config), value);
 	}
 
 	return true;

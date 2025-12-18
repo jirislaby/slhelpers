@@ -37,9 +37,9 @@ private:
 	bool processFlavor(const std::string &arch, const std::string &flavor,
 			   const SlGit::TreeEntry &treeEntry);
 	bool processConfigFile(const std::string &arch, const std::string &flavor,
-			       const std::string &configFile);
+			       std::string_view configFile);
 	bool processConfig(const std::string &arch, const std::string &flavor,
-			   const std::string &line);
+			   std::string_view line);
 	const SlGit::Repo &repo;
 	const InsertArchFlavor insertArchFlavor;
 	const InsertConfig insertConfig;
