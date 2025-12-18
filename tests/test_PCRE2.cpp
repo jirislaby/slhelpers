@@ -6,19 +6,21 @@
 #include "helpers/Color.h"
 #include "pcre2/PCRE2.h"
 
+using namespace SlPCRE2;
+
 using Clr = SlHelpers::Color;
 
-static_assert(!std::is_copy_constructible<PCRE2::PCRE2>());
-static_assert(!std::is_copy_assignable<PCRE2::PCRE2>());
+static_assert(!std::is_copy_constructible<PCRE2>());
+static_assert(!std::is_copy_assignable<PCRE2>());
 
 int main()
 {
-	PCRE2::PCRE2 regex2;
+	PCRE2 regex2;
 	assert(regex2.compile("dummy"));
 	assert(regex2);
 
 	{
-		PCRE2::PCRE2 regex;
+		PCRE2 regex;
 
 		assert(regex.compile("a(.*)(b)$"));
 		assert(regex.valid());
@@ -61,7 +63,7 @@ int main()
 	}
 
 	{
-		PCRE2::PCRE2 regex;
+		PCRE2 regex;
 		assert(regex.compile("a(.*)(b)$", PCRE2_CASELESS));
 		assert(regex.match("axxxB") > 0);
 	}

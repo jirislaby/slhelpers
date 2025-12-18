@@ -7,7 +7,7 @@
 
 #include "../helpers/LastError.h"
 
-namespace PCRE2 {
+namespace SlPCRE2 {
 
 struct MatchIterator {
 	MatchIterator() = delete;

@@ -11,13 +11,12 @@
 
 using namespace SlKernCVS;
 
-
 int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::string &content)
 {
-	static PCRE2::PCRE2 REInteresting;
-	static PCRE2::PCRE2 REFalse;
-	static PCRE2::PCRE2 REGitFixes;
-	static PCRE2::PCRE2 REInvalRef;
+	static SlPCRE2::PCRE2 REInteresting;
+	static SlPCRE2::PCRE2 REFalse;
+	static SlPCRE2::PCRE2 REGitFixes;
+	static SlPCRE2::PCRE2 REInvalRef;
 	static std::once_flag flag;
 
 	std::call_once(flag, [](){
