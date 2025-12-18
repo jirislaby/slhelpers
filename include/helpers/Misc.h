@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_MISC_H
-#define SLHELPERS_MISC_H
+#pragma once
 
 #include <charconv>
 #include <cstddef>
@@ -14,8 +13,11 @@
 
 namespace SlHelpers {
 
+/**
+ * @brief Compare versions, to be used as Compare in containers
+ */
 struct CmpVersions {
-	bool operator()(std::string_view ver1, std::string_view ver2) const
+	constexpr bool operator()(std::string_view ver1, std::string_view ver2) const noexcept
 	{
 		const auto arr1 = String::splitSV(ver1, ".-");
 		const auto arr2 = String::splitSV(ver2, ".-");
@@ -39,7 +41,7 @@ struct CmpVersions {
 	}
 
 private:
-	static unsigned int getSublevel(std::string_view s) {
+	static unsigned int getSublevel(std::string_view s) noexcept {
 		const auto off = s.starts_with("rc") ? 2U : 0U;
 		unsigned int i = 0;
 		std::from_chars(s.data() + off, s.data() + s.size(), i);
@@ -48,8 +50,13 @@ private:
 };
 
 struct Env {
+	/**
+	 * @brief Get value of \p name in environment
+	 * @param name Name of variable to obtain value of
+	 * @return Value of environment variable \p name. nullopt if not present.
+	 */
 	template <typename T = std::string>
-	static std::optional<T> get(const std::string &name) {
+	static std::optional<T> get(const std::string &name) noexcept {
 		if (const auto env = std::getenv(name.c_str()))
 			return env;
 		return std::nullopt;
@@ -57,8 +64,15 @@ struct Env {
 };
 
 struct Unit {
+	/**
+	 * @brief Convert \p bytes into human readable form (1 Kib, 20.5 MiB, ...)
+	 * @param bytes Value to convert
+	 * @param precision Count of numbers after a dot
+	 * @param fixed If std::fixed should be used
+	 * @return Human readable form of \p bytes.
+	 */
 	static std::string human(const size_t bytes, const unsigned precision = 2,
-				 const bool fixed = true) {
+				 const bool fixed = true) noexcept {
 		static constexpr const std::string_view units[] {
 			"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"
 		};
@@ -79,5 +93,3 @@ struct Unit {
 };
 
 }
-
-#endif
