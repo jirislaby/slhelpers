@@ -13,7 +13,7 @@ const constexpr std::string_view clearLine("\33[2K\r");
 const constexpr bool do_ratelimit = 1;
 }
 
-void DefaultFetchCallbacks::checkoutProgress(const std::string &path, size_t completed_steps,
+void DefaultFetchCallbacks::checkoutProgress(std::string_view path, size_t completed_steps,
 					     size_t total_steps)
 {
 	if (do_ratelimit && completed_steps != 0 && completed_steps != total_steps &&
@@ -25,8 +25,8 @@ void DefaultFetchCallbacks::checkoutProgress(const std::string &path, size_t com
 		std::cerr << '\n';
 }
 
-int DefaultFetchCallbacks::credentials(git_credential **out, const std::string &url,
-				       const std::optional<std::string> &usernameFromUrl,
+int DefaultFetchCallbacks::credentials(git_credential **out, std::string_view url,
+				       std::optional<std::string_view> usernameFromUrl,
 				       unsigned int allowedTypes)
 {
 	auto user = getUserName(usernameFromUrl);
@@ -63,7 +63,7 @@ int DefaultFetchCallbacks::packProgress(int stage, uint32_t current, uint32_t to
 	return 0;
 }
 
-int DefaultFetchCallbacks::sidebandProgress(const std::string_view &str)
+int DefaultFetchCallbacks::sidebandProgress(std::string_view str)
 {
 	if (!do_ratelimit || ratelimit.limit())
 		std::cerr << clearLine << "remote: " << str;
@@ -94,8 +94,8 @@ int DefaultFetchCallbacks::transferProgress(const git_indexer_progress &stats)
 	return 0;
 }
 
-int DefaultFetchCallbacks::updateRefs(const std::string &refname, const git_oid &a, const git_oid &b,
-				 git_refspec &) {
+int DefaultFetchCallbacks::updateRefs(std::string_view refname, const git_oid &a, const git_oid &b,
+				      git_refspec &) {
 	const auto b_str = SlGit::Helpers::oidToStr(b);
 
 	if (git_oid_is_zero(&a)) {
@@ -108,7 +108,7 @@ int DefaultFetchCallbacks::updateRefs(const std::string &refname, const git_oid 
 	return 0;
 }
 
-std::string DefaultFetchCallbacks::getUserName(const std::optional<std::string> &usernameFromUrl)
+std::string DefaultFetchCallbacks::getUserName(std::optional<std::string_view> usernameFromUrl)
 {
 	if (!userName.empty())
 		return userName;

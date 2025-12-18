@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
-#ifndef SLGIT_DEFAULTFETCHCALLBACKS_H
-#define SLGIT_DEFAULTFETCHCALLBACKS_H
+
+#pragma once
 
 #include "../helpers/Ratelimit.h"
 #include "../helpers/SSH.h"
@@ -14,19 +14,19 @@ public:
 	DefaultFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
 		tried(0), triedKey(0) { }
 
-	virtual void checkoutProgress(const std::string &, size_t, size_t) override;
+	virtual void checkoutProgress(std::string_view, size_t, size_t) override;
 
-	virtual int credentials(git_credential **out, const std::string &url,
-				const std::optional<std::string> &usernameFromUrl,
+	virtual int credentials(git_credential **out, std::string_view url,
+				std::optional<std::string_view> usernameFromUrl,
 				unsigned int allowedTypes) override;
 	virtual int packProgress(int stage, uint32_t current, uint32_t total) override;
-	virtual int sidebandProgress(const std::string_view &str) override;
+	virtual int sidebandProgress(std::string_view str) override;
 	virtual int transferProgress(const git_indexer_progress &stats) override;
-	virtual int updateRefs(const std::string &refname, const git_oid &a, const git_oid &b,
+	virtual int updateRefs(std::string_view refname, const git_oid &a, const git_oid &b,
 			       git_refspec &) override;
 
 private:
-	std::string getUserName(const std::optional<std::string> &usernameFromUrl);
+	std::string getUserName(std::optional<std::string_view> usernameFromUrl);
 
 	std::string userName;
 	SlHelpers::Ratelimit ratelimit;
@@ -36,5 +36,3 @@ private:
 };
 
 }
-
-#endif
