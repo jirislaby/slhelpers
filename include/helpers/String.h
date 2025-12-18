@@ -152,6 +152,36 @@ public:
 			out << quote << e << quote;
 		}
 	}
+
+
+	/**
+	 * @brief Hash for string and string_view to be used in hashing containers
+	 *
+	 * It is to support for find() to work on both string and string_view.
+	 */
+	struct Hash {
+		using is_transparent = void;
+
+		auto hash(std::string_view sv) const noexcept {
+			return std::hash<std::string_view>{}(sv);
+		}
+
+		size_t operator()(std::string_view sv) const noexcept { return hash(sv); }
+		size_t operator()(const std::string &s) const noexcept { return hash(s); }
+	};
+
+	/**
+	 * @brief Equality struct for string and string_view to be used in containers
+	 *
+	 * It is to support for find() to work on both string and string_view.
+	 */
+	struct Eq {
+		using is_transparent = void;
+
+		bool operator()(std::string_view a, std::string_view b) const noexcept {
+			return a == b;
+		}
+	};
 };
 
 }
