@@ -84,13 +84,13 @@ public:
 
 	void setEmail(const std::string &email) { m_email = email; }
 
-	static std::optional<Person> parsePerson(const std::string_view &src, Role role);
+	static std::optional<Person> parsePerson(std::string_view src, Role role);
 	/**
 	 * @brief Try to parse a line
 	 * @param src Line to parse
 	 * @return A Person if successful, std::nullopt otherwise.
 	 */
-	static std::optional<Person> parse(const std::string_view &src)
+	static std::optional<Person> parse(std::string_view src)
 	{
 		for (std::size_t i = Role::FirstRole; i <= Role::LastRole; ++i) {
 			Role r(i);

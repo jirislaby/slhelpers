@@ -22,7 +22,7 @@ namespace SlKernCVS {
  */
 class Stanza {
 public:
-	using TranslateEmail = std::function<std::string (const std::string_view &sv)>;
+	using TranslateEmail = std::function<std::string (std::string_view sv)>;
 	using Maintainers = std::vector<Person>;
 
 	Stanza() = default;
@@ -38,7 +38,7 @@ public:
 		});
 	}
 
-	void add_maintainer_and_store(const std::string_view &maintainer,
+	void add_maintainer_and_store(std::string_view maintainer,
 				      std::set<std::string> &suse_users,
 				      const TranslateEmail &translateEmail) {
 		if (auto m = Person::parsePerson(maintainer, Role::Maintainer)) {
@@ -52,13 +52,13 @@ public:
 				     " cannot be parsed into name and email!\n";
 	}
 
-	void add_backporter(const std::string &name, const std::string_view &email,
+	void add_backporter(const std::string &name, std::string_view email,
 			    unsigned cnt, const TranslateEmail &translateEmail) {
 		m_maintainers.push_back(Person(Role::Maintainer, name,
 					       /*TODO*/ translateEmail(email), cnt));
 	}
 
-	void add_maintainer_if(const std::string_view &maintainer,
+	void add_maintainer_if(std::string_view maintainer,
 			       const std::set<std::string> &suse_users,
 			       const TranslateEmail &translateEmail) {
 		if (auto m = Person::parsePerson(maintainer, Role::Upstream)) {

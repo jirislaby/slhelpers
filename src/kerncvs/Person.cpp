@@ -16,7 +16,7 @@ using namespace SlKernCVS;
  * M: First LastName <email@somewhere.com>
  * M: email@somewhere.com
  */
-std::optional<Person> Person::parsePerson(const std::string_view &src, Role role)
+std::optional<Person> Person::parsePerson(std::string_view src, Role role)
 {
 	const auto atSign = src.find_last_of("@");
 	if (atSign == std::string::npos)

@@ -67,10 +67,11 @@ bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 		return false;
 	}
 
-	std::istringstream upstream_maintainters_file(*maintOpt);
 	Stanza st;
 	bool skip = true;
-	for (std::string line; getline(upstream_maintainters_file, line); ) {
+	SlHelpers::GetLine gl(*maintOpt);
+	while (auto lineOpt = gl.get()) {
+		auto line = *lineOpt;
 		if (skip) {
 			if (line.starts_with("Maintainers List"))
 				skip = false;
@@ -99,7 +100,7 @@ bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 				st.add_maintainer_if(line, m_suse_users, translateEmail);
 				break;
 			case 'F':
-				std::string fpattern(SlHelpers::String::trim(std::string_view(line).substr(2)));
+				std::string fpattern(SlHelpers::String::trim(line.substr(2)));
 				if (fpattern.empty())
 					std::cerr << "Upstream MAINTAINERS entry: " << line << '\n';
 				else
@@ -109,7 +110,7 @@ bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 		else {
 			if (!st.empty())
 				m_upstream_maintainers.push_back(std::move(st));
-			st.new_entry("Upstream: " + line);
+			st.new_entry(std::string("Upstream: ").append(line));
 		}
 	}
 	if (!st.empty())
