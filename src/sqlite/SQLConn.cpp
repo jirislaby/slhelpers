@@ -63,7 +63,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 }
 
 bool SQLConn::attach(const std::filesystem::path &dbFile,
-		     const std::string_view &dbName) const noexcept
+		     std::string_view dbName) const noexcept
 {
 	SQLStmtHolder attach;
 	return prepareStatement("ATTACH DATABASE :db AS :dbName", attach) &&
@@ -143,10 +143,10 @@ bool SQLConn::createViews(const Views &views) const noexcept
 	return true;
 }
 
-bool SQLConn::prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept
+bool SQLConn::prepareStatement(std::string_view sql, SQLStmtHolder &stmt) const noexcept
 {
 	sqlite3_stmt *SQLStmt;
-	auto ret = sqlite3_prepare_v2(sqlHolder, sql.c_str(), -1, &SQLStmt, nullptr);
+	auto ret = sqlite3_prepare_v2(sqlHolder, sql.data(), sql.size(), &SQLStmt, nullptr);
 	if (ret != SQLITE_OK) {
 		setError(ret, "db prepare failed", true) << "\n\t" << sql;
 		return false;
@@ -364,7 +364,7 @@ SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
 	}
 }
 
-SlHelpers::LastError &SQLConn::setError(int ret, const std::string_view &error, bool errmsg) const
+SlHelpers::LastError &SQLConn::setError(int ret, std::string_view error, bool errmsg) const
 {
 	m_lastErrorCode = sqlite3_errcode(sqlHolder);
 	m_lastErrorCodeExt = sqlite3_extended_errcode(sqlHolder);

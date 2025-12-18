@@ -89,15 +89,15 @@ public:
 		return	SQLConnTemp::prepDB() && prepareStatements(stmts) && prepareSelects(sels);
 	}
 
-	bool badInsertAddress(const std::string &street) const {
+	bool badInsertAddress(std::string_view street) const {
 		return insert(insAddress, { { ":streetFoo", street } });
 	}
 
-	bool insertAddress(const std::string &street) const {
+	bool insertAddress(std::string_view street) const {
 		return insert(insAddress, { { ":street", street } });
 	}
 
-	bool insertPerson(const std::string &name, const int age, const std::string &street,
+	bool insertPerson(std::string_view name, const int age, std::string_view street,
 			  uint64_t *affected = nullptr) const {
 		return insert(insPerson, {
 				      { ":name", name },
@@ -106,7 +106,7 @@ public:
 			      }, affected);
 	}
 
-	bool insertPersonTemp(const std::string &name, const int age, const std::string &street,
+	bool insertPersonTemp(std::string_view name, const int age, std::string_view street,
 			      uint64_t *affected = nullptr) const {
 		return insert(insPersonTemp, {
 				      { ":name", name },
@@ -124,7 +124,7 @@ public:
 	}
 
 	std::optional<SlSqlite::SQLConn::SelectResult>
-	getPersons(const std::string &name) const
+	getPersons(std::string_view name) const
 	{
 		return selPerson.select({ { ":name", name } });
 	}
@@ -164,10 +164,10 @@ SQLConn testOpen(const std::filesystem::path &tmpDir)
 	return db;
 }
 
-const struct {
-	std::string name;
+constinit const struct {
+	std::string_view name;
 	int age;
-	std::string addr;
+	std::string_view addr;
 } people[] = {
 	{ "John Smith", 21, "Whale street 21" },
 	{ "John Cagliari", 25, "Down street 105" },

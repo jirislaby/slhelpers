@@ -79,7 +79,7 @@ public:
 	virtual bool prepDB() { return true; }
 
 	bool attach(const std::filesystem::path &dbFile,
-		    const std::string_view &dbName) const noexcept;
+		    std::string_view dbName) const noexcept;
 
 	bool begin(TransactionType type = TransactionType::DEFERRED) const noexcept;
 	bool end() const noexcept;
@@ -129,7 +129,7 @@ protected:
 	bool createTriggers(const Triggers &triggers) const noexcept;
 	bool createViews(const Views &views) const noexcept;
 
-	bool prepareStatement(const std::string &sql, SQLStmtHolder &stmt) const noexcept;
+	bool prepareStatement(std::string_view sql, SQLStmtHolder &stmt) const noexcept;
 	bool prepareStatements(const Statements &stmts) const noexcept;
 	bool prepareSelects(const Selects &sels) const noexcept;
 
@@ -150,7 +150,7 @@ protected:
 		return cond ? std::move(val) : std::monostate();
 	}
 
-	SlHelpers::LastError &setError(int ret, const std::string_view &error,
+	SlHelpers::LastError &setError(int ret, std::string_view error,
 				       bool errmsg = false) const;
 
 	SQLHolder sqlHolder;
@@ -168,7 +168,7 @@ public:
 	Select() = delete;
 	Select(const SQLConn &sqlConn) : m_sqlConn(sqlConn) {}
 
-	bool prepare(const std::string &sql, const SQLConn::ColumnTypes &columns) noexcept {
+	bool prepare(std::string_view sql, const SQLConn::ColumnTypes &columns) noexcept {
 		m_resultTypes = columns;
 		return m_sqlConn.prepareStatement(sql, m_select);
 	}
