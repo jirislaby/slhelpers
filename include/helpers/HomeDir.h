@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_HOMEDIR_H
-#define SLHELPERS_HOMEDIR_H
+#pragma once
 
 #include <filesystem>
 #include <pwd.h>
@@ -16,9 +15,9 @@ public:
 
 	/**
 	 * @brief Obtains home directory
-	 * @return $HOME or /etc/passwd home entry
+	 * @return $HOME or /etc/passwd home entry.
 	 */
-	static std::filesystem::path get() {
+	static std::filesystem::path get() noexcept {
 		std::filesystem::path dir;
 
 		if (const auto homeDir = std::getenv("HOME")) {
@@ -36,10 +35,9 @@ public:
 
 	/**
 	 * @brief Obtains directory for caching
-	 * @return $XDG_CACHE_HOME or $HOME/.cache
+	 * @return $XDG_CACHE_HOME or $HOME/.cache.
 	 */
-	static std::filesystem::path getCacheDir()
-	{
+	static std::filesystem::path getCacheDir() noexcept {
 		if (const auto xdgCacheDir = std::getenv("XDG_CACHE_HOME"))
 			return xdgCacheDir;
 
@@ -51,12 +49,11 @@ public:
 	}
 
 	/**
-	 * @brief Creates (if not existing) and returns getCacheDir() / subdir
+	 * @brief Creates (if not existing) and returns getCacheDir() / \p subdir
 	 * @param subdir Subdirectory to append to cache dir
-	 * @return Created getCacheDir() / subdir
+	 * @return Created getCacheDir() / \p subdir.
 	 */
-	static std::filesystem::path createCacheDir(const std::filesystem::path &subdir)
-	{
+	static std::filesystem::path createCacheDir(const std::filesystem::path &subdir) noexcept {
 		auto cache = getCacheDir();
 		if (cache.empty())
 			return {};
@@ -72,5 +69,3 @@ public:
 };
 
 }
-
-#endif
