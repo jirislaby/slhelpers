@@ -5,6 +5,7 @@
 #include "helpers/Color.h"
 #include "helpers/HomeDir.h"
 #include "helpers/Process.h"
+#include "helpers/PushD.h"
 
 #include "helpers.h"
 
@@ -112,6 +113,21 @@ void testProcess(const std::filesystem::path &crash)
 	assert(p.signalled());
 }
 
+void testPushD()
+{
+	const auto orig = std::filesystem::current_path();
+	{
+		std::error_code ec;
+		PushD p1("/", ec);
+		assert(!ec);
+		assert(std::filesystem::current_path() == "/");
+		PushD p2("/tmp", ec);
+		assert(!ec);
+		assert(std::filesystem::current_path() == "/tmp");
+	}
+	assert(std::filesystem::current_path() == orig);
+}
+
 }
 
 int main(int argc, char **argv)
@@ -120,6 +136,7 @@ int main(int argc, char **argv)
 	testColor();
 	testHomeDir();
 	testProcess(argv[1]);
+	testPushD();
 
 	return 0;
 }
