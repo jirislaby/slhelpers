@@ -10,7 +10,7 @@
 using namespace SlKernCVS;
 using Clr = SlHelpers::Color;
 
-Branches::BranchesList Branches::getBuildBranches(const std::string &branchesConf)
+Branches::BranchesList Branches::getBuildBranches(std::string_view branchesConf) noexcept
 {
 	return Branches::create(branchesConf).filter(BUILD, EXCLUDED);
 }
@@ -23,7 +23,7 @@ std::optional<Branches::BranchesList> Branches::getBuildBranches()
 	return branchesOpt->filter(BUILD, EXCLUDED);
 }
 
-Branches Branches::create(const std::string &branchesConf)
+Branches Branches::create(std::string_view branchesConf) noexcept
 {
 	BranchesMap branches;
 
@@ -72,7 +72,7 @@ std::optional<Branches> Branches::create()
 	return create(*branchesConf);
 }
 
-void Branches::dfs(const std::string &u, BranchesSet &visited) const
+void Branches::dfs(std::string_view u, BranchesSet &visited) const
 {
 	const auto it = m_map.find(u);
 	if (it == m_map.end())
@@ -83,7 +83,7 @@ void Branches::dfs(const std::string &u, BranchesSet &visited) const
 			dfs(v, visited);
 }
 
-Branches::BranchesSet Branches::mergesClosure(const std::string &branch) const
+Branches::BranchesSet Branches::mergesClosure(std::string_view branch) const
 {
 	BranchesSet visited;
 
@@ -115,7 +115,7 @@ Branches::BranchesList Branches::filter(unsigned int include, unsigned int exclu
 	return ret;
 }
 
-bool Branches::isExcluded(const std::string_view &branch)
+bool Branches::isExcluded(std::string_view branch)
 {
 	static const std::set<std::string_view> excludes {
 		"master",

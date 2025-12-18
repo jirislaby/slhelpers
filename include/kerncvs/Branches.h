@@ -10,6 +10,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "../helpers/String.h"
+
 namespace SlKernCVS {
 
 struct BranchProps {
@@ -32,10 +34,11 @@ public:
 
 	using BranchesSet = std::unordered_set<std::string>;
 	using BranchesList = BranchProps::BranchesList;
-	using BranchesMap = std::unordered_map<std::string, BranchProps>;
+	using BranchesMap = std::unordered_map<std::string, BranchProps, SlHelpers::String::Hash,
+		SlHelpers::String::Eq>;
 
 	Branches() = delete;
-	static Branches create(const std::string &branchesConf);
+	static Branches create(std::string_view branchesConf) noexcept;
 	static std::optional<Branches> create();
 
 	const BranchesMap &map() const noexcept { return m_map; }
@@ -43,21 +46,21 @@ public:
 	auto end() const noexcept { return m_map.end(); }
 
 	BranchesList filter(unsigned included = ANY, unsigned exclude = EXCLUDED) const;
-	const BranchesList &merges(const std::string &branch) const {
-		return m_map.at(branch).merges;
+	const BranchesList &merges(std::string_view branch) const {
+		return m_map.find(branch)->second.merges;
 	}
-	BranchesSet mergesClosure(const std::string &branch) const;
+	BranchesSet mergesClosure(std::string_view branch) const;
 
-	static BranchesList getBuildBranches(const std::string &branchesConf);
+	static BranchesList getBuildBranches(std::string_view branchesConf) noexcept;
 	static std::optional<BranchesList> getBuildBranches();
 private:
 	Branches(BranchesMap &map) : m_map(std::move(map)) {}
 
-	void dfs(const std::string &u, BranchesSet &visited) const;
+	void dfs(std::string_view u, BranchesSet &visited) const;
 
 	BranchesMap m_map;
 
-	static bool isExcluded(const std::string_view &branch);
+	static bool isExcluded(std::string_view branch);
 };
 
 }
