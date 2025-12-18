@@ -6,7 +6,7 @@
 
 using namespace SlCVEs;
 
-std::optional<std::string_view> CVE::getCVENumber(const std::string_view &sv) noexcept
+std::optional<std::string_view> CVE::getCVENumber(std::string_view sv) noexcept
 {
 	if (sv.length() < std::string_view("CVE-2025-1").length())
 		return std::nullopt;

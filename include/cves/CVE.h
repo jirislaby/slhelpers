@@ -9,7 +9,7 @@ namespace SlCVEs {
 
 class CVE {
 public:
-	static std::optional<std::string_view> getCVENumber(const std::string_view &sv) noexcept;
+	static std::optional<std::string_view> getCVENumber(std::string_view sv) noexcept;
 };
 
 }
