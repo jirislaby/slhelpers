@@ -1,13 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_COLOR_H
-#define SLHELPERS_COLOR_H
+#pragma once
 
 #include <iostream>
 #include <unistd.h>
 
 namespace SlHelpers {
-
+/**
+ * @brief Colorized output
+ *
+ * Use like:
+ * @code
+ * using Clr = SlHelpers::Color;
+ * Clr(std::cerr, Clr::RED) << "error";
+ * @endcode
+ */
 class Color {
 public:
 	enum C : unsigned {
@@ -109,5 +116,3 @@ Color &&operator<<(Color &&os, const T &x)
 }
 
 }
-
-#endif
