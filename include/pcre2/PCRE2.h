@@ -35,7 +35,7 @@ struct MatchIterator {
 private:
 	friend struct Matches;
 	friend class PCRE2;
-	static std::string_view matchByIdx(size_t *ovector, const std::string_view &subject,
+	static std::string_view matchByIdx(size_t *ovector, std::string_view subject,
 					   unsigned index) {
 		const auto start = ovector[2 * index];
 		const auto len = ovector[2 * index + 1] - start;
@@ -98,7 +98,7 @@ public:
 		return *this;
 	}
 
-	bool compile(const std::string_view &regex, uint32_t options = 0) noexcept {
+	bool compile(std::string_view regex, uint32_t options = 0) noexcept {
 		free();
 
 		int err;
@@ -120,7 +120,7 @@ public:
 		return true;
 	}
 
-	int match(const std::string_view &subject) noexcept {
+	int match(std::string_view subject) noexcept {
 		return pcre2_match(m_code, reinterpret_cast<PCRE2_SPTR>(subject.data()),
 				   subject.length(), 0, 0, m_matchData, nullptr);
 	}
@@ -137,11 +137,11 @@ public:
 		return s;
 	}
 
-	auto matches(const std::string_view &subject, unsigned matches) const noexcept {
+	auto matches(std::string_view subject, unsigned matches) const noexcept {
 		return Matches(subject, ovector(), matches);
 	}
 
-	auto matchByIdx(const std::string_view &subject, unsigned index) const noexcept {
+	auto matchByIdx(std::string_view subject, unsigned index) const noexcept {
 		return MatchIterator::matchByIdx(ovector(), subject, index);
 	}
 
