@@ -12,25 +12,6 @@ namespace {
 void testSplit()
 {
 	static const constexpr std::string_view toSplit("  \t first second    third\t\tfourth  # ignore ");
-
-	{
-		const auto split = String::split(std::string(toSplit), " \t");
-		assert(split.size() == 6);
-		assert(split[0] == "first");
-		assert(split[1] == "second");
-		assert(split[2] == "third");
-		assert(split[3] == "fourth");
-		assert(split[4] == "#");
-		assert(split[5] == "ignore");
-	}
-	{
-		const auto split = String::split(std::string(toSplit), " ", '#');
-		assert(split.size() == 4);
-		assert(split[0] == "\t");
-		assert(split[1] == "first");
-		assert(split[2] == "second");
-		assert(split[3] == "third\t\tfourth");
-	}
 	{
 		const auto split = String::splitSV(toSplit, " \t");
 		assert(split.size() == 6);

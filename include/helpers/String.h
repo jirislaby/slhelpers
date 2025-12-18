@@ -72,7 +72,7 @@ public:
 		return it - str.begin();
 	}
 
-	static std::vector<std::string>
+	[[deprecated]] static std::vector<std::string>
 	split(std::string str, const std::string &delim,
 	      const std::optional<char> &comment = std::nullopt) noexcept {
 		std::vector<std::string> res;
