@@ -51,6 +51,7 @@ public:
 	GitTy *commit() const noexcept { return typed(); }
 	operator GitTy *() const noexcept { return commit(); }
 private:
+	friend class Tag;
 	explicit Commit(const Repo &repo, GitTy *commit) noexcept :
 		TypedObject(repo, commit) { }
 };

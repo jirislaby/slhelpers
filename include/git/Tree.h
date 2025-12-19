@@ -45,6 +45,7 @@ public:
 private:
 	static int walkCB(const char *root, const git_tree_entry *entry, void *payload);
 
+	friend class Tag;
 	explicit Tree(const Repo &repo, GitTy *tree) noexcept : TypedObject(repo, tree) {}
 };
 

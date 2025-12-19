@@ -156,6 +156,7 @@ private:
 
 	friend class Index;
 	friend class PathSpec;
+	friend class Tag;
 
 	template<class Class, typename FunTy, typename... Args>
 	static std::optional<Class> MakeGit(const FunTy &fun, Args&&... args)

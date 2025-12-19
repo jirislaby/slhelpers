@@ -25,7 +25,7 @@ public:
 	git_object_t type() const noexcept { return git_object_type(object()); }
 	std::string typeStr() const noexcept { return git_object_type2string(type()); }
 
-	virtual git_object *object() const noexcept = 0;
+	virtual git_object *object() const noexcept { return nullptr; }
 
 	const Repo &repo() const { return *m_repo; }
 

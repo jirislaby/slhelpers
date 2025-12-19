@@ -6,13 +6,17 @@
 #include <string>
 
 #include <git2.h>
+#include <variant>
 
 #include "Helpers.h"
 #include "Object.h"
 
 namespace SlGit {
 
+class Blob;
+class Commit;
 class Repo;
+class Tree;
 
 class Tag : public TypedObject<git_tag> {
 	using GitTy = git_tag;
@@ -28,6 +32,8 @@ public:
 	std::string name() const noexcept { return git_tag_name(tag()); }
 	const git_signature *tagger() const noexcept { return git_tag_tagger(tag()); }
 	std::string message() const noexcept { return git_tag_message(tag()); }
+
+	std::variant<std::monostate, Commit, Tree, Blob> peel() const noexcept;
 
 	GitTy *tag() const noexcept { return typed(); }
 private:
