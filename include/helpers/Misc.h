@@ -49,6 +49,9 @@ private:
 	}
 };
 
+/**
+ * @brief A helper for environment variables
+ */
 struct Env {
 	/**
 	 * @brief Get value of \p name in environment
@@ -63,6 +66,9 @@ struct Env {
 	}
 };
 
+/**
+ * @brief A helper to convert units
+ */
 struct Unit {
 	/**
 	 * @brief Convert \p bytes into human readable form (1 Kib, 20.5 MiB, ...)

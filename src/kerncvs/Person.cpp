@@ -6,16 +6,6 @@
 
 using namespace SlKernCVS;
 
-/**
- * @brief Parse \p src into a Person
- * @param src Line to parse
- * @param role Role to set to the new Person
- * @return Person, or nullopt in case of failure
- *
- * Parses lines like:
- * M: First LastName <email@somewhere.com>
- * M: email@somewhere.com
- */
 std::optional<Person> Person::parsePerson(std::string_view src, Role role)
 {
 	const auto atSign = src.find_last_of("@");

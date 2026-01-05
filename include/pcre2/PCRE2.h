@@ -9,6 +9,9 @@
 
 namespace SlPCRE2 {
 
+/**
+ * @brief Iterator over matches
+ */
 struct MatchIterator {
 	MatchIterator() = delete;
 
@@ -31,6 +34,10 @@ struct MatchIterator {
 	auto operator==(const MatchIterator &other) const noexcept { return m_idx == other.m_idx; }
 	auto operator!=(const MatchIterator &other) const noexcept { return !operator==(other); }
 
+	/**
+	 * @brief Get current index of the match
+	 * @return Index of the match.
+	 */
 	auto index() const noexcept { return m_idx; }
 private:
 	friend struct Matches;
@@ -51,6 +58,9 @@ private:
 	std::string_view m_subject;
 };
 
+/**
+ * @brief Pseudo-vector of matches
+ */
 struct Matches {
 	Matches() = delete;
 
@@ -72,8 +82,14 @@ private:
 	std::string_view m_subject;
 };
 
+/**
+ * @brief Perl-compatible regex
+ */
 class PCRE2 {
 public:
+	/**
+	 * @brief Constructs an empty PCRE2
+	 */
 	PCRE2() noexcept : m_lastErrno(0), m_lastOffset(0), m_code(nullptr), m_matchData(nullptr) {}
 	~PCRE2() noexcept { free(); }
 
@@ -98,6 +114,12 @@ public:
 		return *this;
 	}
 
+	/**
+	 * @brief Compile PCRE2 \p regex with passed \p options
+	 * @param regex Regex to compile
+	 * @param options Options to use (like PCRE2_CASELESS)
+	 * @return true on success
+	 */
 	bool compile(std::string_view regex, uint32_t options = 0) noexcept {
 		free();
 
@@ -120,13 +142,29 @@ public:
 		return true;
 	}
 
+	/**
+	 * @brief PCRE2 against \p subject
+	 * @param subject Text to match the regex to
+	 * @return negative on error, 1 for no match, 2 for one group matched, ...
+	 */
 	int match(std::string_view subject) noexcept {
 		return pcre2_match(m_code, reinterpret_cast<PCRE2_SPTR>(subject.data()),
 				   subject.length(), 0, 0, m_matchData, nullptr);
 	}
 
+	/**
+	 * @brief Returns offset (into the subject string) vector for all matches
+	 * @return An array of size_t values.
+	 *
+	 * Preferrably, use matches() or matchByIdx() wrappers.
+	 */
 	auto ovector() const { return pcre2_get_ovector_pointer(m_matchData); }
 
+	/**
+	 * @brief Converts PCRE2 error code \p err to string
+	 * @param err PCRE2 error code
+	 * @return Error string.
+	 */
 	static std::string errToStr(int err) {
 		std::string s(256, 0);
 		auto len = pcre2_get_error_message(err, reinterpret_cast<PCRE2_UCHAR *>(s.data()),
@@ -137,10 +175,22 @@ public:
 		return s;
 	}
 
+	/**
+	 * @brief Returns Matches (a pseudo-vector of matches) in \p subject
+	 * @param subject Subject matched
+	 * @param matches Number of matches -- the return value of match()
+	 * @return Pseudo-vector of matches.
+	 */
 	auto matches(std::string_view subject, unsigned matches) const noexcept {
 		return Matches(subject, ovector(), matches);
 	}
 
+	/**
+	 * @brief Returns one match -- a substring of \p subject
+	 * @param subject Subject matched
+	 * @param index Index of the requested match
+	 * @return Matched string.
+	 */
 	auto matchByIdx(std::string_view subject, unsigned index) const noexcept {
 		return MatchIterator::matchByIdx(ovector(), subject, index);
 	}
@@ -149,8 +199,18 @@ public:
 	auto lastError() const noexcept { return m_lastError.lastError(); }
 	auto lastOffset() const noexcept { return m_lastOffset; }
 
+	/**
+	 * @brief Test whether PCRE2 is valid
+	 * @return true if this PCRE2 contains a valid regex.
+	 */
 	bool valid() const noexcept { return m_code; }
+	/**
+	 * @brief bool wrapper around valid()
+	 */
 	operator bool() const noexcept { return valid(); }
+	/**
+	 * @brief ! wrapper around valid()
+	 */
 	bool operator!() const noexcept { return !valid(); }
 private:
 	void free() {

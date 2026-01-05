@@ -13,6 +13,10 @@ class TreeEntry;
 
 namespace SlKernCVS {
 
+/**
+ * @brief Class to walk the KernCVS repository and report arch, flavor and configs via callbacks
+ * passed to the constructor.
+ */
 class CollectConfigs {
 public:
 	enum ConfigValue : char {
@@ -26,10 +30,21 @@ public:
 	using InsertConfig = std::function<int (const std::string &, const std::string &,
 		const std::string &, const ConfigValue &)>;
 
+	/**
+	 * @brief CollectConfigs constructor
+	 * @param repo KernCVS repository to search in
+	 * @param insertArchFlavor Callback to invoke for an arch and flavor
+	 * @param insertConfig Callback to invoke for a config
+	 */
 	CollectConfigs(const SlGit::Repo &repo, const InsertArchFlavor &insertArchFlavor,
 		       const InsertConfig &insertConfig) : repo(repo),
 		insertArchFlavor(insertArchFlavor), insertConfig(insertConfig) {}
 
+	/**
+	 * @brief The real work function of this class
+	 * @param commit The commit to walk
+	 * @return true on success.
+	 */
 	bool collectConfigs(const SlGit::Commit &commit);
 
 private:

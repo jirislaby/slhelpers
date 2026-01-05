@@ -14,12 +14,18 @@
 
 namespace SlSqlite {
 
+/**
+ * @brief Flags to be used for SQLConn::open()
+ */
 enum OpenFlags : unsigned {
 	CREATE				= 1 << 0,
 	NO_FOREIGN_KEY			= 1 << 1,
 	ERROR_ON_UNIQUE_CONSTRAINT	= 1 << 2,
 };
 
+/**
+ * @brief Transaction types used for SQLConn::begin()
+ */
 enum struct TransactionType {
 	DEFERRED,
 	IMMEDIATE,
@@ -29,6 +35,9 @@ enum struct TransactionType {
 class Select;
 class SQLConn;
 
+/**
+ * @brief Begin a transaction in the constructor and end in the destructor
+ */
 class AutoTransaction {
 public:
 	AutoTransaction() = delete;
@@ -60,9 +69,18 @@ private:
 	const SQLConn *m_conn;
 };
 
+/**
+ * @brief SQLite3 connection (the core class)
+ */
 class SQLConn {
 	friend class Select;
 public:
+	/**
+	 * @brief Open a database connection (openDB() + createDB() + prepDB())
+	 * @param dbFile Path to the database
+	 * @param flags Flags to use (like OpenFlags::CREATE)
+	 * @return true on success.
+	 */
 	bool open(const std::filesystem::path &dbFile, unsigned int flags = 0)
 	{
 		if (!openDB(dbFile, flags) ||
@@ -73,21 +91,77 @@ public:
 		return true;
 	}
 
+	/**
+	 * @brief Just open a database file
+	 * @param dbFile Path to the database
+	 * @param flags Flags to use (like OpenFlags::CREATE)
+	 * @return true on success.
+	 */
 	bool openDB(const std::filesystem::path &dbFile, unsigned int flags = 0) noexcept;
+
+	/**
+	 * @brief Creates tables, views, triggers and such.
+	 * @return true on success.
+	 *
+	 * Override this if you want to create some structures in the database.
+	 */
 	virtual bool createDB() { return true; }
+
+	/**
+	 * @brief Prepares statements
+	 * @return true on success.
+	 *
+	 * Override this if you want to use some statements.
+	 */
 	virtual bool prepDB() { return true; }
 
+	/**
+	 * @brief Attach another database using ATTACH
+	 * @param dbFile Path to another DB
+	 * @param dbName Name to use for this attached database
+	 * @return true on success.
+	 */
 	bool attach(const std::filesystem::path &dbFile,
 		    std::string_view dbName) const noexcept;
 
+	/**
+	 * @brief Begin a transaction
+	 * @param type Kind of transaction
+	 * @return true on success.
+	 */
 	bool begin(TransactionType type = TransactionType::DEFERRED) const noexcept;
+
+	/**
+	 * @brief End a transaction
+	 * @return true on success.
+	 */
 	bool end() const noexcept;
+
+	/**
+	 * @brief Begin a transaction which is automatically ended when the returned object dies
+	 * @param type Kind of transaction
+	 * @return AutoTransaction which ends the transation when destructed.
+	 */
 	AutoTransaction beginAuto(TransactionType type = TransactionType::DEFERRED) const noexcept {
 		return AutoTransaction(*this, type);
 	}
 
+	/**
+	 * @brief Return the last error string if some
+	 * @return Error string.
+	 */
 	std::string lastError() const { return m_lastError.lastError(); }
+
+	/**
+	 * @brief Return the last error number if some
+	 * @return Error number.
+	 */
 	int lastErrorCode() const { return m_lastErrorCode; }
+
+	/**
+	 * @brief Return the last extended error number if some
+	 * @return Error number.
+	 */
 	int lastErrorCodeExt() const { return m_lastErrorCodeExt; }
 
 protected:
@@ -162,16 +236,35 @@ private:
 	void dumpBinding(const Binding &binding) const noexcept;
 };
 
+/**
+ * @brief Special class for SELECT statements
+ */
 class Select {
 public:
 	Select() = delete;
+
+	/**
+	 * @brief Constructs an empty Select
+	 * @param sqlConn Connection this SELECT should be bound to
+	 */
 	Select(const SQLConn &sqlConn) : m_sqlConn(sqlConn) {}
 
+	/**
+	 * @brief Prepare this SELECT with \p sql
+	 * @param sql SQL SELECT string
+	 * @param columns Types of returned columns by this SELECT
+	 * @return true on success.
+	 */
 	bool prepare(std::string_view sql, const SQLConn::ColumnTypes &columns) noexcept {
 		m_resultTypes = columns;
 		return m_sqlConn.prepareStatement(sql, m_select);
 	}
 
+	/**
+	 * @brief Perform the actual SELECT
+	 * @param binding Values to pass to prepared SELECT
+	 * @return Rows with data, typed by \p columns in prepare()
+	 */
 	std::optional<SQLConn::SelectResult>
 	select(const SQLConn::Binding &binding) const noexcept {
 		return m_sqlConn.select(m_select, binding, m_resultTypes);

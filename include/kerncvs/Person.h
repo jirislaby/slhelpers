@@ -7,6 +7,11 @@
 
 namespace SlKernCVS {
 
+/**
+ * @brief Role of a Person
+ *
+ * The class converts roles to indices and back too.
+ */
 class Role {
 private:
 	static constexpr const std::string_view roleNames[] = {
@@ -49,6 +54,9 @@ private:
 	RoleType m_role;
 };
 
+/**
+ * @brief Information about a person (such as username, e-mail, Role)
+ */
 class Person {
 public:
 	Person() = delete;
@@ -70,11 +78,25 @@ public:
 	std::string userName() const { return m_email.substr(0, m_email.find("@")); }
 	auto count() const { return m_count; }
 
+	/**
+	 * @brief Pretty format as "username <e-mail>"
+	 * @param includeName If output the username part
+	 * @return Either "username <e-mail>" when \p includeName is true or "e-mail" otherwise.
+	 */
 	std::string pretty(bool includeName = true) const {
 		if (includeName && !name().empty())
 			return name() + " <" + email() + ">";
 		return email();
 	}
+
+	/**
+	 * @brief Pretty format as "username <e-mail>"
+	 * @param translate A translate callback for e-mail
+	 * @param includeName If output the username part
+	 * @return Either "username <e-mail>" when \p includeName is true or "e-mail" otherwise.
+	 *
+	 * The e-mail is passed to \p translate() before passing to the output.
+	 */
 	template <typename T>
 	std::string pretty(const T &translate, bool includeName = true) const {
 		if (includeName && !name().empty())
@@ -84,7 +106,18 @@ public:
 
 	void setEmail(const std::string &email) { m_email = email; }
 
+	/**
+	 * @brief Parse \p src into a Person
+	 * @param src Line to parse
+	 * @param role Role to set to the new Person
+	 * @return Person, or nullopt in case of failure.
+	 *
+	 * Parses lines like:
+	 * M: First LastName <email@somewhere.com>
+	 * M: email@somewhere.com
+	 */
 	static std::optional<Person> parsePerson(std::string_view src, Role role);
+
 	/**
 	 * @brief Try to parse a line
 	 * @param src Line to parse

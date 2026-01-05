@@ -34,12 +34,22 @@ public:
 		NL,
 	};
 
+	/**
+	 * @brief New Color stream (stdout) using a predefined color C
+	 * @param c A color from C
+	 */
 	explicit Color(enum C c = DEFAULT) noexcept : Color(std::cout, c) {}
 	explicit Color(std::ostream &os, enum C c = DEFAULT) noexcept : m_NL(true), m_os(os) {
 		if (doColor(os))
 			m_os << seqBegin << c << 'm';
 	}
 
+	/**
+	 * @brief New Color stream (stdout) using an RGB color
+	 * @param r Red
+	 * @param g Green
+	 * @param b Blue
+	 */
 	Color(unsigned char r, unsigned char g, unsigned char b) noexcept
 		: Color(std::cout, r, g, b) {}
 	Color(std::ostream &os, unsigned char r, unsigned char g, unsigned char b) noexcept
@@ -59,11 +69,23 @@ public:
 			m_os << '\n';
 	}
 
+	/**
+	 * @brief Force color value (see forceColorValue())
+	 * @param force If set, use of colors is bound to color value set by forceColorValue()
+	 */
 	static void forceColor(bool force) { m_forceColor = force; }
+	/**
+	 * @brief If forceColor(true) was called, use of colors is bound to \p value
+	 * @param value If colors should be used
+	 */
 	static void forceColorValue(bool value) { m_forceColorValue = value; }
 
 	std::ostream &os() { return m_os; }
 
+	/**
+	 * @brief Controls the stream behavior
+	 * @param ctrl Control character (like NoNL to not automatically emit a newline at the end)
+	 */
 	void ctrl(Ctrl ctrl) {
 		switch (ctrl) {
 		case NL:

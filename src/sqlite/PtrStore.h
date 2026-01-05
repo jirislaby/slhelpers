@@ -8,6 +8,9 @@
 
 namespace SlSqlite {
 
+/**
+ * @brief A store for a pointer which is freed in the destructor using sqlite3_free()
+ */
 template <typename T>
 class PtrStore {
 public:
@@ -26,14 +29,28 @@ public:
 		return *this;
 	}
 
+	/**
+	 * @brief Does this instance hold a valid pointer?
+	 * @return true if the pointer is non-NULL.
+	 */
 	bool valid() const { return m_ptr; }
 	operator bool() const { return valid(); }
 	bool operator!() const { return !valid(); }
 
+	/**
+	 * @brief Return the current pointer as string
+	 * @return The current pointer as a string or empty string if the pointer is not valid.
+	 */
 	template <typename U = T,
 		  typename = std::enable_if_t<std::is_same_v<U, char>>>
 	std::string_view str() const noexcept { return m_ptr ? : ""; }
 
+	/**
+	 * @brief Get a pointer to the internal pointer
+	 * @return Pointer to the internal pointer.
+	 *
+	 * Usually to assign to the pointer. The previous pointer is freed if it was valid.
+	 */
 	T **ptr() noexcept {
 		free();
 		return &m_ptr;

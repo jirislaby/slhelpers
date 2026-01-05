@@ -26,11 +26,26 @@ public:
 	using Maintainers = std::vector<Person>;
 
 	Stanza() = default;
+	/**
+	 * @brief Construct new Stanza called \p name
+	 * @param name Name of the Stanza
+	 */
 	Stanza(std::string name) : m_name(std::move(name)) {}
+	/**
+	 * @brief Construct new Stanza called \p n with one Person (having \p name and \p email)
+	 * @param n Name of the Stanza
+	 * @param name Name of a Person
+	 * @param email E-mail of a Person
+	 */
 	Stanza(std::string n, std::string name, std::string email)
 		: m_name(std::move(n)), m_maintainers{Person(Role::Maintainer, std::move(name),
 							     std::move(email))} { }
 
+	/**
+	 * @brief Return weight of \p path in this Stanza
+	 * @param path A path to look for
+	 * @return Maximum weight of \p path in this Stanza or 0 if not found.
+	 */
 	unsigned match_path(const std::filesystem::path &path) const {
 		return std::accumulate(m_patterns.cbegin(), m_patterns.cend(), 0u,
 				       [&path](unsigned m, const Pattern &p) {
@@ -84,6 +99,10 @@ public:
 		return m_name.empty() || m_maintainers.empty() || m_patterns.empty();
 	}
 
+	/**
+	 * @brief Obtain a list of Person in this Stanza
+	 * @return List of Person classes.
+	 */
 	const Maintainers &maintainers() const { return m_maintainers; }
 
 	void new_entry(std::string n) {

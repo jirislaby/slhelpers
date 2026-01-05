@@ -9,6 +9,9 @@
 
 namespace SlHelpers {
 
+/**
+ * @brief Helpers for $HOME directory
+ */
 class HomeDir {
 public:
 	HomeDir() = delete;

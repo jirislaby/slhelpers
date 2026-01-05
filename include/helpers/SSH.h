@@ -10,15 +10,25 @@
 
 namespace SlSSH {
 
+/**
+ * @brief Get SSH private and public keys
+ */
 class Keys {
 public:
 	Keys() = delete;
 
 	using Key = std::filesystem::path;
-	// public, private
+	/**
+	 * @brief Pair of public + private keys (in that order)
+	 */
 	using KeyPair = std::pair<Key, Key>;
 	using KeyPairs = std::vector<KeyPair>;
 
+	/**
+	 * @brief Get keys for a \p host
+	 * @param host Host to get keys for (currently ignored)
+	 * @return Private + public keys for \p host.
+	 */
 	static KeyPairs get([[maybe_unused]] std::string_view host) {
 		auto home = SlHelpers::HomeDir::get();
 		auto sshDir = home / ".ssh";
