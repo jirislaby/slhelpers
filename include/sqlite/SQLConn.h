@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLSQLITE_SQLCONN_H
-#define SLSQLITE_SQLCONN_H
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -197,5 +196,3 @@ inline void AutoTransaction::end()
 }
 
 }
-
-#endif

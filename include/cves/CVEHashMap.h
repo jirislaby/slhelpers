@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLCVES_CVEHASHMAP_H
-#define SLCVES_CVEHASHMAP_H
+#pragma once
 
 #include <algorithm>
 #include <filesystem>
@@ -62,5 +61,3 @@ private:
 };
 
 }
-
-#endif

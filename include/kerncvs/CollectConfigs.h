@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLKERNCVS_COLLECTCONFIGS_H
-#define SLKERNCVS_COLLECTCONFIGS_H
+#pragma once
 
 #include <functional>
 #include <string>
@@ -46,6 +45,3 @@ private:
 };
 
 }
-
-#endif
-

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_REMOTE_H
-#define SLGIT_REMOTE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -60,5 +59,3 @@ private:
 };
 
 }
-
-#endif

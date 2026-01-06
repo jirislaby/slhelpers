@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLCURL_CURL_H
-#define SLCURL_CURL_H
+#pragma once
 
 #include <chrono>
 #include <filesystem>
@@ -62,5 +61,3 @@ private:
 };
 
 }
-
-#endif

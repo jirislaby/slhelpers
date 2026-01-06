@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_LASTERROR_H
-#define SLHELPERS_LASTERROR_H
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -31,5 +30,3 @@ private:
 };
 
 }
-
-#endif

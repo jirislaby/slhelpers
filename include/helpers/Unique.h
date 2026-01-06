@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_UNIQUE_H
-#define SLHELPERS_UNIQUE_H
+#pragma once
 
 #include <memory>
 
@@ -29,5 +28,3 @@ struct UniqueHolder : public Deleter<T>::Unique {
 };
 
 }
-
-#endif

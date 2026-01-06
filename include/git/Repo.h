@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_REPO_H
-#define SLGIT_REPO_H
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -181,5 +180,3 @@ private:
 };
 
 }
-
-#endif

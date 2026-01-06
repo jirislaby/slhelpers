@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLSQLITE_SQLITESMART_H
-#define SLSQLITE_SQLITESMART_H
+#pragma once
 
 #include "../helpers/Unique.h"
 
@@ -24,5 +23,3 @@ private:
 };
 
 }
-
-#endif

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLCVES_CVE2BUGZILLA_H
-#define SLCVES_CVE2BUGZILLA_H
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -33,5 +32,3 @@ private:
 };
 
 }
-
-#endif

@@ -1,5 +1,6 @@
-#ifndef TEST_HELPERS_H
-#define TEST_HELPERS_H
+// SPDX-License-Identifier: GPL-2.0-only
+
+#pragma once
 
 #include <cassert>
 #include <filesystem>
@@ -44,5 +45,3 @@ private:
 };
 
 }
-
-#endif

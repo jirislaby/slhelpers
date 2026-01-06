@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_BUF_H
-#define SLGIT_BUF_H
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -41,5 +40,3 @@ private:
 };
 
 }
-
-#endif

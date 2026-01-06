@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_COMMIT_H
-#define SLGIT_COMMIT_H
+#pragma once
 
 #include <optional>
 #include <string>
@@ -57,5 +56,3 @@ private:
 };
 
 }
-
-#endif

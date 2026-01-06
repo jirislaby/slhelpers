@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_RATELIMIT_H
-#define SLHELPERS_RATELIMIT_H
+#pragma once
 
 #include <chrono>
 
@@ -38,5 +37,3 @@ private:
 };
 
 }
-
-#endif

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_GIT_H
-#define SLGIT_GIT_H
+#pragma once
 
 #include "Blob.h"
 #include "Commit.h"
@@ -14,5 +13,3 @@
 #include "Repo.h"
 #include "Tag.h"
 #include "Tree.h"
-
-#endif

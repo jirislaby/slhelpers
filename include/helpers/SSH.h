@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLHELPERS_SSH_H
-#define SLHELPERS_SSH_H
+#pragma once
 
 #include <string_view>
 #include <utility>
@@ -46,5 +45,3 @@ public:
 };
 
 }
-
-#endif

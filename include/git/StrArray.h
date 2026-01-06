@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_STRARRAY_H
-#define SLGIT_STRARRAY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -27,5 +26,3 @@ private:
 };
 
 }
-
-#endif

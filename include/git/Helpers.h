@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#ifndef SLGIT_HELPERS_H
-#define SLGIT_HELPERS_H
+#pragma once
 
 #include <string>
 
@@ -20,5 +19,3 @@ public:
 };
 
 }
-
-#endif
