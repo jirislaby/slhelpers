@@ -4,6 +4,7 @@
 
 #include "helpers/Color.h"
 #include "helpers/HomeDir.h"
+#include "helpers/LastError.h"
 #include "helpers/Process.h"
 #include "helpers/PushD.h"
 
@@ -88,6 +89,19 @@ void testHomeDir()
 	std::filesystem::remove_all(tmpDir);
 }
 
+void testLastError()
+{
+	LastError e;
+	static constexpr std::string_view text("text");
+	static constexpr std::string_view moreText("more");
+
+	assert(e.lastError().empty());
+	e.reset() << text;
+	assert(e.lastError() == text);
+	e << moreText;
+	assert(e.lastError() == std::string(text).append(moreText));
+}
+
 void testProcess(const std::filesystem::path &crash)
 {
 	Process p;
@@ -135,6 +149,7 @@ int main(int argc, char **argv)
 	assert(argc > 1);
 	testColor();
 	testHomeDir();
+	testLastError();
 	testProcess(argv[1]);
 	testPushD();
 
