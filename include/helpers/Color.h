@@ -17,6 +17,7 @@ namespace SlHelpers {
  */
 class Color {
 public:
+	/// @brief Predefined colors
 	enum C : unsigned {
 		BLACK = 30,
 		RED = 31,
@@ -29,16 +30,24 @@ public:
 		COL256 = 38,
 		DEFAULT = 39,
 	};
+
+	/// @brief Controls for Color
 	enum Ctrl {
 		NoNL,
 		NL,
 	};
 
 	/**
-	 * @brief New Color stream (stdout) using a predefined color C
+	 * @brief New Color stream (stdout) using color \p c
 	 * @param c A color from C
 	 */
 	explicit Color(enum C c = DEFAULT) noexcept : Color(std::cout, c) {}
+
+	/**
+	 * @brief New Color stream (into \p os) using color \p c
+	 * @param os Output stream where to output
+	 * @param c A color from C
+	 */
 	explicit Color(std::ostream &os, enum C c = DEFAULT) noexcept : m_NL(true), m_os(os) {
 		if (doColor(os))
 			m_os << seqBegin << c << 'm';
@@ -52,6 +61,14 @@ public:
 	 */
 	Color(unsigned char r, unsigned char g, unsigned char b) noexcept
 		: Color(std::cout, r, g, b) {}
+
+	/**
+	 * @brief New Color stream (into \p os) using an RGB color
+	 * @param os Output stream where to output
+	 * @param r Red
+	 * @param g Green
+	 * @param b Blue
+	 */
 	Color(std::ostream &os, unsigned char r, unsigned char g, unsigned char b) noexcept
 		: m_NL(true), m_os(os) {
 		if (!doColor(os))
@@ -80,6 +97,10 @@ public:
 	 */
 	static void forceColorValue(bool value) { m_forceColorValue = value; }
 
+	/**
+	 * @brief Return current output stream
+	 * @return Output stream.
+	 */
 	std::ostream &os() { return m_os; }
 
 	/**

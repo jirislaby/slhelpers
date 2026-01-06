@@ -6,11 +6,14 @@
 
 namespace SlHelpers {
 
+/**
+ * @brief Helpers specific to SUSE
+ */
 struct SUSE {
 	/**
 	 * @brief Evaluate if \p email is likely a SUSE address
 	 * @param email E-mail to check
-	 * @return True if \p email is likely SUSE address.
+	 * @return True if \p email is likely a SUSE address.
 	 */
 	static constexpr bool isSUSEAddress(std::string_view email) {
 		return email.ends_with("@suse.com") ||

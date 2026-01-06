@@ -17,11 +17,17 @@ namespace SlKernCVS {
  * @brief Properties of a branch stored in Branches
  */
 struct BranchProps {
+	/// @brief List of branches
 	using BranchesList = std::vector<std::string>;
 
+	/// @brief Marked as build in branches.conf
 	bool isBuild;
+	/// @brief Marked as publish in branches.conf
 	bool isPublish;
+	/// @brief One of master, stable, vanilla, or similar branches
 	bool isExcluded;
+
+	/// @brief What immediate branches this branch merges
 	BranchesList merges;
 };
 
@@ -30,6 +36,7 @@ struct BranchProps {
  */
 class Branches {
 public:
+	/// @brief Constants used for filter()
 	enum Filter : unsigned {
 		BUILD		= 1U << 0,
 		PUBLISH		= 1U << 1,
@@ -37,8 +44,11 @@ public:
 		ANY 		= ~0U,
 	};
 
+	/// @brief A set of branches
 	using BranchesSet = std::unordered_set<std::string>;
+	/// @brief A list of branches
 	using BranchesList = BranchProps::BranchesList;
+	/// @brief Branch -> BranchProps mapping
 	using BranchesMap = std::unordered_map<std::string, BranchProps, SlHelpers::String::Hash,
 		SlHelpers::String::Eq>;
 
@@ -55,8 +65,21 @@ public:
 	 */
 	static std::optional<Branches> create();
 
+	/**
+	 * @brief Obtain whole branch map
+	 * @return Branch mapping.
+	 */
 	const BranchesMap &map() const noexcept { return m_map; }
+
+	/**
+	 * @brief Obtain begin iterator of branches
+	 * @return Begin iterator.
+	 */
 	auto begin() const noexcept { return m_map.begin(); }
+	/**
+	 * @brief Obtain end iterator of branches
+	 * @return End iterator.
+	 */
 	auto end() const noexcept { return m_map.end(); }
 
 	/**

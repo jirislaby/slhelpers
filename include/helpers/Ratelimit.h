@@ -6,20 +6,27 @@
 
 namespace SlHelpers {
 
+/**
+ * @brief Rate-limit some actions
+ */
 class Ratelimit {
 public:
+	/// @brief Clock used for measuring
 	using Clock = std::chrono::steady_clock;
 
 	Ratelimit() = delete;
-	Ratelimit(const std::chrono::milliseconds &dur) : dur(dur), last(Clock::time_point{}) { }
 
 	/**
-	 * @brief start counting from now
+	 * @brief Construct new Ratelimit, allowing action to be once per \p dur
+	 * @param dur Duration between actions
 	 */
+	Ratelimit(const std::chrono::milliseconds &dur) : dur(dur), last(Clock::time_point{}) { }
+
+	/// @brief Start counting from now
 	void reset() { last = Clock::time_point{}; }
 
 	/**
-	 * @brief limit actions to one per constructor's dur
+	 * @brief Limit actions to one per constructor's dur
 	 * @return true if the ratelimited action should be performed
 	 */
 	bool limit() {

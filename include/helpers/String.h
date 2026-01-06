@@ -22,6 +22,10 @@ namespace SlHelpers {
  */
 class GetLine {
 public:
+	/**
+	 * @brief Construct GetLine to parse \p str
+	 * @param str String to parse
+	 */
 	GetLine(std::string_view str) noexcept : m_str(str) {}
 
 	/**
@@ -44,8 +48,12 @@ private:
 	std::string_view m_str;
 };
 
+/**
+ * @brief Various helpers on strings
+ */
 class String {
 public:
+	/// @brief A local alias for std::string_view::npos
 	inline static constinit const auto npos = std::string_view::npos;
 	static_assert(std::string_view::npos == std::string::npos);
 
@@ -71,6 +79,13 @@ public:
 		return it - str.begin();
 	}
 
+	/**
+	 * @brief Split a string into vector of strings, DO NOT USE THIS
+	 * @param str
+	 * @param delim
+	 * @param comment
+	 * @return
+	 */
 	[[deprecated]] static std::vector<std::string>
 	split(std::string str, const std::string &delim,
 	      const std::optional<char> &comment = std::nullopt) noexcept {
@@ -121,6 +136,11 @@ public:
 		return res;
 	}
 
+	/**
+	 * @brief Trim string (remove surrounding whitespace)
+	 * @param line String to trim
+	 * @return Trimmed string.
+	 */
 	template <typename T>
 	static constexpr T trim(const T &line) noexcept
 	{
@@ -134,10 +154,22 @@ public:
 		return line.substr(pos1, pos2 - pos1 + 1);
 	}
 
+	/**
+	 * @brief Is the string consisting of hex number?
+	 * @param s String to inspect
+	 * @return true if all characters are hex numbers
+	 */
 	static constexpr bool isHex(std::string_view s) noexcept {
 		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
 	}
 
+	/**
+	 * @brief Join \p iterable into \p out using separator \p sep and quoting \p quote
+	 * @param out Output stream
+	 * @param iterable Input container
+	 * @param sep Separator
+	 * @param quote Quoting string, it is put before and after each value in \p iterable
+	 */
 	template <typename T>
 	static constexpr void join(std::ostream &out, const T &iterable,
 				   std::string_view sep = ", ",
@@ -156,27 +188,50 @@ public:
 	/**
 	 * @brief Hash for string and string_view to be used in hashing containers
 	 *
-	 * It is to support for find() to work on both string and string_view.
+	 * It is to support find() to work on both string and string_view.
 	 */
 	struct Hash {
+		/// @brief For containers to know this is a transparent hash
 		using is_transparent = void;
 
+		/**
+		 * @brief Hash any kind of string using std::hash
+		 * @param sv String to hash
+		 */
 		auto hash(std::string_view sv) const noexcept {
 			return std::hash<std::string_view>{}(sv);
 		}
 
+		/**
+		 * @brief Hash string_view \p sv
+		 * @param sv String to hash
+		 * @return Hash of \p sv.
+		 */
 		size_t operator()(std::string_view sv) const noexcept { return hash(sv); }
+
+		/**
+		 * @brief Hash string \p s
+		 * @param s String to hash
+		 * @return Hash of \p s.
+		 */
 		size_t operator()(const std::string &s) const noexcept { return hash(s); }
 	};
 
 	/**
-	 * @brief Equality struct for string and string_view to be used in containers
+	 * @brief Equality test for string and string_view to be used in containers
 	 *
-	 * It is to support for find() to work on both string and string_view.
+	 * It is to support find() to work on both string and string_view.
 	 */
 	struct Eq {
+		/// @brief For containers to know this is a transparent eq test
 		using is_transparent = void;
 
+		/**
+		 * @brief Compare any kinds of two strings \p a and \p b
+		 * @param a First string
+		 * @param b Second string
+		 * @return true if \p a == \p b
+		 */
 		bool operator()(std::string_view a, std::string_view b) const noexcept {
 			return a == b;
 		}

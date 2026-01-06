@@ -27,6 +27,12 @@ private:
 		"Upstream"
 	};
 public:
+	/**
+	 * @brief Actual roles
+	 *
+	 * Roles from FirstRole to LastRole are tried in parse(). The others have to be set
+	 * manually as needed.
+	 */
 	enum RoleType {
 		Author,
 		SignedOffBy, FirstRole = SignedOffBy,
@@ -43,12 +49,17 @@ public:
 	static_assert(Last == std::size(roleNames));
 
 	Role() = delete;
+	/// @brief Construct new Role with role set by the \p index
 	Role(size_t index) : m_role(static_cast<RoleType>(index)) {}
+	/// @brief Construct new Role with \p role set
 	Role(RoleType role) : m_role(role) {}
 
+	/// @brief Get the actual RoleType
 	RoleType role() const { return m_role; }
 
+	/// @brief Convert Role to number/index
 	constexpr auto index() const { return static_cast<std::size_t>(m_role); }
+	/// @brief Convert Role to string
 	constexpr const auto &toString() const { return roleNames[index()]; }
 private:
 	RoleType m_role;
@@ -72,10 +83,19 @@ public:
 		m_role(std::move(r)), m_name(std::move(name)), m_email(std::move(email)),
 		m_count(count) {}
 
+	/// @brief Get Role of this Person
 	const Role &role() const { return m_role; }
+	/// @brief Get name of this Person
 	const std::string &name() const { return m_name; }
+	/// @brief Get e-mail of this Person
 	const std::string &email() const { return m_email; }
+	/// @brief Get user name (from e-mail)
 	std::string userName() const { return m_email.substr(0, m_email.find("@")); }
+
+	/**
+	 * @brief Get count of changes historically done by this Person
+	 * @return Count of changes.
+	 */
 	auto count() const { return m_count; }
 
 	/**
@@ -104,6 +124,10 @@ public:
 		return translate(email());
 	}
 
+	/**
+	 * @brief Re-set e-mail to \p email
+	 * @param email E-mail to store
+	 */
 	void setEmail(const std::string &email) { m_email = email; }
 
 	/**

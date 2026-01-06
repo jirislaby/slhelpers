@@ -15,23 +15,30 @@ namespace SlPCRE2 {
 struct MatchIterator {
 	MatchIterator() = delete;
 
+	/// @brief Obtain the current match
 	auto operator*() const noexcept {
 		return matchByIdx(m_ovector, m_subject, m_idx);
 	}
 
+	/// @brief Move to the next match
 	MatchIterator &operator++() noexcept { ++m_idx; return *this; }
+	/// @brief Move to the previous match
 	MatchIterator &operator--() noexcept { --m_idx; return *this; }
+	/// @brief Move to the next match
 	MatchIterator operator++(int) noexcept {
 		auto old = *this;
 		++m_idx;
 		return old;
 	}
+	/// @brief Move to the previous match
 	MatchIterator operator--(int) noexcept {
 		auto old = *this;
 		--m_idx;
 		return old;
 	}
+	/// @brief Compare two MatchIterators
 	auto operator==(const MatchIterator &other) const noexcept { return m_idx == other.m_idx; }
+	/// @brief Compare two MatchIterators
 	auto operator!=(const MatchIterator &other) const noexcept { return !operator==(other); }
 
 	/**
@@ -64,9 +71,16 @@ private:
 struct Matches {
 	Matches() = delete;
 
+	/// @brief Get first match (the begin iterator)
 	auto begin() const noexcept { return MatchIterator(0, m_ovector, m_subject); }
+	/// @brief Get past last match (the end iterator)
 	auto end() const noexcept { return MatchIterator(m_matches); }
 
+	/**
+	 * @brief Get n-th match
+	 * @param idx Index of the requested match
+	 * @return \p idx-th match.
+	 */
 	auto operator[](std::size_t idx) const noexcept {
 		return MatchIterator::matchByIdx(m_ovector, m_subject, idx);
 	}
@@ -87,21 +101,21 @@ private:
  */
 class PCRE2 {
 public:
-	/**
-	 * @brief Constructs an empty PCRE2
-	 */
+	/// @brief Constructs an empty PCRE2
 	PCRE2() noexcept : m_lastErrno(0), m_lastOffset(0), m_code(nullptr), m_matchData(nullptr) {}
 	~PCRE2() noexcept { free(); }
 
 	PCRE2(const PCRE2 &) = delete;
 	PCRE2 &operator=(const PCRE2 &) = delete;
 
+	/// @brief Move constructor
 	PCRE2(PCRE2 &&other) noexcept : m_lastErrno(other.m_lastErrno),
 			m_lastOffset(other.m_lastOffset), m_code(other.m_code),
 			m_matchData(other.m_matchData) {
 		other.m_code = nullptr;
 		other.m_matchData = nullptr;
 	}
+	/// @brief Move assignment
 	PCRE2 &operator=(PCRE2 &&other) noexcept {
 		if (this != &other) {
 			free();
@@ -195,22 +209,18 @@ public:
 		return MatchIterator::matchByIdx(ovector(), subject, index);
 	}
 
+	/// @brief Return the last error number
 	auto lastErrno() const noexcept { return m_lastErrno; }
+	/// @brief Return the last error string if some
 	auto lastError() const noexcept { return m_lastError.lastError(); }
+	/// @brief Get offset of last error (to the regex string)
 	auto lastOffset() const noexcept { return m_lastOffset; }
 
-	/**
-	 * @brief Test whether PCRE2 is valid
-	 * @return true if this PCRE2 contains a valid regex.
-	 */
+	/// @brief Test whether PCRE2 is valid
 	bool valid() const noexcept { return m_code; }
-	/**
-	 * @brief bool wrapper around valid()
-	 */
+	/// @brief bool wrapper around valid()
 	operator bool() const noexcept { return valid(); }
-	/**
-	 * @brief ! wrapper around valid()
-	 */
+	/// @brief ! wrapper around valid()
 	bool operator!() const noexcept { return !valid(); }
 private:
 	void free() {

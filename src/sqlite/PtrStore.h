@@ -20,7 +20,9 @@ public:
 	PtrStore(const PtrStore &) = delete;
 	PtrStore &operator=(const PtrStore &) = delete;
 
+	/// @brief Move constructor
 	PtrStore(PtrStore &&other) noexcept : m_ptr(other.m_ptr) { other.m_ptr = nullptr; }
+	/// @brief Move assignment
 	PtrStore &operator=(PtrStore &&other) noexcept {
 		if (this != &other) {
 			free();
@@ -29,12 +31,11 @@ public:
 		return *this;
 	}
 
-	/**
-	 * @brief Does this instance hold a valid pointer?
-	 * @return true if the pointer is non-NULL.
-	 */
+	/// @brief Does this instance hold a valid pointer?
 	bool valid() const { return m_ptr; }
+	/// @brief bool wrapper around valid()
 	operator bool() const { return valid(); }
+	/// @brief ! wrapper around valid()
 	bool operator!() const { return !valid(); }
 
 	/**

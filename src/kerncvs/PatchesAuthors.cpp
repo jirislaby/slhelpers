@@ -89,7 +89,7 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 }
 
 bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
-				   const InsertUFMap &insertUFMap)
+				    const InsertUFMap &insertUFMap)
 {
 	auto tree = *commit.tree();
 

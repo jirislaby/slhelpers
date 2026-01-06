@@ -17,6 +17,12 @@ namespace SlHelpers {
  * @brief Compare versions, to be used as Compare in containers
  */
 struct CmpVersions {
+	/**
+	 * @brief Comparator for versions \p ver1 and \p ver2
+	 * @param ver1 One version
+	 * @param ver2 Another version
+	 * @return true if \p ver1 < \p ver2
+	 */
 	constexpr bool operator()(std::string_view ver1, std::string_view ver2) const noexcept
 	{
 		const auto arr1 = String::splitSV(ver1, ".-");

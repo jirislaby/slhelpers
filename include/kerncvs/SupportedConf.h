@@ -13,6 +13,7 @@ namespace SlKernCVS {
  */
 class SupportedConf {
 public:
+	/// @brief Level of support for a module
 	enum SupportState {
 		NonPresent = -3,
 		Unsupported = -2,

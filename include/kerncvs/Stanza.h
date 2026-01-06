@@ -22,7 +22,9 @@ namespace SlKernCVS {
  */
 class Stanza {
 public:
+	/// @brief Callback to translate an e-mail
 	using TranslateEmail = std::function<std::string (std::string_view sv)>;
+	/// @brief Maintainers are a list of Person
 	using Maintainers = std::vector<Person>;
 
 	Stanza() = default;
@@ -53,6 +55,12 @@ public:
 		});
 	}
 
+	/**
+	 * @brief Add a maintainer (as Maintainer) and store them into SUSE users set too
+	 * @param maintainer SUSE maintainer
+	 * @param suse_users Set to add to
+	 * @param translateEmail Callback to update the Person's e-mail
+	 */
 	void add_maintainer_and_store(std::string_view maintainer,
 				      std::set<std::string> &suse_users,
 				      const TranslateEmail &translateEmail) {
@@ -67,12 +75,25 @@ public:
 				     " cannot be parsed into name and email!\n";
 	}
 
+	/**
+	 * @brief Creates a Person and adds it as Maintainer
+	 * @param name Name of the Person
+	 * @param email E-mail of the Person
+	 * @param cnt Count of changes
+	 * @param translateEmail Callback to update the Person's e-mail
+	 */
 	void add_backporter(const std::string &name, std::string_view email,
 			    unsigned cnt, const TranslateEmail &translateEmail) {
 		m_maintainers.push_back(Person(Role::Maintainer, name,
 					       /*TODO*/ translateEmail(email), cnt));
 	}
 
+	/**
+	 * @brief Add a \p maintainer (as Upstream) if in \p suse_users
+	 * @param maintainer Maintainer to add
+	 * @param suse_users Set of SUSE users
+	 * @param translateEmail Callback to update the Person's e-mail
+	 */
 	void add_maintainer_if(std::string_view maintainer,
 			       const std::set<std::string> &suse_users,
 			       const TranslateEmail &translateEmail) {
@@ -87,6 +108,11 @@ public:
 				     " cannot be parsed into name and email!\n";
 	}
 
+	/**
+	 * @brief Add \p pattern to this Stanza
+	 * @param pattern Pattern to add
+	 * @return true on success.
+	 */
 	bool add_pattern(std::string pattern) {
 		auto p = Pattern::create(std::move(pattern));
 		if (!p)
@@ -95,6 +121,7 @@ public:
 		return true;
 	}
 
+	/// @brief Check if this Stanza has no name, maintainers, and patterns
 	bool empty() const {
 		return m_name.empty() || m_maintainers.empty() || m_patterns.empty();
 	}
@@ -105,12 +132,19 @@ public:
 	 */
 	const Maintainers &maintainers() const { return m_maintainers; }
 
+	/**
+	 * @brief Reset Stanza and start from the beginning
+	 * @param n New name of Stanza
+	 *
+	 * Called while parsing MAINTAINERS and a new subsystem was parsed.
+	 */
 	void new_entry(std::string n) {
 		m_name = std::move(n);
 		m_maintainers.clear();
 		m_patterns.clear();
 	}
 
+	/// @brief Get name/title of this Stanza
 	const std::string &name() const { return m_name; }
 private:
 	std::string m_name;

@@ -22,10 +22,13 @@ namespace SlKernCVS {
  */
 class PatchesAuthors {
 public:
+	/// @brief E-mail -> file -> count mapping
 	using Map = std::map<std::string, std::map<std::string, unsigned int>>;
-	using InsertUser = std::function<bool (const std::string &)>;
-	using InsertUFMap = std::function<bool (const std::string &, const std::filesystem::path &,
-		unsigned, unsigned)>;
+	/// @brief A callback invoked for e-mail
+	using InsertUser = std::function<bool (const std::string &email)>;
+	/// @brief A callback invoked for e-mail, file, and counts of git-fixes and real changes
+	using InsertUFMap = std::function<bool (const std::string &email,
+		const std::filesystem::path &file, unsigned gitFixes, unsigned realFixes)>;
 
 	/**
 	 * @brief PatchesAuthors constructor

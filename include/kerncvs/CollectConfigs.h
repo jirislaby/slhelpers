@@ -19,6 +19,7 @@ namespace SlKernCVS {
  */
 class CollectConfigs {
 public:
+	/// @brief Value for a config
 	enum ConfigValue : char {
 		Disabled = 'n',
 		BuiltIn = 'y',
@@ -26,7 +27,9 @@ public:
 		WithValue = 'v',
 	};
 
+	/// @brief A callback invoked for arch and flavor
 	using InsertArchFlavor = std::function<int (const std::string &, const std::string &)>;
+	/// @brief A callback invoked for arch, flavor, config, and its value
 	using InsertConfig = std::function<int (const std::string &, const std::string &,
 		const std::string &, const ConfigValue &)>;
 

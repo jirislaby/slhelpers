@@ -19,6 +19,7 @@ namespace SlKernCVS {
  */
 class Maintainers {
 public:
+	/// @brief Maintainers are a list of stanzas
 	using MaintainersType = std::vector<Stanza>;
 
 	/**

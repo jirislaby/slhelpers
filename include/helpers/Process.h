@@ -15,6 +15,7 @@ namespace SlHelpers {
  */
 class Process {
 public:
+	/// @brief Errors returned by lastErrorNo()
 	enum Error {
 		UnknownError,
 		BusyError,
@@ -24,6 +25,7 @@ public:
 		ReadError,
 		WriteError,
 	};
+
 	Process() : m_pid(-1), m_pipe{-1, -1}, m_signalled(false), m_exitStatus(0), m_lastError(""),
 		m_lastErrorNo(UnknownError) {}
 	~Process();
@@ -64,11 +66,27 @@ public:
 	 */
 	bool waitForFinished();
 
+	/**
+	 * @brief Return the process ID for the child process
+	 * @return PID
+	 */
 	pid_t pid() const { return m_pid; }
+
+	/**
+	 * @brief Was the child signalled?
+	 * @return true if signalled.
+	 */
 	bool signalled() const { return m_signalled; }
+
+	/**
+	 * @brief Exit status of the children (aka WEXITSTATUS())
+	 * @return Exit status.
+	 */
 	unsigned int exitStatus() const { return m_exitStatus; }
 
+	/// @brief Return the last error string if some
 	const std::string &lastError() const { return m_lastError; }
+	/// @brief Return the last error number
 	Error lastErrorNo() const { return m_lastErrorNo; }
 private:
 	void closePipe(const unsigned int &p);

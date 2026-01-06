@@ -17,11 +17,11 @@ class Keys {
 public:
 	Keys() = delete;
 
+	/// @brief One SSH key (a path to it)
 	using Key = std::filesystem::path;
-	/**
-	 * @brief Pair of public + private keys (in that order)
-	 */
+	/// @brief A pair of public + private keys (in that order)
 	using KeyPair = std::pair<Key, Key>;
+	/// @brief A list of key pairs
 	using KeyPairs = std::vector<KeyPair>;
 
 	/**
