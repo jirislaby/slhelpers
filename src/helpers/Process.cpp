@@ -18,12 +18,12 @@ Process::~Process()
 		waitForFinished();
 }
 
-int Process::spawn(const std::filesystem::path &program, const std::vector<std::string> &args,
-		   std::string *out)
+bool Process::spawn(const std::filesystem::path &program, const std::vector<std::string> &args,
+		    bool captureStdout)
 {
 	if (m_pid >= 0) {
 		setError(BusyError, "The previous pid still active");
-		return -1;
+		return false;
 	}
 
 	std::vector<char *> argv;
@@ -34,10 +34,10 @@ int Process::spawn(const std::filesystem::path &program, const std::vector<std::
 
 	posix_spawn_file_actions_t actions;
 	posix_spawn_file_actions_init(&actions);
-	if (out) {
+	if (captureStdout) {
 		if (pipe(m_pipe)) {
 			setError(PipeError, strerror(errno));
-			return -1;
+			return false;
 		}
 		posix_spawn_file_actions_addclose(&actions, STDOUT_FILENO);
 		posix_spawn_file_actions_adddup2(&actions, m_pipe[1], STDOUT_FILENO);
@@ -51,13 +51,13 @@ int Process::spawn(const std::filesystem::path &program, const std::vector<std::
 	if (ret) {
 		closePipe(0);
 		setError(SpawnError, strerror(errno));
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-int Process::waitForFinished()
+bool Process::waitForFinished()
 {
 	int stat;
 	auto ret = waitpid(m_pid, &stat, 0);
@@ -66,27 +66,27 @@ int Process::waitForFinished()
 	closePipe(1);
 	if (ret < 0) {
 		setError(WaitPidError, strerror(errno));
-		return -1;
+		return false;
 	}
 
 	if (WIFEXITED(stat)) {
 		m_exitStatus = WEXITSTATUS(stat);
 		if (m_exitStatus == 127) { // 127 defined in man
 			setError(SpawnError, "pre-exec or execve() failure");
-			return -1;
+			return false;
 		}
-		return 0;
+		return true;
 	}
 
 	if (WIFSIGNALED(stat)) {
 		m_signalled = true;
-		return 0;
+		return true;
 	}
 
-	return 0;
+	return true;
 }
 
-int Process::readAll(std::string &out)
+bool Process::readAll(std::string &out)
 {
 	char buf[128];
 	std::stringstream ss;
@@ -94,7 +94,7 @@ int Process::readAll(std::string &out)
 		auto r = read(m_pipe[0], buf, sizeof(buf));
 		if (r < 0) {
 			setError(ReadError, strerror(errno));
-			return -1;
+			return false;
 		}
 		if (!r)
 			break;
@@ -103,18 +103,20 @@ int Process::readAll(std::string &out)
 	closePipe(0);
 	out = ss.str();
 
-	return 0;
+	return true;
 }
 
-int Process::run(const std::filesystem::path &program, const std::vector<std::string> &args,
+bool Process::run(const std::filesystem::path &program, const std::vector<std::string> &args,
 		 std::string *out)
 {
-	if (spawn(program, args, out))
-		return -1;
+	if (!spawn(program, args, out))
+		return false;
 
-	auto ret = out ? readAll(*out) : 0;
+	auto ret = true;
+	if (out)
+		ret = readAll(*out);
 
-	return waitForFinished() ? : ret;
+	return waitForFinished() && ret;
 }
 
 void Process::closePipe(const unsigned int &p)

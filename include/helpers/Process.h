@@ -35,13 +35,13 @@ public:
 	 * If \p out is non-NULL, the stdout of the \p program is filled in there.
 	 * run() combines spawn(), readAll(), and waitForFinished().
 	 */
-	int run(const std::filesystem::path &program, const std::vector<std::string> &args = {},
-		std::string *out = nullptr);
+	bool run(const std::filesystem::path &program, const std::vector<std::string> &args = {},
+		 std::string *out = nullptr);
 
-	int spawn(const std::filesystem::path &program, const std::vector<std::string> &args = {},
-		  std::string *out = nullptr);
-	int readAll(std::string &out);
-	int waitForFinished();
+	bool spawn(const std::filesystem::path &program, const std::vector<std::string> &args = {},
+		   bool captureStdout = false);
+	bool readAll(std::string &out);
+	bool waitForFinished();
 
 	pid_t pid() const { return m_pid; }
 	bool signalled() const { return m_signalled; }

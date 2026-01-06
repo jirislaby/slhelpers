@@ -92,24 +92,24 @@ void testProcess(const std::filesystem::path &crash)
 {
 	Process p;
 
-	assert(!p.run("/usr/bin/true"));
+	assert(p.run("/usr/bin/true"));
 	assert(!p.signalled());
 	assert(!p.exitStatus());
 
-	assert(!p.run("/usr/bin/false"));
+	assert(p.run("/usr/bin/false"));
 	assert(!p.signalled());
 	assert(p.exitStatus());
 
-	assert(p.run("/does_not_exist/bin"));
+	assert(!p.run("/does_not_exist/bin"));
 	assert(p.lastErrorNo() == Process::SpawnError);
 
 	std::string s;
-	assert(!p.run("/usr/bin/echo", { "-e", "one", "two\\n\\tthree" }, &s));
+	assert(p.run("/usr/bin/echo", { "-e", "one", "two\\n\\tthree" }, &s));
 	assert(!p.signalled());
 	assert(!p.exitStatus());
 	assert(s == "one two\n\tthree\n");
 
-	assert(!p.run(crash));
+	assert(p.run(crash));
 	assert(p.signalled());
 }
 
