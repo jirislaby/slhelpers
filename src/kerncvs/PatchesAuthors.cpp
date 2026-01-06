@@ -4,9 +4,12 @@
 #include <mutex>
 #include <set>
 
+#include "git/Blob.h"
+#include "git/Commit.h"
+#include "git/Repo.h"
+#include "git/Tree.h"
 #include "helpers/String.h"
 #include "kerncvs/PatchesAuthors.h"
-#include "git/Git.h"
 #include "pcre2/PCRE2.h"
 
 using namespace SlKernCVS;

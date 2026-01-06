@@ -2,9 +2,11 @@
 
 #include <iostream>
 
+#include "git/Commit.h"
+#include "git/Repo.h"
+#include "git/Tree.h"
 #include "helpers/String.h"
 #include "kerncvs/CollectConfigs.h"
-#include "git/Git.h"
 
 using namespace SlKernCVS;
 
