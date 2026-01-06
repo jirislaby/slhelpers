@@ -4,8 +4,8 @@
 
 #include "../helpers/Unique.h"
 
-typedef struct sqlite3 sqlite3;
-typedef struct sqlite3_stmt sqlite3_stmt;
+struct sqlite3;
+struct sqlite3_stmt;
 
 namespace SlSqlite {
 
@@ -13,13 +13,12 @@ using SQLHolder = SlHelpers::UniqueHolder<sqlite3>;
 using SQLStmtHolder = SlHelpers::UniqueHolder<sqlite3_stmt>;
 
 struct SQLStmtResetter {
-	SQLStmtResetter(sqlite3 *sql, sqlite3_stmt *stmt) : sql(sql), stmt(stmt) { }
+	SQLStmtResetter(sqlite3_stmt *stmt) : m_stmt(stmt) { }
 	~SQLStmtResetter();
 
 	int reset();
 private:
-	sqlite3 *sql;
-	sqlite3_stmt *stmt;
+	sqlite3_stmt *m_stmt;
 };
 
 }

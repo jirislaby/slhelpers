@@ -21,17 +21,18 @@ void SlHelpers::Deleter<sqlite3_stmt>::operator()(sqlite3_stmt *stmt) const
 
 SQLStmtResetter::~SQLStmtResetter()
 {
+	auto stmt = m_stmt;
 	auto ret = reset();
 	if (ret != SQLITE_OK && ret != SQLITE_CONSTRAINT) {
 		std::cerr << "stmt reset failed (" << __LINE__ << "): " <<
 			     sqlite3_errstr(ret) << " -> " <<
-			     sqlite3_errmsg(sql) << "\n";
+			     sqlite3_errmsg(sqlite3_db_handle(stmt)) << "\n";
 	}
 }
 
 int SQLStmtResetter::reset()
 {
-	auto ret = sqlite3_reset(stmt);
-	stmt = nullptr;
+	auto ret = sqlite3_reset(m_stmt);
+	m_stmt = nullptr;
 	return ret;
 }

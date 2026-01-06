@@ -309,7 +309,7 @@ void SQLConn::dumpBinding(const Binding &binding) const noexcept
 bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 		     uint64_t *affected) const noexcept
 {
-	SQLStmtResetter insResetter(sqlHolder, ins);
+	SQLStmtResetter insResetter(ins);
 
 	if (!bind(ins, binding))
 		return false;
@@ -334,7 +334,7 @@ std::optional<SQLConn::SelectResult>
 SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
 		const ColumnTypes &columns) const noexcept
 {
-	SQLStmtResetter selResetter(sqlHolder, sel);
+	SQLStmtResetter selResetter(sel);
 	int ret;
 
 	if (!bind(sel, binding))
