@@ -3,7 +3,8 @@
 #ifndef SLHELPERS_SSH_H
 #define SLHELPERS_SSH_H
 
-#include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 #include "HomeDir.h"
@@ -19,8 +20,7 @@ public:
 	using KeyPair = std::pair<Key, Key>;
 	using KeyPairs = std::vector<KeyPair>;
 
-	static KeyPairs get(const std::string &host) {
-		(void)host;
+	static KeyPairs get([[maybe_unused]] std::string_view host) {
 		auto home = SlHelpers::HomeDir::get();
 		auto sshDir = home / ".ssh";
 
@@ -38,7 +38,7 @@ public:
 			auto priv {pub};
 			priv.replace_extension();
 			if (std::filesystem::exists(priv))
-				res.push_back(std::make_pair(pub, std::move(priv)));
+				res.emplace_back(pub, std::move(priv));
 		}
 
 		return res;
