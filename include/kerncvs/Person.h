@@ -67,7 +67,7 @@ public:
 	const Role &role() const { return m_role; }
 	const std::string &name() const { return m_name; }
 	const std::string &email() const { return m_email; }
-	const std::string userName() const { return m_email.substr(0, m_email.find("@")); }
+	std::string userName() const { return m_email.substr(0, m_email.find("@")); }
 	auto count() const { return m_count; }
 
 	std::string pretty(bool includeName = true) const {
