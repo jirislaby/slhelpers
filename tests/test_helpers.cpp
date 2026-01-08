@@ -91,15 +91,39 @@ void testHomeDir()
 
 void testLastError()
 {
-	LastError e;
-	static constexpr std::string_view text("text");
-	static constexpr std::string_view moreText("more");
+	static const constinit std::string_view text("text");
+	static const constinit std::string_view moreText("more");
+	static const auto merged(std::string(text).append(moreText));
 
-	assert(e.lastError().empty());
-	e.reset() << text;
-	assert(e.lastError() == text);
-	e << moreText;
-	assert(e.lastError() == std::string(text).append(moreText));
+	{
+		LastErrorStream e;
+
+		assert(e.lastError().empty());
+		e.reset() << text;
+		assert(e.lastError() == text);
+		e << moreText;
+		assert(e.lastError() == merged);
+	}
+	{
+		LastErrorStr<int> e;
+		assert(e.lastError().empty());
+		assert(e.get<0>() == 0);
+		e.set<0>(1000);
+		assert(e.get<0>() == 1000);
+		e.reset().setError(text);
+		assert(e.lastError() == text);
+		assert(e.get<0>() == 0);
+	}
+	{
+		LastErrorStr<int, std::string> e;
+		assert(e.get<1>().empty());
+		e.set<1>(text);
+		assert(e.get<1>() == text);
+		e.get<1>().append(moreText);
+		assert(e.get<1>() == merged);
+		e.reset();
+		assert(e.get<1>().empty());
+	}
 }
 
 void testProcess(const std::filesystem::path &crash)

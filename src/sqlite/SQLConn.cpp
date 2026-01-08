@@ -364,13 +364,14 @@ SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
 	}
 }
 
-SlHelpers::LastError &SQLConn::setError(int ret, std::string_view error, bool errmsg) const
+SQLConn::LastError &SQLConn::setError(int ret, std::string_view error, bool errmsg) const
 {
-	m_lastErrorCode = sqlite3_errcode(sqlHolder);
-	m_lastErrorCodeExt = sqlite3_extended_errcode(sqlHolder);
 	m_lastError.reset() << error << ": " << sqlite3_errstr(ret);
 	if (errmsg)
 		m_lastError << " -> " << sqlite3_errmsg(sqlHolder);
+
+	m_lastError.set<0>(sqlite3_errcode(sqlHolder));
+	m_lastError.set<1>(sqlite3_extended_errcode(sqlHolder));
 
 	return m_lastError;
 }

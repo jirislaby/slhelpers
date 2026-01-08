@@ -153,12 +153,12 @@ public:
 	/// @brief Return the last error string if some
 	std::string lastError() const { return m_lastError.lastError(); }
 	/// @brief Return the last error number
-	int lastErrorCode() const { return m_lastErrorCode; }
+	int lastErrorCode() const { return m_lastError.get<0>(); }
 	/// @brief Return the last extended error number
-	int lastErrorCodeExt() const { return m_lastErrorCodeExt; }
+	int lastErrorCodeExt() const { return m_lastError.get<1>(); }
 
 protected:
-	SQLConn() : m_flags(0), m_lastErrorCode(0), m_lastErrorCodeExt(0) {}
+	SQLConn() : m_flags(0) {}
 
 	/// @brief Bind value (SQL's null, number, string)
 	using BindVal = std::variant<std::monostate, int, unsigned, std::string, std::string_view>;
@@ -250,20 +250,18 @@ protected:
 		return cond ? std::move(val) : std::monostate();
 	}
 
+	/// @brief Store a string + 2 ints
+	using LastError = SlHelpers::LastErrorStream<int, int>;
+
 	/// @brief Set last error to \p ret and \p error
-	SlHelpers::LastError &setError(int ret, std::string_view error,
-				       bool errmsg = false) const;
+	LastError &setError(int ret, std::string_view error, bool errmsg = false) const;
 
 	/// @brief The DB connection
 	SQLHolder sqlHolder;
 	/// @brief OpenFlags
 	unsigned int m_flags;
-	/// @brief The last error
-	mutable SlHelpers::LastError m_lastError;
-	/// @brief The last error code
-	mutable int m_lastErrorCode;
-	/// @brief The last extended error code
-	mutable int m_lastErrorCodeExt;
+	/// @brief The last error + error code + extended error code
+	mutable LastError m_lastError;
 private:
 	static int busyHandler(void *, int count);
 	void dumpBinding(const Binding &binding) const noexcept;

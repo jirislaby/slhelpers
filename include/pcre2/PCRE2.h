@@ -102,16 +102,15 @@ private:
 class PCRE2 {
 public:
 	/// @brief Constructs an empty PCRE2
-	PCRE2() noexcept : m_lastErrno(0), m_lastOffset(0), m_code(nullptr), m_matchData(nullptr) {}
+	PCRE2() noexcept : m_code(nullptr), m_matchData(nullptr) {}
 	~PCRE2() noexcept { free(); }
 
 	PCRE2(const PCRE2 &) = delete;
 	PCRE2 &operator=(const PCRE2 &) = delete;
 
 	/// @brief Move constructor
-	PCRE2(PCRE2 &&other) noexcept : m_lastErrno(other.m_lastErrno),
-			m_lastOffset(other.m_lastOffset), m_code(other.m_code),
-			m_matchData(other.m_matchData) {
+	PCRE2(PCRE2 &&other) noexcept : m_lastError(std::move(other.m_lastError)),
+			m_code(other.m_code), m_matchData(other.m_matchData) {
 		other.m_code = nullptr;
 		other.m_matchData = nullptr;
 	}
@@ -119,9 +118,7 @@ public:
 	PCRE2 &operator=(PCRE2 &&other) noexcept {
 		if (this != &other) {
 			free();
-			m_lastErrno = other.m_lastErrno;
 			m_lastError = std::move(other.m_lastError);
-			m_lastOffset = other.m_lastOffset;
 			std::swap(m_code, other.m_code);
 			std::swap(m_matchData, other.m_matchData);
 		}
@@ -138,18 +135,20 @@ public:
 		free();
 
 		int err;
+		PCRE2_SIZE lastOff;
 		m_code = pcre2_compile(reinterpret_cast<PCRE2_SPTR>(regex.data()), regex.length(),
-				       options, &err, &m_lastOffset, nullptr);
+				       options, &err, &lastOff, nullptr);
 		if (!m_code) {
-			m_lastErrno = err;
-			m_lastError.reset() << errToStr(err);
+			m_lastError.reset().setError(errToStr(err));
+			m_lastError.set<0>(err);
+			m_lastError.set<1>(lastOff);
 			return false;
 		}
 
 		m_matchData = pcre2_match_data_create_from_pattern(m_code, nullptr);
 		if (!m_matchData) {
-			m_lastErrno = PCRE2_ERROR_NOMEMORY;
-			m_lastError.reset() << "failed to allocate match data";
+			m_lastError.reset().setError("failed to allocate match data");
+			m_lastError.set<0>(PCRE2_ERROR_NOMEMORY);
 			return false;
 		}
 
@@ -210,11 +209,11 @@ public:
 	}
 
 	/// @brief Return the last error number
-	auto lastErrno() const noexcept { return m_lastErrno; }
+	auto lastErrno() const noexcept { return m_lastError.get<0>(); }
 	/// @brief Return the last error string if some
 	auto lastError() const noexcept { return m_lastError.lastError(); }
 	/// @brief Get offset of last error (to the regex string)
-	auto lastOffset() const noexcept { return m_lastOffset; }
+	auto lastOffset() const noexcept { return m_lastError.get<1>(); }
 
 	/// @brief Test whether PCRE2 is valid
 	bool valid() const noexcept { return m_code; }
@@ -229,9 +228,7 @@ private:
 		pcre2_code_free(m_code);
 		m_code = nullptr;
 	}
-	int m_lastErrno;
-	SlHelpers::LastError m_lastError;
-	PCRE2_SIZE m_lastOffset;
+	SlHelpers::LastErrorStr<int, PCRE2_SIZE> m_lastError;
 	pcre2_code *m_code;
 	pcre2_match_data *m_matchData;
 };
