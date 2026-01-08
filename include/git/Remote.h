@@ -23,16 +23,16 @@ class Remote {
 public:
 	Remote() = delete;
 
-	int fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &refspecs = {},
-			  int depth = 0, bool tags = true) const noexcept;
-	int fetchRefspecs(const std::vector<std::string> &refspecs = {}, int depth = 0,
-			  bool tags = true) const noexcept {
+	bool fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &refspecs = {},
+			   int depth = 0, bool tags = true) const noexcept;
+	bool fetchRefspecs(const std::vector<std::string> &refspecs = {}, int depth = 0,
+			   bool tags = true) const noexcept {
 		DefaultFetchCallbacks fc;
 		return fetchRefspecs(fc, refspecs, depth, tags);
 	}
-	int fetchBranches(const std::vector<std::string> &branches, int depth = 0,
-			  bool tags = true) const noexcept;
-	int fetch(const std::string &branch, int depth = 0,
+	bool fetchBranches(const std::vector<std::string> &branches, int depth = 0,
+			   bool tags = true) const noexcept;
+	bool fetch(const std::string &branch, int depth = 0,
 		  bool tags = true) const noexcept { return fetchBranches({ branch }, depth, tags); }
 
 	std::string url() const noexcept { return git_remote_url(remote()); }

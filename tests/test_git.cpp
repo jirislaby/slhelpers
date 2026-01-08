@@ -63,7 +63,7 @@ createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
 	assert(aBlob->type() == GIT_OBJECT_BLOB);
 	assert(aBlob->typeStr() == "blob");
 
-	assert(!aTb->insert(aFile, *aBlob));
+	assert(aTb->insert(aFile, *aBlob));
 	auto aTreeOpt = aTb->write(repo);
 	assert(aTreeOpt);
 	auto aTree = std::move(*aTreeOpt);
@@ -71,7 +71,7 @@ createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
 	assert(aTree.typeStr() == "tree");
 	std::cout << __func__ << ": aTree=" << aTree.idStr() << '\n';
 
-	assert(!repo.index()->readTree(aTree));
+	assert(repo.index()->readTree(aTree));
 
 	auto aCommitOpt = repo.commitCreateCheckout(me, me, "commit of " + aFile.string(), aTree);
 	assert(aCommitOpt);
@@ -99,13 +99,13 @@ createBCommit(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit
 	auto bBlob = repo.blobCreateFromBuffer(bContent);
 	assert(bBlob);
 
-	assert(!bTb->insert(bFile, *bBlob));
+	assert(bTb->insert(bFile, *bBlob));
 	auto bTreeOpt = bTb->write(repo);
 	assert(bTreeOpt);
 	auto bTree = std::move(*bTreeOpt);
 	std::cout << __func__ << ": bTree=" << bTree.idStr() << '\n';
 
-	assert(!repo.index()->readTree(bTree));
+	assert(repo.index()->readTree(bTree));
 
 	auto bCommitOpt = repo.commitCreateCheckout(me, me, "commit of " + bFile.string(), bTree,
 						    GIT_CHECKOUT_SAFE | GIT_CHECKOUT_RECREATE_MISSING,
@@ -257,7 +257,7 @@ static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 {
 	auto revWalk = repo.revWalkCreate();
 	assert(revWalk);
-	revWalk->pushHead();
+	assert(revWalk->pushHead());
 	auto nextCommit = revWalk->next();
 	assert(nextCommit);
 	assert(nextCommit == bCommit);
@@ -268,6 +268,7 @@ static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	std::cout << __func__ << ": top-1=" << nextCommit->idStr() << '\n';
 	nextCommit = revWalk->next();
 	assert(!nextCommit);
+	assert(repo.lastErrno() == GIT_ITEROVER);
 }
 
 static void testCatFile(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
@@ -303,12 +304,13 @@ static void testFilesOnFS(const SlGit::Repo &repo, const std::filesystem::path &
 	ifs.close();
 	assert(line == aContent);
 }
+
 static void testCheckout(const SlGit::Repo &repo2, const SlGit::Commit &aCommit)
 {
 	auto r = repo2.refDWIM("origin/aRef2");
 	assert(r);
 	assert(r->name() == "refs/remotes/origin/aRef2");
-	assert(!repo2.checkout(*r));
+	assert(repo2.checkout(*r));
 	auto head = repo2.commitRevparseSingle("HEAD");
 	assert(head);
 	std::cout << __func__ << ": cloned head=" << head->idStr() << '\n';
@@ -320,7 +322,7 @@ static void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
 	auto remote = repo2.remoteLookup("origin");
 	assert(remote);
 	std::cout << "vvv fetch output vvv\n";
-	assert(!remote->fetch("master"));
+	assert(remote->fetch("master"));
 	std::cout << "^^^ fetch output ^^^\n";
 	auto originMaster = repo2.commitRevparseSingle("origin/master");
 	std::cout << __func__ << ": origin/master=" << originMaster->idStr() << '\n';

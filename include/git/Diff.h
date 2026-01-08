@@ -45,13 +45,24 @@ public:
 		return git_diff_get_delta(diff(), idx);
 	}
 
-	int findSimilar(const git_diff_find_options *options = nullptr) const noexcept {
-		return git_diff_find_similar(diff(), options);
+	bool findSimilar(const git_diff_find_options *options = nullptr) const noexcept {
+		return !git_diff_find_similar(diff(), options);
 	}
 
 	bool isSortedICase() const noexcept { return git_diff_is_sorted_icase(diff()); }
 
+	/**
+	 * @brief Invoke \p forEachCB callbacks for each file, hunk, ... in the diff
+	 * @param forEachCB Callbacks
+	 * @return 0 on success, non-zero callback return value, or error code.
+	 */
 	int forEach(const ForEachCB &forEachCB) const;
+	/**
+	 * @brief Invoke \p forEachCB callbacks for each file, hunk, ... in the diff
+	 * @param format \c GIT_DIFF_FORMAT_PATCH, \c GIT_DIFF_FORMAT_PATCH_HEADER, ...
+	 * @param printCB Callback
+	 * @return 0 on success, non-zero callback return value, or error code.
+	 */
 	int print(const git_diff_format_t &format, const PrintCB &printCB) const;
 
 	std::optional<Buf> toBuf(git_diff_format_t format) const noexcept;

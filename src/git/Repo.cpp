@@ -23,6 +23,8 @@ void SlHelpers::Deleter<git_repository>::operator()(git_repository *repo) const
 	git_repository_free(repo);
 }
 
+thread_local SlHelpers::LastErrorStr<int, int> Repo::m_lastError;
+
 std::optional<Repo> Repo::init(const std::filesystem::path &path, bool bare,
 				 const std::string &originUrl) noexcept
 {
@@ -69,11 +71,13 @@ bool Repo::update(const std::filesystem::path &path, const std::string &remote)
 	return true;
 }
 
-int Repo::checkoutTree(const Tree &tree, unsigned int strategy) const noexcept
+bool Repo::checkoutTree(const Tree &tree, unsigned int strategy) const noexcept
 {
 	git_checkout_options opts GIT_CHECKOUT_OPTIONS_INIT;
 	opts.checkout_strategy = strategy;
-	return git_checkout_tree(repo(), reinterpret_cast<const git_object *>(tree.tree()), &opts);
+	return !setLastError(git_checkout_tree(repo(),
+					       reinterpret_cast<const git_object *>(tree.tree()),
+					       &opts));
 }
 
 std::optional<std::string> Repo::catFile(const std::string &branch,
@@ -88,7 +92,7 @@ std::optional<std::string> Repo::catFile(const std::string &branch,
 std::optional<Blob> Repo::blobCreateFromWorkDir(const std::filesystem::path &file) const noexcept
 {
 	git_oid oid;
-	if (git_blob_create_from_workdir(&oid, repo(), file.c_str()))
+	if (setLastError(git_blob_create_from_workdir(&oid, repo(), file.c_str())))
 		return std::nullopt;
 	return blobLookup(oid);
 }
@@ -96,7 +100,7 @@ std::optional<Blob> Repo::blobCreateFromWorkDir(const std::filesystem::path &fil
 std::optional<Blob> Repo::blobCreateFromDisk(const std::filesystem::path &file) const noexcept
 {
 	git_oid oid;
-	if (git_blob_create_from_disk(&oid, repo(), file.c_str()))
+	if (setLastError(git_blob_create_from_disk(&oid, repo(), file.c_str())))
 		return std::nullopt;
 	return blobLookup(oid);
 }
@@ -104,7 +108,7 @@ std::optional<Blob> Repo::blobCreateFromDisk(const std::filesystem::path &file) 
 std::optional<Blob> Repo::blobCreateFromBuffer(const std::string &buf) const noexcept
 {
 	git_oid oid;
-	if (git_blob_create_from_buffer(&oid, repo(), buf.c_str(), buf.length()))
+	if (setLastError(git_blob_create_from_buffer(&oid, repo(), buf.c_str(), buf.length())))
 		return std::nullopt;
 	return blobLookup(oid);
 }
@@ -142,8 +146,9 @@ std::optional<Commit> Repo::commitCreate(const Signature &author, const Signatur
 	for (const auto &p : parents)
 		parentPtrs.push_back(p->commit());
 
-	if (git_commit_create(&oid, repo(), "HEAD", author, committer, "UTF-8", msg.c_str(),
-			      tree, parentPtrs.size(), parentPtrs.data()))
+	if (setLastError(git_commit_create(&oid, repo(), "HEAD", author, committer, "UTF-8",
+					   msg.c_str(), tree, parentPtrs.size(),
+					   parentPtrs.data())))
 		return std::nullopt;
 	return commitLookup(oid);
 }
@@ -157,7 +162,7 @@ std::optional<Commit> Repo::commitCreateCheckout(const Signature &author,
 	auto commit = commitCreate(author, committer, msg, tree, parents);
 	if (!commit)
 		return std::nullopt;
-	if (checkoutTree(tree, strategy))
+	if (!checkoutTree(tree, strategy))
 		return std::nullopt;
 	return commit;
 }
@@ -231,7 +236,7 @@ std::variant<Blob, Commit, Tag, Tree, std::monostate>
 Repo::revparseSingle(const std::string &rev) const noexcept
 {
 	git_object *obj;
-	if (git_revparse_single(&obj, repo(), rev.c_str()))
+	if (setLastError(git_revparse_single(&obj, repo(), rev.c_str())))
 		return std::monostate{};
 
 	switch (git_object_type(obj)) {
@@ -293,8 +298,8 @@ std::optional<Tag> Repo::tagCreate(const std::string &tagName, const Object &tar
 				   bool force) const noexcept
 {
 	git_oid oid;
-	if (git_tag_create(&oid, repo(), tagName.c_str(), target.object(), tagger, message.c_str(),
-			   force))
+	if (setLastError(git_tag_create(&oid, repo(), tagName.c_str(), target.object(), tagger,
+					message.c_str(), force)))
 		return std::nullopt;
 	return tagLookup(oid);
 }
@@ -344,7 +349,7 @@ std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const noe
 	return MakeGit<TreeBuilder>(git_treebuilder_new, repo(), source ? source->tree() : nullptr);
 }
 
-std::pair<std::string, int> Repo::lastError() noexcept
+std::pair<std::string, int> Repo::lastGitError() noexcept
 {
 	const auto err = git_error_last();
 	return { err->message, err->klass };
@@ -381,32 +386,30 @@ std::optional<Repo> Repo::clone(const std::filesystem::path &path, const std::st
 	return MakeGit<Repo>(git_clone, url.c_str(), path.c_str(), &opts);
 }
 
-int Repo::checkout(const std::string &branch) const noexcept
+bool Repo::checkout(const std::string &branch) const noexcept
 {
 	auto ref = refLookup(branch);
 	if (!ref)
-		return -1;
+		return false;
 
 	return checkout(*ref);
 }
 
-int Repo::checkout(const Reference &ref) const noexcept
+bool Repo::checkout(const Reference &ref) const noexcept
 {
 	auto c = commitLookup(*ref.target());
 	if (!c)
-		return -1;
+		return false;
 
 	auto tree = c->tree();
 	if (!tree)
-		return -1;
+		return false;
 
-	auto ret = checkoutTree(*tree);
-	if (ret)
-		return ret;
+	if (!checkoutTree(*tree))
+		return false;
 
-	ret = git_repository_set_head(repo(), ref.name().c_str());
-	if (ret)
-		return ret;
+	if (setLastError(git_repository_set_head(repo(), ref.name().c_str())))
+		return false;
 
-	return 0;
+	return true;
 }

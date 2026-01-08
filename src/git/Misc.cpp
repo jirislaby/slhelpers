@@ -34,35 +34,35 @@ std::optional<Reference> Reference::resolve() const noexcept
 	return Reference(out);
 }
 
-int RevWalk::push(const std::string &id) const noexcept
+bool RevWalk::push(const std::string &id) const noexcept
 {
 	const auto commit = m_repo.commitRevparseSingle(id);
 	if (!commit)
-		return -1;
+		return false;
 
-	return git_revwalk_push(revWalk(), commit->id());
+	return !Repo::setLastError(git_revwalk_push(revWalk(), commit->id()));
 }
 
-int RevWalk::hide(const std::string &id) const noexcept
+bool RevWalk::hide(const std::string &id) const noexcept
 {
 	const auto commit = m_repo.commitRevparseSingle(id);
 	if (!commit)
-		return -1;
+		return false;
 
-	return git_revwalk_hide(revWalk(), commit->id());
+	return !Repo::setLastError(git_revwalk_hide(revWalk(), commit->id()));
 }
 
 std::optional<Commit> RevWalk::next() const noexcept
 {
 	git_oid oid;
-	if (git_revwalk_next(&oid, revWalk()))
+	if (Repo::setLastError(git_revwalk_next(&oid, revWalk())))
 		return std::nullopt;
 	return m_repo.commitLookup(oid);
 }
 
 std::optional<Signature> Signature::now(const std::string &name, const std::string &email) {
 	git_signature *sig;
-	if (git_signature_now(&sig, name.c_str(), email.c_str()))
+	if (Repo::setLastError(git_signature_now(&sig, name.c_str(), email.c_str())))
 		return std::nullopt;
 	return Signature(sig);
 }

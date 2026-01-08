@@ -37,9 +37,9 @@ std::optional<Index> Index::create() noexcept
 	return Index(index);
 }
 
-int Index::readTree(const Tree &tree) const noexcept
+bool Index::readTree(const Tree &tree) const noexcept
 {
-	return git_index_read_tree(index(), tree);
+	return !Repo::setLastError(git_index_read_tree(index(), tree));
 }
 
 std::optional<Tree> Index::writeTree(const Repo &repo) const noexcept

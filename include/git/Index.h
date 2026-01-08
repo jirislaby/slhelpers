@@ -11,10 +11,10 @@
 #include <git2.h>
 
 #include "../helpers/Unique.h"
+#include "Repo.h"
 
 namespace SlGit {
 
-class Repo;
 class Tree;
 
 class IndexIterator {
@@ -73,9 +73,11 @@ public:
 	static std::optional<Index> open(const std::filesystem::path &path) noexcept;
 	static std::optional<Index> create() noexcept;
 
-	int read(bool force = true) const noexcept { return git_index_read(index(), force); }
-	int write() const noexcept { return git_index_write(index()); }
-	int readTree(const Tree &tree) const noexcept;
+	bool read(bool force = true) const noexcept {
+		return !Repo::setLastError(git_index_read(index(), force));
+	}
+	bool write() const noexcept { return !Repo::setLastError(git_index_write(index())); }
+	bool readTree(const Tree &tree) const noexcept;
 	std::optional<Tree> writeTree(const Repo &repo) const noexcept;
 
 	size_t entrycount() const noexcept { return git_index_entrycount(index()); }
@@ -87,15 +89,35 @@ public:
 		return git_index_get_bypath(index(), path.c_str(), stage);
 	}
 
-	int addByPath(const std::filesystem::path &path) const noexcept {
-		return git_index_add_bypath(index(), path.c_str());
+	bool addByPath(const std::filesystem::path &path) const noexcept {
+		return !Repo::setLastError(git_index_add_bypath(index(), path.c_str()));
 	}
-	int removeByPath(const std::filesystem::path &path) const noexcept {
-		return git_index_remove_bypath(index(), path.c_str());
+	bool removeByPath(const std::filesystem::path &path) const noexcept {
+		return !Repo::setLastError(git_index_remove_bypath(index(), path.c_str()));
 	}
+
+	/**
+	 * @brief Add all \p paths into this Index
+	 * @param paths Paths to add
+	 * @param flags Combination of git_index_add_option_t
+	 * @param cb Callback for each added/updated path (or nullptr)
+	 * @return 0 on success, negative callback return value, or error code.
+	 */
 	int addAll(const std::vector<std::string> &paths, unsigned int flags,
 		   const MatchCB *cb = nullptr) const;
+	/**
+	 * @brief Remove all \p paths from this Index
+	 * @param paths Paths to remove
+	 * @param cb Callback for each removed path (or nullptr)
+	 * @return 0 on success, negative callback return value, or error code.
+	 */
 	int removeAll(const std::vector<std::string> &paths, const MatchCB *cb = nullptr) const;
+	/**
+	 * @brief Update all \p paths in this Index
+	 * @param paths Paths to update
+	 * @param cb Callback for each updated path (or nullptr)
+	 * @return 0 on success, negative callback return value, or error code.
+	 */
 	int updateAll(const std::vector<std::string> &paths, const MatchCB *cb = nullptr) const;
 
 	bool hasConflicts() const noexcept { return git_index_has_conflicts(index()); }

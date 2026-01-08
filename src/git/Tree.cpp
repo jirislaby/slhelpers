@@ -30,10 +30,10 @@ void SlHelpers::Deleter<git_tree_entry>::operator()(git_tree_entry *TE) const
 		git_tree_entry_free(TE);
 }
 
-int Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) const
+bool Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) const
 {
-	return git_tree_walk(tree(), mode, walkCB,
-			     const_cast<void *>(static_cast<const void *>(&CB)));
+	return !Repo::setLastError(git_tree_walk(tree(), mode, walkCB,
+						 const_cast<void *>(static_cast<const void *>(&CB))));
 }
 
 std::optional<TreeEntry> Tree::treeEntryByPath(const std::string &path) const noexcept
@@ -64,10 +64,10 @@ int Tree::walkCB(const char *root, const git_tree_entry *entry, void *payload)
 	return CB(root, std::move(TreeEntry(entry)));
 }
 
-int TreeBuilder::insert(const std::filesystem::path &file, const Blob &blob) const noexcept
+bool TreeBuilder::insert(const std::filesystem::path &file, const Blob &blob) const noexcept
 {
-	return git_treebuilder_insert(nullptr, treeBuilder(), file.c_str(), blob.id(),
-				      GIT_FILEMODE_BLOB);
+	return !Repo::setLastError(git_treebuilder_insert(nullptr, treeBuilder(), file.c_str(),
+							  blob.id(), GIT_FILEMODE_BLOB));
 }
 
 std::optional<Tree> TreeBuilder::write(const Repo &repo) const noexcept

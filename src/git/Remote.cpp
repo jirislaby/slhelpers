@@ -3,6 +3,7 @@
 #include <git2.h>
 
 #include "git/Remote.h"
+#include "git/Repo.h"
 #include "git/StrArray.h"
 
 using namespace SlGit;
@@ -46,7 +47,7 @@ int Remote::fetchUpdateRefs(const char *refname, const git_oid *a, const git_oid
 }
 #endif
 
-int Remote::fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &refspecs, int depth,
+bool Remote::fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &refspecs, int depth,
 			  bool tags) const noexcept
 {
 	git_fetch_options opts GIT_FETCH_OPTIONS_INIT;
@@ -61,11 +62,11 @@ int Remote::fetchRefspecs(FetchCallbacks &fc, const std::vector<std::string> &re
 	if (!tags)
 		opts.download_tags = GIT_REMOTE_DOWNLOAD_TAGS_NONE;
 	opts.depth = depth;
-	return git_remote_fetch(remote(), StrArray(refspecs), &opts, nullptr);
+	return !Repo::setLastError(git_remote_fetch(remote(), StrArray(refspecs), &opts, nullptr));
 }
 
-int Remote::fetchBranches(const std::vector<std::string> &branches, int depth,
-			  bool tags) const noexcept
+bool Remote::fetchBranches(const std::vector<std::string> &branches, int depth,
+			   bool tags) const noexcept
 {
 	std::string remote { git_remote_name(*this) };
 	std::vector<std::string> refspecs;

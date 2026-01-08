@@ -24,17 +24,14 @@ bool CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 	if (!configTree)
 		return false;
 
-	auto ret = configTree->walk([this](const std::string &root,
-				    const SlGit::TreeEntry &entry) -> int {
+	return configTree->walk([this](const std::string &root,
+				const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
 		if (!processFlavor(root.substr(0, root.size() - 1), entry.name(), entry))
 			return -1;
 		return 0;
 	});
-	if (ret)
-		return false;
-	return true;
 }
 
 bool CollectConfigs::processFlavor(const std::string &arch, const std::string &flavor,

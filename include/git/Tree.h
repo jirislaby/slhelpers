@@ -13,12 +13,12 @@
 
 #include "Helpers.h"
 #include "Object.h"
+#include "Repo.h"
 
 namespace SlGit {
 
 class Blob;
 class Commit;
-class Repo;
 class TreeEntry;
 
 class Tree : public TypedObject<git_tree> {
@@ -33,7 +33,7 @@ public:
 
 	size_t entryCount() const noexcept { return git_tree_entrycount(tree()); }
 
-	int walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE) const;
+	bool walk(const WalkCallback &CB, const git_treewalk_mode &mode = GIT_TREEWALK_PRE) const;
 
 	std::optional<TreeEntry> treeEntryByPath(const std::string &path) const noexcept;
 	TreeEntry treeEntryByIndex(size_t idx) const noexcept;
@@ -56,11 +56,13 @@ class TreeBuilder {
 public:
 	TreeBuilder() = delete;
 
-	int insert(const std::filesystem::path &file, const Blob &blob) const noexcept;
-	int remove(const std::filesystem::path &file) const noexcept {
-		return git_treebuilder_remove(treeBuilder(), file.c_str());
+	bool insert(const std::filesystem::path &file, const Blob &blob) const noexcept;
+	bool remove(const std::filesystem::path &file) const noexcept {
+		return !Repo::setLastError(git_treebuilder_remove(treeBuilder(), file.c_str()));
 	}
-	int clear() const noexcept { return git_treebuilder_clear(treeBuilder()); }
+	bool clear() const noexcept {
+		return !Repo::setLastError(git_treebuilder_clear(treeBuilder()));
+	}
 
 	std::optional<Tree> write(const Repo &repo) const noexcept;
 

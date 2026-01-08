@@ -8,6 +8,7 @@
 #include <git2.h>
 
 #include "../helpers/Unique.h"
+#include "Repo.h"
 
 namespace SlGit {
 
@@ -36,7 +37,6 @@ private:
 };
 
 class Commit;
-class Repo;
 
 class RevWalk {
 	using GitTy = git_revwalk;
@@ -46,28 +46,34 @@ class RevWalk {
 public:
 	RevWalk() = delete;
 
-	int push(const git_oid &oid) const noexcept { return git_revwalk_push(revWalk(), &oid); }
-	int push(const std::string &id) const noexcept;
-	int pushHead() const noexcept { return git_revwalk_push_head(revWalk()); }
-	int pushRef(const std::string &ref) const noexcept {
-		return git_revwalk_push_ref(revWalk(), ref.c_str());
+	bool push(const git_oid &oid) const noexcept {
+		return !Repo::setLastError(git_revwalk_push(revWalk(), &oid));
 	}
-	int pushGlob(const std::string &glob) const noexcept {
-		return git_revwalk_push_glob(revWalk(), glob.c_str());
+	bool push(const std::string &id) const noexcept;
+	bool pushHead() const noexcept {
+		return !Repo::setLastError(git_revwalk_push_head(revWalk()));
 	}
-	int pushRange(const std::string &range) const noexcept {
-		return git_revwalk_push_range(revWalk(), range.c_str());
+	bool pushRef(const std::string &ref) const noexcept {
+		return !Repo::setLastError(git_revwalk_push_ref(revWalk(), ref.c_str()));
+	}
+	bool pushGlob(const std::string &glob) const noexcept {
+		return !Repo::setLastError(git_revwalk_push_glob(revWalk(), glob.c_str()));
+	}
+	bool pushRange(const std::string &range) const noexcept {
+		return !Repo::setLastError(git_revwalk_push_range(revWalk(), range.c_str()));
 	}
 
 	/* Hiding marks stopping points */
-	int hide(const git_oid &oid) const noexcept { return git_revwalk_hide(revWalk(), &oid); }
-	int hide(const std::string &id) const noexcept;
-	int hideGlob(const std::string &glob) const noexcept {
-		return git_revwalk_hide_glob(revWalk(), glob.c_str());
+	bool hide(const git_oid &oid) const noexcept {
+		return !Repo::setLastError(git_revwalk_hide(revWalk(), &oid));
+	}
+	bool hide(const std::string &id) const noexcept;
+	bool hideGlob(const std::string &glob) const noexcept {
+		return !Repo::setLastError(git_revwalk_hide_glob(revWalk(), glob.c_str()));
 	}
 
-	int sorting(unsigned int mode) const noexcept {
-		return git_revwalk_sorting(revWalk(), mode);
+	bool sorting(unsigned int mode) const noexcept {
+		return !Repo::setLastError(git_revwalk_sorting(revWalk(), mode));
 	}
 
 	std::optional<Commit> next() const noexcept;

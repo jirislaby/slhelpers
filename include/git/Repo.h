@@ -10,6 +10,7 @@
 
 #include <git2.h>
 
+#include "../helpers/LastError.h"
 #include "../helpers/Unique.h"
 
 #include "DefaultFetchCallbacks.h"
@@ -60,9 +61,9 @@ public:
 	 */
 	static bool update(const std::filesystem::path &path, const std::string &remote = "origin");
 
-	int checkout(const std::string &branch) const noexcept;
-	int checkout(const Reference &reference) const noexcept;
-	int checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE) const noexcept;
+	bool checkout(const std::string &branch) const noexcept;
+	bool checkout(const Reference &reference) const noexcept;
+	bool checkoutTree(const Tree &tree, unsigned int strategy = GIT_CHECKOUT_SAFE) const noexcept;
 	std::optional<std::string> catFile(const std::string &branch,
 					   const std::string &file) const noexcept;
 
@@ -144,24 +145,46 @@ public:
 	std::filesystem::path path() const noexcept { return git_repository_path(repo()); }
 	std::filesystem::path workDir() const noexcept { return git_repository_workdir(repo()); }
 
-	static std::pair<std::string, int> lastError() noexcept;
+	/// @brief Return the last error string if some (from git_last_error())
+	static auto &lastError() noexcept { return m_lastError.lastError(); }
+	/// @brief Return the last error class (from git_last_error())
+	static auto lastClass() noexcept { return m_lastError.get<0>(); }
+	/// @brief Return the last error number (returned from git_* functions)
+	static auto lastErrno() noexcept { return m_lastError.get<1>(); }
 
 	GitTy *repo() const noexcept { return m_repo.get(); }
 	operator GitTy *() const noexcept { return repo(); }
 private:
 	explicit Repo(GitTy *repo) noexcept : m_repo(repo) {}
 
-	Holder m_repo;
-
+	friend class Diff;
 	friend class Index;
 	friend class PathSpec;
+	friend class Remote;
+	friend class RevWalk;
+	friend class Signature;
 	friend class Tag;
+	friend class Tree;
+	friend class TreeBuilder;
+
+	static std::pair<std::string, int> lastGitError() noexcept;
+
+	static int setLastError(int ret) {
+		if (ret) {
+			auto le = lastGitError();
+			m_lastError.reset().setError(std::move(le.first));
+			m_lastError.set<0>(le.second);
+			m_lastError.set<1>(ret);
+		}
+
+		return ret;
+	}
 
 	template<class Class, typename FunTy, typename... Args>
 	static std::optional<Class> MakeGit(const FunTy &fun, Args&&... args)
 	{
 		typename Class::GitTy *gitEntry;
-		if (fun(&gitEntry, std::forward<Args>(args)...))
+		if (setLastError(fun(&gitEntry, std::forward<Args>(args)...)))
 			return std::nullopt;
 		return Class(gitEntry);
 	}
@@ -170,13 +193,16 @@ private:
 	static std::optional<Class> MakeGitRepo(const Repo &repo, const FunTy &fun, Args&&... args)
 	{
 		typename Class::GitTy *gitEntry;
-		if (fun(&gitEntry, std::forward<Args>(args)...))
+		if (setLastError(fun(&gitEntry, std::forward<Args>(args)...)))
 			return std::nullopt;
 		return Class(repo, gitEntry);
 	}
 
 	static void checkoutProgress(const char *path, size_t completed_steps, size_t total_steps,
 				     void *payload);
+
+	Holder m_repo;
+	static thread_local SlHelpers::LastErrorStr<int, int> m_lastError;
 };
 
 }

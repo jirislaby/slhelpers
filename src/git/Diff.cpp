@@ -3,6 +3,7 @@
 #include <git2.h>
 
 #include "git/Diff.h"
+#include "git/Repo.h"
 
 using namespace SlGit;
 
@@ -14,11 +15,11 @@ void SlHelpers::Deleter<git_diff>::operator()(git_diff *idx) const
 
 int Diff::forEach(const ForEachCB &forEachCB) const
 {
-	return git_diff_foreach(diff(), forEachCB.file ? fileCB : nullptr,
-				forEachCB.binary ? binaryCB : nullptr,
-				forEachCB.hunk ? hunkCB : nullptr,
-				forEachCB.line ? lineCB : nullptr,
-				const_cast<void *>(static_cast<const void *>(&forEachCB)));
+	return Repo::setLastError(git_diff_foreach(diff(), forEachCB.file ? fileCB : nullptr,
+						   forEachCB.binary ? binaryCB : nullptr,
+						   forEachCB.hunk ? hunkCB : nullptr,
+						   forEachCB.line ? lineCB : nullptr,
+						   const_cast<void *>(static_cast<const void *>(&forEachCB))));
 }
 
 int Diff::print(const git_diff_format_t &format, const PrintCB &printCB) const
