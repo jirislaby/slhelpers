@@ -94,9 +94,9 @@ public:
 		return git_index_remove_bypath(index(), path.c_str());
 	}
 	int addAll(const std::vector<std::string> &paths, unsigned int flags,
-		   const MatchCB &cb) const;
-	int removeAll(const std::vector<std::string> &paths, const MatchCB &cb) const;
-	int updateAll(const std::vector<std::string> &paths, const MatchCB &cb) const;
+		   const MatchCB *cb = nullptr) const;
+	int removeAll(const std::vector<std::string> &paths, const MatchCB *cb = nullptr) const;
+	int updateAll(const std::vector<std::string> &paths, const MatchCB *cb = nullptr) const;
 
 	bool hasConflicts() const noexcept { return git_index_has_conflicts(index()); }
 

@@ -51,21 +51,21 @@ std::optional<Tree> Index::writeTree(const Repo &repo) const noexcept
 }
 
 int Index::addAll(const std::vector<std::string> &paths, unsigned int flags,
-		  const MatchCB &cb) const
+		  const MatchCB *cb) const
 {
-	return git_index_add_all(index(), StrArray(paths), flags, matchCB,
+	return git_index_add_all(index(), StrArray(paths), flags, cb ? matchCB : nullptr,
 				 const_cast<void *>(static_cast<const void *>(&cb)));
 }
 
-int Index::removeAll(const std::vector<std::string> &paths, const MatchCB &cb) const
+int Index::removeAll(const std::vector<std::string> &paths, const MatchCB *cb) const
 {
-	return git_index_remove_all(index(), StrArray(paths), matchCB,
+	return git_index_remove_all(index(), StrArray(paths), cb ? matchCB : nullptr,
 				    const_cast<void *>(static_cast<const void *>(&cb)));
 }
 
-int Index::updateAll(const std::vector<std::string> &paths, const MatchCB &cb) const
+int Index::updateAll(const std::vector<std::string> &paths, const MatchCB *cb) const
 {
-	return git_index_update_all(index(), StrArray(paths), matchCB,
+	return git_index_update_all(index(), StrArray(paths), cb ? matchCB : nullptr,
 				    const_cast<void *>(static_cast<const void *>(&cb)));
 }
 
