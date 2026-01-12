@@ -16,10 +16,8 @@ public:
 
 	Buf(const Buf &other) = delete;
 	Buf operator=(const Buf &other) = delete;
-	Buf(Buf &&other) noexcept {
-		m_buf = other.m_buf;
-		other.m_buf = GIT_BUF_INIT;
-	}
+
+	Buf(Buf &&other) noexcept : m_buf(other.m_buf) { other.m_buf = GIT_BUF_INIT; }
 	Buf &operator=(Buf &&other) noexcept {
 		if (this != &other) {
 			git_buf_dispose(&m_buf);
