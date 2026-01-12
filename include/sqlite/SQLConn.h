@@ -87,12 +87,7 @@ public:
 	 */
 	bool open(const std::filesystem::path &dbFile, unsigned int flags = 0)
 	{
-		if (!openDB(dbFile, flags) ||
-				!createDB() ||
-				!prepDB())
-			return false;
-
-		return true;
+		return openDB(dbFile, flags) && createDB() && prepDB();
 	}
 
 	/**
