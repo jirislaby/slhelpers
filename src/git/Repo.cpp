@@ -352,6 +352,9 @@ std::optional<TreeBuilder> Repo::treeBuilderCreate(const Tree *source) const noe
 std::pair<std::string, int> Repo::lastGitError() noexcept
 {
 	const auto err = git_error_last();
+	/* libgit2 before 1.8 can return nullptr */
+	if (!err)
+		return {};
 	return { err->message, err->klass };
 }
 
