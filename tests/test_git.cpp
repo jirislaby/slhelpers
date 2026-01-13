@@ -8,7 +8,24 @@
 
 #include "helpers.h"
 
+using namespace SlGit;
+
 namespace {
+
+void testHelpers()
+{
+	static constinit std::string_view sha{"1da177e4c3f41524e886b7f1b8a0c1fc7321cac2"};
+	{
+		git_oid oid;
+		assert(!git_oid_fromstrn(&oid, sha.data(), sha.size()));
+		assert(Helpers::oidToStr(oid) == sha);
+	}
+	{
+		auto oid = Helpers::strToOid(sha);
+		assert(oid);
+		assert(sha == git_oid_tostr_s(&*oid));
+	}
+}
 
 static SlGit::Repo testRepoInit()
 {
@@ -399,6 +416,7 @@ void testIndex(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 
 int main()
 {
+	testHelpers();
 	auto repo = testRepoInit();
 	auto me = testSignature();
 	auto [ aCommit, aFile, aContent ] = createACommit(repo, me);
