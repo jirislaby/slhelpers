@@ -17,6 +17,9 @@ namespace SlGit {
 
 class Tree;
 
+/**
+ * @brief Iterator returned from Index::begin()
+ */
 class IndexIterator {
 	using GitTy = git_index_iterator;
 	using Holder = SlHelpers::UniqueHolder<GitTy>;
@@ -24,6 +27,7 @@ class IndexIterator {
 	friend class Index;
 	friend class Repo;
 public:
+	/// @brief Move to the next entry
 	IndexIterator &operator++() {
 		increment();
 		return *this;
@@ -33,19 +37,27 @@ public:
 	IndexIterator &operator--() = delete;
 	IndexIterator operator--(int) = delete;
 
+	/// @brief Compare with \p other
 	bool operator ==(const IndexIterator &other) const noexcept {
 		return m_current == other.m_current;
 	}
+	/// @brief Compare with \p other
 	bool operator !=(const IndexIterator &other) const noexcept {
 		return !(*this == other);
 	}
+	/// @brief Get entry from this IndexIterator
 	const git_index_entry &operator *() const noexcept { return *m_current; }
+	/// @brief Get entry from this IndexIterator
 	const git_index_entry *operator ->() const noexcept { return m_current; }
 
+	/// @brief Get path from this IndexIterator (as a string)
 	std::string path() const noexcept { return m_current->path; }
+	/// @brief Get path from this IndexIterator (as a string_view)
 	std::string_view pathSV() const noexcept { return m_current->path; }
 
+	/// @brief Get the stored pointer to libgit2's git_index_entry
 	GitTy *iterator() const noexcept { return m_iterator.get(); }
+	/// @brief Alias for iterator() -- implicit conversion
 	operator GitTy *() const noexcept { return iterator(); }
 private:
 	IndexIterator() noexcept : m_current(nullptr) {}
@@ -60,38 +72,53 @@ private:
 	const git_index_entry *m_current;
 };
 
+/**
+ * @brief Index is a representation of a git index
+ */
 class Index {
 	using GitTy = git_index;
 	using Holder = SlHelpers::UniqueHolder<GitTy>;
 
 	friend class Repo;
 public:
+	/// @brief A callback for addAll(), removeAll(), updateAll()
 	using MatchCB = std::function<int(const std::filesystem::path &, const std::string &)>;
 
 	Index() = delete;
 
+	/// @brief Load an index at \p into a new Index
 	static std::optional<Index> open(const std::filesystem::path &path) noexcept;
+	/// @brief Create a new Index
 	static std::optional<Index> create() noexcept;
 
+	/// @brief Read the index from the disk into this Index
 	bool read(bool force = true) const noexcept {
 		return !Repo::setLastError(git_index_read(index(), force));
 	}
+	/// @brief Write this Index to disk
 	bool write() const noexcept { return !Repo::setLastError(git_index_write(index())); }
+	/// @brief Read \p tree into this Index
 	bool readTree(const Tree &tree) const noexcept;
+	/// @brief Write this Index as a Tree
 	std::optional<Tree> writeTree(const Repo &repo) const noexcept;
 
+	/// @brief Get count of entries in this Index
 	size_t entrycount() const noexcept { return git_index_entrycount(index()); }
+	/// @brief Get an entry on the \p idx-th position
 	const git_index_entry *entryByIndex(size_t idx) const noexcept {
 		return git_index_get_byindex(index(), idx);
 	}
+	/// @brief Get entry corresponding to \p path (and \p stage)
 	const git_index_entry *entryByPath(const std::filesystem::path &path,
 					   git_index_stage_t stage = GIT_INDEX_STAGE_NORMAL) const noexcept {
 		return git_index_get_bypath(index(), path.c_str(), stage);
 	}
 
+	/// @brief Add \p path to this Index
 	bool addByPath(const std::filesystem::path &path) const noexcept {
 		return !Repo::setLastError(git_index_add_bypath(index(), path.c_str()));
 	}
+	/// @brief Remove \p path from this Index
 	bool removeByPath(const std::filesystem::path &path) const noexcept {
 		return !Repo::setLastError(git_index_remove_bypath(index(), path.c_str()));
 	}
@@ -120,15 +147,22 @@ public:
 	 */
 	int updateAll(const std::vector<std::string> &paths, const MatchCB *cb = nullptr) const;
 
+	/// @brief Returns true if this index has some conflicts
 	bool hasConflicts() const noexcept { return git_index_has_conflicts(index()); }
 
+	/// @brief Get the begin iterator for this Index
 	IndexIterator begin() noexcept { return cbegin(); }
+	/// @brief Get the end iterator for this Index
 	IndexIterator end() noexcept { return IndexIterator(); }
 
+	/// @brief Get the begin iterator for this Index
 	IndexIterator cbegin() const noexcept;
+	/// @brief Get the end iterator for this Index
 	IndexIterator cend() const noexcept { return IndexIterator(); }
 
+	/// @brief Get the stored pointer to libgit2's git_index
 	GitTy *index() const noexcept { return m_index.get(); }
+	/// @brief Alias for index() -- implicit conversion
 	operator GitTy *() const noexcept { return index(); }
 private:
 	explicit Index(GitTy *index) noexcept : m_index(index) { }

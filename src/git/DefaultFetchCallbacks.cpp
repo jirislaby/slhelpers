@@ -13,15 +13,15 @@ const constexpr std::string_view clearLine("\33[2K\r");
 const constexpr bool do_ratelimit = 1;
 }
 
-void DefaultFetchCallbacks::checkoutProgress(std::string_view path, size_t completed_steps,
-					     size_t total_steps)
+void DefaultFetchCallbacks::checkoutProgress(std::string_view path, size_t completedSteps,
+					     size_t totalSteps)
 {
-	if (do_ratelimit && completed_steps != 0 && completed_steps != total_steps &&
+	if (do_ratelimit && completedSteps != 0 && completedSteps != totalSteps &&
 			!ratelimit.limit())
 		return;
-	std::cerr << clearLine << "Checked-out: " << completed_steps << '/' << total_steps <<
+	std::cerr << clearLine << "Checked-out: " << completedSteps << '/' << totalSteps <<
 		     " (" << path << ')';
-	if (completed_steps == total_steps)
+	if (completedSteps == totalSteps)
 		std::cerr << '\n';
 }
 

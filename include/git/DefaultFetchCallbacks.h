@@ -9,12 +9,17 @@
 
 namespace SlGit {
 
+/**
+ * @brief The default FetchCallbacks implementation
+ */
 class DefaultFetchCallbacks : public FetchCallbacks {
 public:
+	/// @brief Construct DefaultFetchCallbacks
 	DefaultFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
 		tried(0), triedKey(0) { }
 
-	virtual void checkoutProgress(std::string_view, size_t, size_t) override;
+	virtual void checkoutProgress(std::string_view path, size_t completedSteps,
+				      size_t totalSteps) override;
 
 	virtual int credentials(git_credential **out, std::string_view url,
 				std::optional<std::string_view> usernameFromUrl,

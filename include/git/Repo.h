@@ -35,6 +35,12 @@ class TreeEntry;
  * @brief The most important Git class
  *
  * It is the starting point to work with a git repository using this library.
+ * \code
+ * auto repo = Repo::init("git_repo");
+ * repo->remoteCreate("origin", "ssh://some_host/repo");
+ * auto repo2 = Repo::clone("git", "https://github.com/git/git");
+ * auto HEAD_SHA = repo2->commitHead()->idStr();
+ * \endcode
  */
 class Repo {
 	using GitTy = git_repository;
