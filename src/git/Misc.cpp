@@ -2,9 +2,12 @@
 
 #include <git2.h>
 
+#include "git/Blob.h"
 #include "git/Commit.h"
 #include "git/Misc.h"
 #include "git/Repo.h"
+#include "git/Tag.h"
+#include "git/Tree.h"
 
 using namespace SlGit;
 
@@ -36,20 +39,30 @@ std::optional<Reference> Reference::resolve() const noexcept
 
 bool RevWalk::push(const std::string &id) const noexcept
 {
-	const auto commit = m_repo.commitRevparseSingle(id);
-	if (!commit)
+	const auto obj = m_repo.revparseSingle(id);
+	const git_oid *oid;
+	if (auto commit = std::get_if<Commit>(&obj))
+		oid = commit->id();
+	else if (auto tag = std::get_if<Tag>(&obj))
+		oid = tag->id();
+	else
 		return false;
 
-	return !Repo::setLastError(git_revwalk_push(revWalk(), commit->id()));
+	return !Repo::setLastError(git_revwalk_push(revWalk(), oid));
 }
 
 bool RevWalk::hide(const std::string &id) const noexcept
 {
-	const auto commit = m_repo.commitRevparseSingle(id);
-	if (!commit)
+	const auto obj = m_repo.revparseSingle(id);
+	const git_oid *oid;
+	if (auto commit = std::get_if<Commit>(&obj))
+		oid = commit->id();
+	else if (auto tag = std::get_if<Tag>(&obj))
+		oid = tag->id();
+	else
 		return false;
 
-	return !Repo::setLastError(git_revwalk_hide(revWalk(), commit->id()));
+	return !Repo::setLastError(git_revwalk_hide(revWalk(), oid));
 }
 
 std::optional<Commit> RevWalk::next() const noexcept
