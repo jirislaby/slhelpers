@@ -82,7 +82,7 @@ public:
 	 * @param printCB Callback
 	 * @return 0 on success, non-zero callback return value, or error code.
 	 */
-	int print(const git_diff_format_t &format, const PrintCB &printCB) const;
+	int print(git_diff_format_t format, const PrintCB &printCB) const;
 
 	/// @brief Convert to Buf
 	std::optional<Buf> toBuf(git_diff_format_t format) const noexcept;

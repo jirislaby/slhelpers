@@ -22,7 +22,7 @@ int Diff::forEach(const ForEachCB &forEachCB) const
 						   const_cast<void *>(static_cast<const void *>(&forEachCB))));
 }
 
-int Diff::print(const git_diff_format_t &format, const PrintCB &printCB) const
+int Diff::print(git_diff_format_t format, const PrintCB &printCB) const
 {
 	return git_diff_print(diff(), format, Diff::printCB,
 			      const_cast<void *>(static_cast<const void *>(&printCB)));
