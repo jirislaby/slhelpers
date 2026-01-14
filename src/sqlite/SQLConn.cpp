@@ -6,12 +6,13 @@
 #include <thread>
 #include <typeindex>
 
+#include "helpers/PtrStore.h"
 #include "helpers/String.h"
 #include "sqlite/SQLConn.h"
 
-#include "PtrStore.h"
-
 using namespace SlSqlite;
+
+using CharPtrStore = SlHelpers::PtrStore<char, decltype([](void* p) { sqlite3_free(p); })>;
 
 int SQLConn::busyHandler(void *, int count)
 {

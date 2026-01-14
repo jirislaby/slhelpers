@@ -6,6 +6,7 @@
 #include "helpers/HomeDir.h"
 #include "helpers/LastError.h"
 #include "helpers/Process.h"
+#include "helpers/PtrStore.h"
 #include "helpers/PushD.h"
 
 #include "helpers.h"
@@ -151,6 +152,57 @@ void testProcess(const std::filesystem::path &crash)
 	assert(p.signalled());
 }
 
+void testPtrStore()
+{
+	static constinit std::string_view text{"1"};
+	static int refcount;
+
+	using CharPtrStore = SlHelpers::PtrStore<char, decltype([](char *p) {
+							if (!p)
+								return;
+							assert(p == text.data());
+							refcount--;
+						})>;
+	static_assert(!std::is_copy_constructible<CharPtrStore>());
+	static_assert(!std::is_copy_assignable<CharPtrStore>());
+	static_assert(std::is_move_constructible<CharPtrStore>());
+	static_assert(std::is_move_assignable<CharPtrStore>());
+
+	{
+		CharPtrStore ptr;
+		*ptr.ptr() = const_cast<char *>(text.data());
+		refcount++;
+		assert(ptr.get() == text.data());
+		std::ostringstream oss;
+		oss << ptr;
+		assert(oss.str() == text);
+	}
+	assert(refcount == 0);
+
+	{
+		CharPtrStore ptr(const_cast<char *>(text.data()));
+		assert(ptr.get() == text.data());
+		ptr.release();
+		assert(ptr.get() == nullptr);
+		assert(refcount == 0);
+
+		ptr.reset(const_cast<char *>(text.data()));
+		refcount++;
+		assert(ptr.get() == text.data());
+		ptr.reset();
+		assert(ptr.get() == nullptr);
+		assert(refcount == 0);
+
+		ptr.reset(const_cast<char *>(text.data()));
+		refcount++;
+		CharPtrStore ptr2;
+		ptr2 = std::move(ptr);
+		assert(ptr2);
+		assert(ptr2.str() == text);
+	}
+	assert(refcount == 0);
+}
+
 void testPushD()
 {
 	const auto orig = std::filesystem::current_path();
@@ -175,6 +227,7 @@ int main(int argc, char **argv)
 	testHomeDir();
 	testLastError();
 	testProcess(argv[1]);
+	testPtrStore();
 	testPushD();
 
 	return 0;

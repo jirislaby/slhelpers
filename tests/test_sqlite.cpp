@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <cassert>
-#include <cstring>
 #include <iostream>
 #include <optional>
 #include <sqlite3.h>
 
 #include "helpers/Color.h"
 #include "sqlite/SQLConn.h"
-#include "../src/sqlite/PtrStore.h"
 
 #include "helpers.h"
 
@@ -285,22 +283,6 @@ void testDelete(const SQLConn &db)
 	assert(affected == persons);
 }
 
-void testErrStore()
-{
-	static_assert(!std::is_copy_constructible<CharPtrStore>());
-	static_assert(!std::is_copy_assignable<CharPtrStore>());
-	static_assert(std::is_move_constructible<CharPtrStore>());
-	static_assert(std::is_move_assignable<CharPtrStore>());
-	CharPtrStore err;
-	char *mem = static_cast<char *>(sqlite3_malloc(100));
-	strncpy(mem, "test", 100);
-	*err.ptr() = mem;
-	CharPtrStore err2;
-	err2 = std::move(err);
-	assert(err2);
-	assert(err2.str() == "test");
-}
-
 }
 
 int main()
@@ -320,7 +302,6 @@ int main()
 		assert(db.lastErrorCode() == SQLITE_ERROR);
 		assert(db.lastError().find("no such table: personTemp") != std::string::npos);
 	}
-	testErrStore();
 	std::filesystem::remove_all(tmpDir);
 
 	return 0;

@@ -6,6 +6,7 @@ public_headers += [
   'helpers/LastError.h',
   'helpers/Misc.h',
   'helpers/Process.h',
+  'helpers/PtrStore.h',
   'helpers/PushD.h',
   'helpers/Ratelimit.h',
   'helpers/String.h',
