@@ -62,10 +62,8 @@ public:
 
 	/// @brief Set the pointer to \p t
 	void reset(T *t = nullptr) {
-		if (m_ptr != t) {
-			free();
-			m_ptr = t;
-		}
+		free();
+		m_ptr = t;
 	}
 
 	/**
