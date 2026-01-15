@@ -86,6 +86,16 @@ bool Process::waitForFinished()
 	return true;
 }
 
+bool Process::kill(int sig)
+{
+	if (::kill(m_pid, sig) < 0) {
+		setError(UnknownError, strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+
 bool Process::readAll(std::string &out)
 {
 	char buf[128];

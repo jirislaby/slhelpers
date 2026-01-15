@@ -72,6 +72,9 @@ public:
 	 */
 	bool waitForFinished();
 
+	/// @brief Send a signal \p sig to the process
+	bool kill(int sig);
+
 	/**
 	 * @brief Return the process ID for the child process
 	 * @return PID
