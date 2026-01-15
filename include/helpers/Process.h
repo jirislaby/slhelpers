@@ -61,6 +61,12 @@ public:
 	bool readAll(std::string &out);
 
 	/**
+	 * @brief Get the stdout pipe of the process
+	 * @return Pipe file descriptor.
+	 */
+	int readPipe() const { return m_pipe[0]; }
+
+	/**
 	 * @brief Wait until the underlying process is finished (or dead)
 	 * @return true on success.
 	 */
