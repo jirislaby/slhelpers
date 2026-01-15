@@ -89,7 +89,7 @@ bool Process::waitForFinished()
 bool Process::readAll(std::string &out)
 {
 	char buf[128];
-	std::stringstream ss;
+	std::ostringstream ss;
 	while (true) {
 		auto r = read(m_pipe[0], buf, sizeof(buf));
 		if (r < 0) {
