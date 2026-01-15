@@ -47,13 +47,17 @@ public:
 	requires std::same_as<T, char> { return m_ptr ? : ""; }
 
 	/// @brief Get the stored pointer
-	const T *get() const { return m_ptr; }
+	const T *get() const noexcept { return m_ptr; }
 	/// @brief Get the stored pointer
-	T *get() { return m_ptr; }
+	T *get() noexcept { return m_ptr; }
 	/// @brief Get the stored pointer
-	T *operator*() { return m_ptr; }
+	T *operator*() noexcept { return m_ptr; }
 	/// @brief Get the stored pointer
-	const T *operator*() const { return m_ptr; }
+	const T *operator*() const noexcept { return m_ptr; }
+	/// @brief Get the stored pointer
+	T *operator->() noexcept { return m_ptr; }
+	/// @brief Get the stored pointer
+	const T *operator->() const noexcept { return m_ptr; }
 
 	/// @brief Return the pointer and stop owning it
 	T *release() {
