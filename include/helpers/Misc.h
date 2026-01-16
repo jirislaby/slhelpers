@@ -3,6 +3,7 @@
 #pragma once
 
 #include <charconv>
+#include <chrono>
 #include <cstddef>
 #include <iomanip>
 #include <optional>
@@ -70,6 +71,44 @@ struct Env {
 			return env;
 		return std::nullopt;
 	}
+};
+
+/**
+ * @brief Measure elapsed times
+ */
+template <typename Rep = double, typename Period = std::milli>
+class Measure {
+	using Clock = std::chrono::steady_clock;
+	using TimePoint = Clock::time_point;
+	using Dur = std::chrono::duration<Rep, Period>;
+public:
+	Measure() noexcept : m_start(Clock::now()) {}
+
+	/// @brief Reset to count from \p point (or now)
+	void reset(TimePoint point = Clock::now()) noexcept { m_start = point; }
+
+	/// @brief Returns the duration it took from the construction (or last reset())
+	Dur elapsed() const noexcept {
+		return std::chrono::duration_cast<Dur>(Clock::now() - m_start);
+	}
+
+	/// @brief Returns the duration it took from the construction (or last reset()) and reset
+	Dur lap() noexcept {
+		auto now = Clock::now();
+		auto ret = std::chrono::duration_cast<Dur>(now - m_start);
+		reset(now);
+		return ret;
+	}
+
+	/// @brief Run \p func with \p args and return how long it took
+	template <typename Func, typename... Args>
+	static Dur profile(Func &&func, Args&&... args) {
+		Measure m;
+		std::forward<Func>(func)(std::forward<Args>(args)...);
+		return m.elapsed();
+	}
+private:
+	TimePoint m_start;
 };
 
 /**
