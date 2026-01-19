@@ -15,10 +15,13 @@ public_headers += [
   'helpers/Unique.h',
 ]
 
+ssh_lib = dependency('libssh')
 slhelpers = library('slhelpers++', [
     'Process.cpp',
+    'SSH.cpp',
   ],
   include_directories : global_inc,
+  dependencies: ssh_lib,
   install: true,
   version: meson.project_version(),
 )

@@ -15,8 +15,8 @@ namespace SlGit {
 class DefaultFetchCallbacks : public FetchCallbacks {
 public:
 	/// @brief Construct DefaultFetchCallbacks
-	DefaultFetchCallbacks() : ratelimit(std::chrono::seconds(2)), keys(SlSSH::Keys::get("")),
-		tried(0), triedKey(0) { }
+	DefaultFetchCallbacks() : ratelimit(std::chrono::seconds(2)), tried(0), triedKey(0),
+		grabbedKeys(false) { }
 
 	virtual void checkoutProgress(std::string_view path, size_t completedSteps,
 				      size_t totalSteps) override;
@@ -32,12 +32,15 @@ public:
 
 private:
 	std::string getUserName(std::optional<std::string_view> usernameFromUrl);
+	std::string_view extractHost(std::string_view url);
+	void getKeys(std::string_view url);
 
 	std::string userName;
 	SlHelpers::Ratelimit ratelimit;
 	SlSSH::Keys::KeyPairs keys;
 	unsigned int tried;
 	unsigned int triedKey;
+	bool grabbedKeys;
 };
 
 }

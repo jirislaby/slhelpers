@@ -32,6 +32,8 @@ int DefaultFetchCallbacks::credentials(git_credential **out, std::string_view ur
 				       unsigned int allowedTypes)
 {
 	auto user = getUserName(usernameFromUrl);
+	if (allowedTypes & GIT_CREDENTIAL_SSH_KEY)
+		getKeys(url);
 	std::cerr << __func__ << ": url=" << url << " user=" << user <<
 		     " types=" << std::bitset<8>{allowedTypes} <<
 		     " tried=" << std::bitset<8>{tried} <<
@@ -119,4 +121,26 @@ std::string DefaultFetchCallbacks::getUserName(std::optional<std::string_view> u
 		return userName = *usernameFromUrl;
 
 	return userName = ::getpwuid(::getuid())->pw_name;
+}
+
+std::string_view DefaultFetchCallbacks::extractHost(std::string_view url)
+{
+	size_t start = url.find("://");
+	if (start != std::string_view::npos)
+		url.remove_prefix(start + 3);
+	else if (size_t at = url.find('@'); at != std::string_view::npos)
+		url.remove_prefix(at + 1);
+
+	size_t end = url.find_first_of(":/?");
+	return url.substr(0, end);
+}
+
+void DefaultFetchCallbacks::getKeys(std::string_view url)
+{
+	if (grabbedKeys)
+		return;
+
+	std::string host(extractHost(url));
+	keys = SlSSH::Keys::get(host);
+	grabbedKeys = true;
 }

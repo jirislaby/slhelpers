@@ -2,11 +2,10 @@
 
 #pragma once
 
-#include <string_view>
+#include <filesystem>
+#include <string>
 #include <utility>
 #include <vector>
-
-#include "HomeDir.h"
 
 namespace SlSSH {
 
@@ -29,29 +28,11 @@ public:
 	 * @param host Host to get keys for (currently ignored)
 	 * @return Private + public keys for \p host.
 	 */
-	static KeyPairs get([[maybe_unused]] std::string_view host) {
-		auto home = SlHelpers::HomeDir::get();
-		auto sshDir = home / ".ssh";
-
-		if (!std::filesystem::exists(sshDir))
-			return {};
-
-		KeyPairs res;
-
-		for (const auto &dirEntry : std::filesystem::directory_iterator { sshDir }) {
-			const auto &pub = dirEntry.path();
-
-			if (!dirEntry.is_regular_file() || pub.extension() != ".pub")
-				continue;
-
-			auto priv {pub};
-			priv.replace_extension();
-			if (std::filesystem::exists(priv))
-				res.emplace_back(pub, std::move(priv));
-		}
-
-		return res;
-	}
+	static KeyPairs get(const std::string &host) noexcept;
+private:
+	friend void testKeys();
+	static void replace(std::string &path, size_t &pos, std::string_view by) noexcept;
+	static Key handleTokens(std::string_view host, std::string path) noexcept;
 };
 
 }

@@ -8,6 +8,7 @@
 #include "helpers/Process.h"
 #include "helpers/PtrStore.h"
 #include "helpers/PushD.h"
+#include "helpers/SSH.h"
 
 #include "helpers.h"
 
@@ -57,6 +58,26 @@ void testColor()
 		Clr(oss, 0, 255, 255) << text;
 		std::cerr << oss.str();
 		assert(oss.str() == oss2.str());
+	}
+}
+
+} // namespace
+
+namespace SlSSH {
+
+void testKeys()
+{
+	assert(Keys::handleTokens("", "") == "");
+	assert(Keys::handleTokens("", "~") == "~");
+	assert(Keys::handleTokens("", "%%") == "%");
+	assert(Keys::handleTokens("", "some%") == "some%");
+	assert(Keys::handleTokens("", "some%%") == "some%");
+	assert(Keys::handleTokens("some_host", "some/%h/file") == "some/some_host/file");
+	{
+		THelpers::RestoreEnv home("HOME");
+		setenv("HOME", "/tmp/", true);
+		assert(Keys::handleTokens("", "~/some") == "/tmp/some");
+		assert(Keys::handleTokens("", "s%dome") == "s/tmp/ome");
 	}
 }
 
@@ -229,6 +250,7 @@ int main(int argc, char **argv)
 	testProcess(argv[1]);
 	testPtrStore();
 	testPushD();
+	SlSSH::testKeys();
 
 	return 0;
 }
