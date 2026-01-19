@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <bitset>
 #include <iostream>
+#include <pwd.h>
+#include <unistd.h>
 
 #include "git/DefaultFetchCallbacks.h"
 #include "git/Helpers.h"
