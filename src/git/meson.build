@@ -45,17 +45,17 @@ slgit = library('slgit++', [
   ],
   cpp_args: cpp_args,
   include_directories : global_inc,
-  dependencies: git2_lib,
+  dependencies: [ git2_lib, slhelpers_lib ],
   install: true,
   version: meson.project_version(),
 )
 
 slgit_lib = declare_dependency(
   link_with: slgit,
-  dependencies: git2_lib,
+  dependencies: [ git2_lib, slhelpers_lib ],
 )
 
 pkg.generate(slgit,
-  requires: git2_lib,
+  requires: [ git2_lib, 'slhelpers++' ],
   description: slgit.name() + ': c++ git wrapper library',
 )
