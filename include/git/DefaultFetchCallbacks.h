@@ -31,7 +31,7 @@ public:
 			       git_refspec &) override;
 
 private:
-	std::string getUserName(std::optional<std::string_view> usernameFromUrl);
+	void getUserName(std::optional<std::string_view> usernameFromUrl);
 	std::string_view extractHost(std::string_view url);
 	void getKeys(std::string_view url);
 

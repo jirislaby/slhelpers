@@ -31,17 +31,17 @@ int DefaultFetchCallbacks::credentials(git_credential **out, std::string_view ur
 				       std::optional<std::string_view> usernameFromUrl,
 				       unsigned int allowedTypes)
 {
-	auto user = getUserName(usernameFromUrl);
+	getUserName(usernameFromUrl);
 	if (allowedTypes & GIT_CREDENTIAL_SSH_KEY)
 		getKeys(url);
-	std::cerr << __func__ << ": url=" << url << " user=" << user <<
+	std::cerr << __func__ << ": url=" << url << " user=" << userName <<
 		     " types=" << std::bitset<8>{allowedTypes} <<
 		     " tried=" << std::bitset<8>{tried} <<
 		     " keys=" << keys.size() <<
 		     " triedKey=" << triedKey << '\n';
 
 	if (allowedTypes & GIT_CREDENTIAL_USERNAME)
-		return git_credential_username_new(out, user.c_str());
+		return git_credential_username_new(out, userName.c_str());
 
 	if (allowedTypes & GIT_CREDENTIAL_SSH_KEY && !(tried & GIT_CREDENTIAL_SSH_KEY)) {
 		if (triedKey >= keys.size()) {
@@ -49,7 +49,7 @@ int DefaultFetchCallbacks::credentials(git_credential **out, std::string_view ur
 			return GIT_PASSTHROUGH;
 		}
 		const auto &keyPair = keys[triedKey++];
-		return git_credential_ssh_key_new(out, user.c_str(),
+		return git_credential_ssh_key_new(out, userName.c_str(),
 						  keyPair.first.string().c_str(),
 						  keyPair.second.string().c_str(), nullptr);
 	}
@@ -112,15 +112,17 @@ int DefaultFetchCallbacks::updateRefs(std::string_view refname, const git_oid &a
 	return 0;
 }
 
-std::string DefaultFetchCallbacks::getUserName(std::optional<std::string_view> usernameFromUrl)
+void DefaultFetchCallbacks::getUserName(std::optional<std::string_view> usernameFromUrl)
 {
 	if (!userName.empty())
-		return userName;
+		return;
 
-	if (usernameFromUrl)
-		return userName = *usernameFromUrl;
+	if (usernameFromUrl) {
+		userName = *usernameFromUrl;
+		return;
+	}
 
-	return userName = ::getpwuid(::getuid())->pw_name;
+	userName = ::getpwuid(::getuid())->pw_name;
 }
 
 std::string_view DefaultFetchCallbacks::extractHost(std::string_view url)
