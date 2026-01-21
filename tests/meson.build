@@ -3,19 +3,17 @@
 crash = executable('crash', 'crash.cpp')
 
 tests = {
-  'branches' : { 'libs' : [ slkerncvs_lib ] },
   'curl' : { 'libs' : [ slcurl_lib ] },
   'CVE' : { 'libs' : [ slcves_lib ] },
   'git' : { 'libs' : [ slgit_lib ] },
   'helpers' : { 'libs' : [ slhelpers_lib ], 'args' : [ crash ] },
+  'kerncvs' : { 'libs' : [ slkerncvs_lib ] },
   'maintainers' : { 'libs' : [ slgit_lib, slkerncvs_lib ] },
   'misc' : {},
-  'PatchesAuthors' : { 'libs' : [ slkerncvs_lib ] },
   'PCRE2' : { 'libs' : [ slpcre2_lib ] },
   'ratelimit' : {},
   'sqlite' : { 'libs' : [ slsqlite_lib, sqlite3_lib ] },
   'string' : {},
-  'supported_conf' : { 'libs' : [ slkerncvs_lib ] },
   'suse' : {},
 }
 
