@@ -10,6 +10,13 @@ using namespace SlHelpers;
 
 namespace {
 
+void testVersion()
+{
+	assert(Version::versionSum("1") == 1U << 16);
+	assert(Version::versionSum("1.2") == ((1U << 16) | (2U << 8)));
+	assert(Version::versionSum("1.100.150") == ((1U << 16) | (100U << 8) | 150));
+}
+
 void testCmpVersions()
 {
 	CmpVersions cmp;
@@ -17,7 +24,9 @@ void testCmpVersions()
 	assert(cmp("1", "2"));
 	assert(cmp("2", "3"));
 	assert(cmp("1", "3"));
+	assert(cmp("1", "1.1"));
 	assert(cmp("1.1", "1.2"));
+	assert(cmp("1.1", "1.1.1"));
 	assert(cmp("1.1.1", "1.1.2"));
 	assert(cmp("1.1-rc1", "1.1-rc2"));
 
@@ -75,6 +84,7 @@ void testEnv()
 
 int main()
 {
+	testVersion();
 	testCmpVersions();
 	testHuman();
 	testEnv();

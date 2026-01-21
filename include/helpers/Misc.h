@@ -15,6 +15,43 @@
 namespace SlHelpers {
 
 /**
+ * @brief Parse a version string into numbers
+ */
+struct Version {
+	Version() = delete;
+
+	/// @brief Split \p version into a string array
+	static constexpr auto versionSplit(std::string_view version) noexcept {
+		return String::splitSV(version, ".-");
+	}
+
+	/// @brief Convert \p version into a number
+	static unsigned versionPart(std::string_view version, bool rc = false) noexcept {
+		const auto off = rc && version.starts_with("rc") ? 2U : 0U;
+		unsigned int verPart = 0;
+		std::from_chars(version.data() + off, version.data() + version.size(), verPart);
+		return verPart;
+	}
+
+	/**
+	 * @brief Sum up version parts as parsed from \p version
+	 * @param version Version to parse
+	 * @return (Major << 16) | (minor << 8) | sublevel.
+	 */
+	static unsigned versionSum(std::string_view version) noexcept {
+		const auto arr = Version::versionSplit(version);
+		unsigned ret = 0;
+		for (auto i = 0U; i < 3; ++i) {
+			ret <<= 8;
+			if (i < arr.size())
+				ret += Version::versionPart(arr[i], i == 2);
+		}
+		return ret;
+	}
+
+};
+
+/**
  * @brief Compare versions, to be used as Compare in containers
  */
 struct CmpVersions {
@@ -26,14 +63,11 @@ struct CmpVersions {
 	 */
 	constexpr bool operator()(std::string_view ver1, std::string_view ver2) const noexcept
 	{
-		const auto arr1 = String::splitSV(ver1, ".-");
-		const auto arr2 = String::splitSV(ver2, ".-");
+		const auto arr1 = Version::versionSplit(ver1);
+		const auto arr2 = Version::versionSplit(ver2);
 		for (auto i = 0U; i < 2U; ++i) {
-			unsigned int ver1 = 0;
-			unsigned int ver2 = 0;
-			std::from_chars(arr1[i].data(), arr1[i].data() + arr1[i].size(), ver1);
-			std::from_chars(arr2[i].data(), arr2[i].data() + arr2[i].size(), ver2);
-
+			auto ver1 = Version::versionPart(arr1[i]);
+			auto ver2 = Version::versionPart(arr2[i]);
 			if (ver1 != ver2)
 				return ver1 < ver2;
 			const auto arr1Last = arr1.size() == i + 1;
@@ -44,15 +78,7 @@ struct CmpVersions {
 				return arr1Last;
 		}
 
-		return getSublevel(arr1[2]) < getSublevel(arr2[2]);
-	}
-
-private:
-	static unsigned int getSublevel(std::string_view s) noexcept {
-		const auto off = s.starts_with("rc") ? 2U : 0U;
-		unsigned int i = 0;
-		std::from_chars(s.data() + off, s.data() + s.size(), i);
-		return i;
+		return Version::versionPart(arr1[2], true) < Version::versionPart(arr2[2], true);
 	}
 };
 
