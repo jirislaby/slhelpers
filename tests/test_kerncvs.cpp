@@ -6,6 +6,7 @@
 
 #include "kerncvs/Branches.h"
 #include "kerncvs/PatchesAuthors.h"
+#include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
 
 using namespace SlKernCVS;
@@ -87,6 +88,47 @@ void testBranches()
 		assert(set.find("SLE12-SP5") != set.end());
 		assert(set.find("scripts") != set.end());
 	}
+}
+
+void testRPMConfig()
+{
+	RPMConfig c("SRCVERSION=6.18\n"
+		    "# comment\n"
+		    "VARIANT=  \n"
+		    "  # COMMENTED=1\n"
+		    "COMPRESS_MODULES=\"zstd\"\n"
+		    "  \t BUILD_DTBS =  \" Yes\"  \n"
+		    "LIVEPATCH=livepatch\n");
+	{
+		auto val = c.get("SRCVERSION");
+		assert(val);
+		assert(val->get() == "6.18");
+	}
+	{
+		assert(c.contains("VARIANT"));
+		auto val = c.get("VARIANT");
+		assert(val);
+		assert(val->get() == "");
+	}
+	{
+		auto val = c.get("COMPRESS_MODULES");
+		assert(val);
+		assert(val->get() == "zstd");
+		assert(c["COMPRESS_MODULES"] == "zstd");
+	}
+	{
+		auto val = c.get("BUILD_DTBS");
+		assert(val);
+		assert(val->get() == " Yes");
+	}
+	{
+		auto val = c.get("LIVEPATCH");
+		assert(val);
+		assert(val->get() == "livepatch");
+	}
+	assert(!c.contains("NON_EXISTANT"));
+	assert(!c.get("NON_EXISTANT2"));
+	assert(!c.contains("COMMENTED"));
 }
 
 void testSupportedConf()
@@ -201,6 +243,7 @@ void testProcessPatch()
 int main()
 {
 	testBranches();
+	testRPMConfig();
 	testSupportedConf();
 	testProcessPatch();
 

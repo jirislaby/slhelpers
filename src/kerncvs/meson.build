@@ -7,6 +7,7 @@ public_headers += [
   'kerncvs/PatchesAuthors.h',
   'kerncvs/Pattern.h',
   'kerncvs/Person.h',
+  'kerncvs/RPMConfig.h',
   'kerncvs/Stanza.h',
   'kerncvs/SupportedConf.h',
 ]
