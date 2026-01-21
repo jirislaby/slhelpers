@@ -64,12 +64,14 @@ public:
 		return *this;
 	}
 
+	/// @brief End the transaction manually
+	void end();
+
 	/// @brief Test whether AutoTransaction is valid
 	bool operator!() const { return !m_conn; }
 	/// @brief Test whether AutoTransaction is valid
 	operator bool() const { return m_conn; }
 private:
-	void end();
 	const SQLConn *m_conn;
 };
 
