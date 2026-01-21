@@ -21,7 +21,7 @@ struct Version {
 	Version() = delete;
 
 	/// @brief Split \p version into a string array
-	static constexpr auto versionSplit(std::string_view version) noexcept {
+	static auto versionSplit(std::string_view version) noexcept {
 		return String::splitSV(version, ".-");
 	}
 
@@ -61,7 +61,7 @@ struct CmpVersions {
 	 * @param ver2 Another version
 	 * @return true if \p ver1 < \p ver2
 	 */
-	constexpr bool operator()(std::string_view ver1, std::string_view ver2) const noexcept
+	bool operator()(std::string_view ver1, std::string_view ver2) const noexcept
 	{
 		const auto arr1 = Version::versionSplit(ver1);
 		const auto arr2 = Version::versionSplit(ver2);

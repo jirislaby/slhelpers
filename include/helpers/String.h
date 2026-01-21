@@ -111,7 +111,7 @@ public:
 	 *
 	 * Note \p str must outlive the use of the return value!
 	 */
-	static constexpr std::vector<std::string_view>
+	static std::vector<std::string_view>
 	splitSV(std::string_view str,
 		std::string_view delim,
 		std::optional<char> comment = std::nullopt) noexcept
