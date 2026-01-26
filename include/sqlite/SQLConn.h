@@ -117,6 +117,13 @@ public:
 	virtual bool prepDB() { return true; }
 
 	/**
+	 * @brief Execute \p sql
+	 * @param sql SQL to execute
+	 * @return true on success.
+	 */
+	bool exec(const std::string &sql) const noexcept { return exec(sql, "exec failed"); }
+
+	/**
 	 * @brief Attach another database using ATTACH
 	 * @param dbFile Path to another DB
 	 * @param dbName Name to use for this attached database
@@ -136,7 +143,7 @@ public:
 	 * @brief End a transaction
 	 * @return true on success.
 	 */
-	bool end() const noexcept;
+	bool end() const noexcept { return exec("END;", "db END failed"); }
 
 	/**
 	 * @brief Begin a transaction which is automatically ended when the returned object dies
@@ -260,6 +267,9 @@ protected:
 	/// @brief The last error + error code + extended error code
 	mutable LastError m_lastError;
 private:
+	bool exec(const std::string &SQL, std::string_view errorMsg,
+		  bool includeSQL = false) const noexcept;
+
 	static int busyHandler(void *, int count);
 	void dumpBinding(const Binding &binding) const noexcept;
 };

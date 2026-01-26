@@ -44,15 +44,9 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 		return false;
 	}
 
-	if (!(flags & OpenFlags::NO_FOREIGN_KEY)) {
-		CharPtrStore err;
-		ret = sqlite3_exec(sqlHolder, "PRAGMA foreign_keys = ON;", nullptr, nullptr,
-				   err.ptr());
-		if (ret != SQLITE_OK) {
-			setError(ret, "db PRAGMA failed") << " -> " << err;
+	if (!(flags & OpenFlags::NO_FOREIGN_KEY))
+		if (!exec("PRAGMA foreign_keys = ON;", "db PRAGMA failed"))
 			return false;
-		}
-	}
 
 	ret = sqlite3_busy_handler(sqlHolder, busyHandler, nullptr);
 	if (ret != SQLITE_OK) {
@@ -84,13 +78,8 @@ bool SQLConn::createTables(const Tables &tables) const noexcept
 		ss << " TABLE IF NOT EXISTS " << c.name << '(';
 		SlHelpers::String::join(ss, c.columns);
 		ss << ") STRICT;";
-		const auto expr = ss.str();
-		CharPtrStore err;
-		const auto ret = sqlite3_exec(sqlHolder, expr.c_str(), nullptr, nullptr, err.ptr());
-		if (ret != SQLITE_OK) {
-			setError(ret, "db CREATE TABLE failed") << " -> " << err << "\n\t" << expr;
+		if (!exec(ss.str(), "db CREATE TABLE failed", true))
 			return false;
-		}
 	}
 
 	return true;
@@ -101,12 +90,8 @@ bool SQLConn::createIndices(const Indices &indices) const noexcept
 	for (const auto &c: indices) {
 		std::string s("CREATE INDEX IF NOT EXISTS ");
 		s.append(c.first).append(" ON ").append(c.second);
-		CharPtrStore err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, err.ptr());
-		if (ret != SQLITE_OK) {
-			setError(ret, "db CREATE INDEX failed") << " -> " << err << "\n\t" << s;
+		if (!exec(s, "db CREATE TABLE failed", true))
 			return false;
-		}
 	}
 
 	return true;
@@ -117,12 +102,8 @@ bool SQLConn::createTriggers(const Triggers &triggers) const noexcept
 	for (const auto &c: triggers) {
 		std::string s("CREATE TRIGGER IF NOT EXISTS ");
 		s.append(c.first).append(" FOR EACH ROW BEGIN ").append(c.second).append("; END;");
-		CharPtrStore err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, err.ptr());
-		if (ret != SQLITE_OK) {
-			setError(ret, "db CREATE TRIGGER failed") << " -> " << err << "\n\t" << s;
+		if (!exec(s, "db CREATE TRIGGER failed", true))
 			return false;
-		}
 	}
 
 	return true;
@@ -133,12 +114,8 @@ bool SQLConn::createViews(const Views &views) const noexcept
 	for (const auto &c: views) {
 		std::string s("CREATE VIEW IF NOT EXISTS ");
 		s.append(c.first).append(" AS ").append(c.second);
-		CharPtrStore err;
-		const auto ret = sqlite3_exec(sqlHolder, s.c_str(), nullptr, nullptr, err.ptr());
-		if (ret != SQLITE_OK) {
-			setError(ret, "db CREATE VIEW failed") << " -> " << err << "\n\t" << s;
+		if (!exec(s, "db CREATE VIEW failed", true))
 			return false;
-		}
 	}
 
 	return true;
@@ -192,26 +169,7 @@ bool SQLConn::begin(TransactionType type) const noexcept
 	}
 	stmt.append(";");
 
-	CharPtrStore err;
-	const auto ret = sqlite3_exec(sqlHolder, stmt.c_str(), nullptr, nullptr, err.ptr());
-	if (ret != SQLITE_OK) {
-		setError(ret, "db BEGIN failed") << " -> " << err;
-		return false;
-	}
-
-	return true;
-}
-
-bool SQLConn::end() const noexcept
-{
-	CharPtrStore err;
-	const auto ret = sqlite3_exec(sqlHolder, "END;", nullptr, nullptr, err.ptr());
-	if (ret != SQLITE_OK) {
-		setError(ret, "db END failed") << " -> " << err;
-		return false;
-	}
-
-	return true;
+	return exec(stmt, "db BEGIN failed");
 }
 
 bool SQLConn::bind(const SQLStmtHolder &ins, const std::string &key,
@@ -288,6 +246,21 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected, bool *uniqueErr
 	setError(ret, "db step (INSERT) failed", true);
 
 	return false;
+}
+
+bool SQLConn::exec(const std::string &SQL, std::string_view errorMsg,
+		   bool includeSQL) const noexcept
+{
+	CharPtrStore err;
+	auto ret = sqlite3_exec(sqlHolder, SQL.c_str(), nullptr, nullptr, err.ptr());
+	if (ret != SQLITE_OK) {
+		auto &thisErr = setError(ret, errorMsg) << " -> " << err;
+		if (includeSQL)
+			thisErr << "\n\t" << SQL;
+		return false;
+	}
+
+	return true;
 }
 
 void SQLConn::dumpBinding(const Binding &binding) const noexcept

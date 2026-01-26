@@ -176,6 +176,16 @@ constinit const struct {
 
 unsigned persons;
 
+void testExec(const SQLConn &db)
+{
+	assert(db.exec("VACUUM;"));
+	assert(!db.exec("BAD_VACUUM;"));
+	Clr(std::cerr, Clr::GREEN) << "EXPECTED error: " << db.lastError() << " " <<
+				      db.lastErrorCode();
+	assert(db.lastError().find("syntax error") != db.lastError().npos);
+	assert(db.lastErrorCode() == SQLITE_ERROR);
+}
+
 void testInsert(const SQLConn &db)
 {
 	uint64_t affected;
@@ -290,6 +300,7 @@ int main()
 	const auto tmpDir = THelpers::getTmpDir();
 	{
 		const auto db = testOpen(tmpDir);
+		testExec(db);
 		testInsert(db);
 		testTemp(db);
 		testSelect(db);
