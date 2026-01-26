@@ -17,7 +17,7 @@ Keys::KeyPairs Keys::get(const std::string &host) noexcept
 	if (session.optionsParseConfig(nullptr) != SSH_OK)
 		return {};
 
-	SlHelpers::PtrStore<char, decltype([](char *p) { free(p); })> path;
+	SlHelpers::PtrStore<char, decltype([](char *p) { ssh_string_free_char(p); })> path;
 	if (ssh_options_get(session.getCSession(), SSH_OPTIONS_IDENTITY, path.ptr()) != SSH_OK)
 		return {};
 	if (!path)
