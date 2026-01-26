@@ -26,6 +26,8 @@ Keys::KeyPairs Keys::get(const std::string &host) noexcept
 	auto priv = handleTokens(host, path.get());
 	auto pub = priv;
 	pub += ".pub";
+	if (!std::filesystem::exists(priv) || !std::filesystem::exists(pub))
+		return {};
 	return { { pub, priv } };
 }
 
