@@ -233,7 +233,7 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected, bool *uniqueErr
 		return true;
 	}
 
-	const auto uniqueErrorLoc = sqlite3_extended_errcode(sqlHolder) == SQLITE_CONSTRAINT_UNIQUE;
+	const auto uniqueErrorLoc = isUniqueConstraint(sqlite3_extended_errcode(sqlHolder));
 	if (uniqueError)
 		*uniqueError = uniqueErrorLoc;
 
@@ -261,6 +261,18 @@ bool SQLConn::exec(const std::string &SQL, std::string_view errorMsg,
 	}
 
 	return true;
+}
+
+constexpr bool SQLConn::isUniqueConstraint(int sqlExtError) noexcept
+{
+	switch (sqlExtError) {
+	case SQLITE_CONSTRAINT_PRIMARYKEY:
+	case SQLITE_CONSTRAINT_ROWID:
+	case SQLITE_CONSTRAINT_UNIQUE:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void SQLConn::dumpBinding(const Binding &binding) const noexcept

@@ -270,6 +270,7 @@ private:
 	bool exec(const std::string &SQL, std::string_view errorMsg,
 		  bool includeSQL = false) const noexcept;
 
+	static constexpr bool isUniqueConstraint(int sqlExtError) noexcept;
 	static int busyHandler(void *, int count);
 	void dumpBinding(const Binding &binding) const noexcept;
 };
