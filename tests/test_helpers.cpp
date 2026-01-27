@@ -9,6 +9,7 @@
 #include "helpers/PtrStore.h"
 #include "helpers/PushD.h"
 #include "helpers/SSH.h"
+#include "helpers/Views.h"
 
 #include "helpers.h"
 
@@ -239,7 +240,31 @@ void testPushD()
 	assert(std::filesystem::current_path() == orig);
 }
 
+void testViews()
+{
+	static const std::vector<std::string_view> vec { "a", "b", "c", "d" };
+
+	{
+		unsigned i = 0;
+		for (const auto &[fi, se]: vec | Views::pairwise) {
+			assert(fi == vec[i]);
+			assert(se == vec[i + 1]);
+			i++;
+		}
+		assert(i < vec.size());
+	}
+	{
+		auto x = Views::pairwise(vec);
+		auto it = x.begin();
+		assert(it.operator*().first == vec[0]);
+		assert(it.operator*().second == vec[1]);
+		++it;
+		assert(it.operator*().first == vec[1]);
+		assert(it.operator*().second == vec[2]);
+	}
 }
+
+} // namespace
 
 int main(int argc, char **argv)
 {
@@ -250,6 +275,7 @@ int main(int argc, char **argv)
 	testProcess(argv[1]);
 	testPtrStore();
 	testPushD();
+	testViews();
 	SlSSH::testKeys();
 
 	return 0;

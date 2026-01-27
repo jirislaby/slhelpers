@@ -13,6 +13,7 @@ public_headers += [
   'helpers/SSH.h',
   'helpers/SUSE.h',
   'helpers/Unique.h',
+  'helpers/Views.h',
 ]
 
 ssh_lib = dependency('libssh')
