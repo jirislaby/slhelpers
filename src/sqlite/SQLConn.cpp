@@ -4,7 +4,6 @@
 #include <optional>
 #include <sqlite3.h>
 #include <thread>
-#include <typeindex>
 
 #include "helpers/PtrStore.h"
 #include "helpers/String.h"
@@ -139,15 +138,6 @@ bool SQLConn::prepareStatements(const Statements &stmts) const noexcept
 {
 	for (const auto &e: stmts)
 		if (!prepareStatement(e.second, e.first))
-			return false;
-
-	return true;
-}
-
-bool SQLConn::prepareSelects(const Selects &sels) const noexcept
-{
-	for (const auto &e: sels)
-		if (!e.ref.get().prepare(e.stmt, e.columnTypes))
 			return false;
 
 	return true;
@@ -317,8 +307,7 @@ bool SQLConn::insert(const SQLStmtHolder &ins, const Binding &binding,
 }
 
 std::optional<SQLConn::SelectResult>
-SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
-		const ColumnTypes &columns) const noexcept
+SQLConn::select(const SQLStmtHolder &sel, const Binding &binding) const noexcept
 {
 	SQLStmtResetter selResetter(sel);
 	int ret;
@@ -338,12 +327,24 @@ SQLConn::select(const SQLStmtHolder &sel, const Binding &binding,
 
 		Row row;
 
-		for (unsigned i = 0; i < columns.size(); ++i) {
+		for (auto i = 0; i < sqlite3_data_count(sel); ++i) {
 			Column col;
-			if (columns[i] == typeid(int))
+			switch (sqlite3_column_type(sel, i)) {
+			case SQLITE_INTEGER:
 				col = sqlite3_column_int(sel, i);
-			else if (columns[i] == typeid(std::string))
+				break;
+			case SQLITE_TEXT:
 				col = Column{reinterpret_cast<const char *>(sqlite3_column_text(sel, i))};
+				break;
+			case SQLITE_NULL:
+				col = std::monostate();
+				break;
+			case SQLITE_FLOAT:
+			case SQLITE_BLOB:
+			default:
+				break;
+			}
+
 			row.push_back(std::move(col));
 		}
 		result.push_back(std::move(row));

@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <optional>
 #include <string>
-#include <typeindex>
 #include <variant>
 #include <vector>
 
@@ -168,10 +167,8 @@ protected:
 	using BindVal = std::variant<std::monostate, int, unsigned, std::string, std::string_view>;
 	/// @brief Bind name -> bind value
 	using Binding = std::vector<std::pair<std::string, BindVal>>;
-	/// @brief Types of SELECT result
-	using ColumnTypes = std::vector<std::type_index>;
 	/// @brief One column returned by SELECT
-	using Column = std::variant<int, std::string>;
+	using Column = std::variant<std::monostate, int, std::string>;
 	/// @brief One row returned by SELECT (ie. list of Columns)
 	using Row = std::vector<Column>;
 	/// @brief Complete SELECT result
@@ -192,16 +189,6 @@ protected:
 		unsigned flags = 0u;
 	};
 
-	/// @brief One Select to be preapred by prepareSelects()
-	struct SelectEntry {
-		/// @brief Reference to the Select to be prepared
-		std::reference_wrapper<Select> ref;
-		/// @brief SQL string to be prepared
-		std::string stmt;
-		/// @brief Types of the SELECT result
-		ColumnTypes columnTypes;
-	};
-
 	/// @brief Tables to be created by createTables()
 	using Tables = std::vector<TableEntry>;
 	/// @brief Indices to be created by createIndices()
@@ -212,8 +199,6 @@ protected:
 	using Views = Indices;
 	/// @brief Statements to be prepared by prepareStatements()
 	using Statements = std::vector<std::pair<std::reference_wrapper<SQLStmtHolder>, std::string>>;
-	/// @brief Selects to be preapred by prepareSelects()
-	using Selects = std::vector<SelectEntry>;
 
 	/// @brief Create tables in the DB as specified in \p tables
 	bool createTables(const Tables &tables) const noexcept;
@@ -228,8 +213,6 @@ protected:
 	bool prepareStatement(std::string_view sql, SQLStmtHolder &stmt) const noexcept;
 	/// @brief Prepate all statements as specified in \p stmts
 	bool prepareStatements(const Statements &stmts) const noexcept;
-	/// @brief Prepate all selects as specified in \p sels
-	bool prepareSelects(const Selects &sels) const noexcept;
 
 	/// @brief Bind one value \p val into \p key of the statement \p ins
 	bool bind(const SQLStmtHolder &ins, const std::string &key,
@@ -244,10 +227,9 @@ protected:
 	bool insert(const SQLStmtHolder &ins, const Binding &binding = {},
 		    uint64_t *affected = nullptr) const noexcept;
 
-	/// @brief Perform one SELECT (\p sel), using the passed \p binding and types of \p columns
+	/// @brief Perform one SELECT (\p sel), using the passed \p binding
 	std::optional<SQLConn::SelectResult>
-	select(const SQLStmtHolder &sel, const Binding &binding,
-	       const ColumnTypes &columns) const noexcept;
+	select(const SQLStmtHolder &sel, const Binding &binding) const noexcept;
 
 	/// @brief A helper to build a null BindVal if \p cond does not hold, \p val otherwise
 	static BindVal valueOrNull(bool cond, BindVal val) {
@@ -273,45 +255,6 @@ private:
 	static constexpr bool isUniqueConstraint(int sqlExtError) noexcept;
 	static int busyHandler(void *, int count);
 	void dumpBinding(const Binding &binding) const noexcept;
-};
-
-/**
- * @brief Special class for SELECT statements
- */
-class Select {
-public:
-	Select() = delete;
-
-	/**
-	 * @brief Constructs an empty Select
-	 * @param sqlConn Connection this SELECT should be bound to
-	 */
-	Select(const SQLConn &sqlConn) : m_sqlConn(sqlConn) {}
-
-	/**
-	 * @brief Prepare this SELECT with \p sql
-	 * @param sql SQL SELECT string
-	 * @param columns Types of returned columns by this SELECT
-	 * @return true on success.
-	 */
-	bool prepare(std::string_view sql, const SQLConn::ColumnTypes &columns) noexcept {
-		m_resultTypes = columns;
-		return m_sqlConn.prepareStatement(sql, m_select);
-	}
-
-	/**
-	 * @brief Perform the actual SELECT
-	 * @param binding Values to pass to prepared SELECT
-	 * @return Rows with data, typed by \p columns in prepare()
-	 */
-	std::optional<SQLConn::SelectResult>
-	select(const SQLConn::Binding &binding) const noexcept {
-		return m_sqlConn.select(m_select, binding, m_resultTypes);
-	}
-private:
-	const SQLConn &m_sqlConn;
-	SQLStmtHolder m_select;
-	SQLConn::ColumnTypes m_resultTypes;
 };
 
 inline AutoTransaction::AutoTransaction(const SQLConn &conn, TransactionType type)

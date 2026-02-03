@@ -17,23 +17,23 @@ namespace {
 
 class SQLConnTemp : public SlSqlite::SQLConn {
 public:
-	SQLConnTemp() : selPersonTemp(*this) {}
+	SQLConnTemp() {}
 
 	virtual bool prepDB() override {
-		return selPersonTemp.prepare("SELECT 1 FROM personTemp;", { typeid(int) });
+		return prepareStatement("SELECT 1 FROM personTemp;", selPersonTemp);
 	}
 
 	std::optional<SlSqlite::SQLConn::SelectResult> getPersonsTemp() const {
-		return selPersonTemp.select({});
+		return select(selPersonTemp, {});
 	}
 
 private:
-	SlSqlite::Select selPersonTemp;
+	SlSqlite::SQLStmtHolder selPersonTemp;
 };
 
 class SQLConn : public SQLConnTemp {
 public:
-	SQLConn() : selPerson(*this) {}
+	SQLConn() {}
 	virtual bool createDB() override {
 		static const Tables create_tables {
 			{ "address", {
@@ -74,17 +74,14 @@ public:
 					"FROM personTemp "
 					"JOIN address ON personTemp.street = address.street;" },
 			{ delPerson, "DELETE FROM person;" },
-		};
-		static const Selects sels {
 			{ selPerson, "SELECT person.name, age, address.street "
 				     "FROM person "
 				     "LEFT JOIN address ON person.address = address.id "
 				     "WHERE person.name LIKE :name "
-				     "ORDER BY person.id;",
-				{ typeid(std::string), typeid(int), typeid(std::string) }},
+				     "ORDER BY person.id;" },
 		};
 
-		return	SQLConnTemp::prepDB() && prepareStatements(stmts) && prepareSelects(sels);
+		return SQLConnTemp::prepDB() && prepareStatements(stmts);
 	}
 
 	bool badInsertAddress(std::string_view street) const {
@@ -122,9 +119,8 @@ public:
 	}
 
 	std::optional<SlSqlite::SQLConn::SelectResult>
-	getPersons(std::string_view name) const
-	{
-		return selPerson.select({ { ":name", name } });
+	getPersons(std::string_view name) const {
+		return select(selPerson, { { ":name", name } });
 	}
 
 	bool delPersons(uint64_t *affected = nullptr) const {
@@ -139,7 +135,7 @@ private:
 	SlSqlite::SQLStmtHolder insPersonTemp;
 	SlSqlite::SQLStmtHolder moveAddress;
 	SlSqlite::SQLStmtHolder movePerson;
-	SlSqlite::Select selPerson;
+	SlSqlite::SQLStmtHolder selPerson;
 	SlSqlite::SQLStmtHolder delPerson;
 };
 
