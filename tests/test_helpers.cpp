@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "helpers/Color.h"
+#include "helpers/Exception.h"
 #include "helpers/HomeDir.h"
 #include "helpers/LastError.h"
 #include "helpers/Process.h"
@@ -85,6 +86,60 @@ void testKeys()
 } // namespace
 
 namespace {
+
+void testException()
+{
+	static constinit std::string_view text("this is exception: ");
+	static constinit std::string_view text2("some reason");
+	std::string composed(text);
+	composed.append(text2);
+
+	auto e = RuntimeException(text);
+	assert(e.str() == text);
+	e << text2;
+	assert(e.str() == composed);
+
+	{
+		bool caught = false;
+		try {
+			e.raise();
+		} catch (std::runtime_error &e) {
+			assert(e.what() == composed);
+			caught = true;
+		}
+		assert(caught);
+	}
+	{
+		bool caught = false;
+		try {
+			e << raise;
+		} catch (std::runtime_error &e) {
+			assert(e.what() == composed);
+			caught = true;
+		}
+		assert(caught);
+	}
+	{
+		bool caught = false;
+		try {
+			throw e.getRE();
+		} catch (std::runtime_error &e) {
+			assert(e.what() == composed);
+			caught = true;
+		}
+		assert(caught);
+	}
+	{
+		bool caught = false;
+		try {
+			RuntimeException(text) << text2 << raise;
+		} catch (std::runtime_error &e) {
+			assert(e.what() == composed);
+			caught = true;
+		}
+		assert(caught);
+	}
+}
 
 void testHomeDir()
 {
@@ -270,6 +325,7 @@ int main(int argc, char **argv)
 {
 	assert(argc > 1);
 	testColor();
+	testException();
 	testHomeDir();
 	testLastError();
 	testProcess(argv[1]);
