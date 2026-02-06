@@ -41,7 +41,7 @@ public:
 		BUILD		= 1U << 0,
 		PUBLISH		= 1U << 1,
 		EXCLUDED	= 1U << 2,
-		ANY 		= ~0U,
+		ANY		= ~0U,
 	};
 
 	/// @brief A set of branches

@@ -210,7 +210,7 @@ public:
 
 	/// @brief Return the last error number
 	auto lastErrno() const noexcept { return m_lastError.get<0>(); }
-	/// @brief Return the last error string if some
+	/// @brief Return the last error string if any
 	auto lastError() const noexcept { return m_lastError.lastError(); }
 	/// @brief Get offset of last error (to the regex string)
 	auto lastOffset() const noexcept { return m_lastError.get<1>(); }

@@ -15,7 +15,7 @@ namespace SlKernCVS {
 /**
  * @brief Loads and holds information from both Linux and SUSE MAINTAINERS files.
  *
- * It can be searches via findBestMatch() and findBestMatchUpstream() functions.
+ * It can be searched via findBestMatch() and findBestMatchUpstream() functions.
  */
 class Maintainers {
 public:

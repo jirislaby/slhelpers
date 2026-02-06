@@ -15,8 +15,8 @@ class Repo;
 namespace SlKernCVS {
 
 /**
- * @brief PatchesAuthors parses all patches in a kerncvs tree and reports who touched what file
- * in the linux tree.
+ * @brief PatchesAuthors parses all patches in all ("build") branches in the kernel-source tree and
+ * reports who touched what file in the linux (upstream) tree.
  *
  * The reporting happens via the provided callbacks.
  */
