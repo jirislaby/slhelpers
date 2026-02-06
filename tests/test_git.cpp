@@ -208,6 +208,104 @@ void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit
 	}
 }
 
+void testDiffBuffer()
+{
+	{
+		static constinit std::string_view patch(
+			"From 728ea413090c1ca4540598e7e4863297c2778a35 Mon Sep 17 00:00:00 2001\n"
+			"From: \"Jiri Slaby (SUSE)\" <jirislaby@kernel.org>\n"
+			"Date: Mon, 16 Jan 2023 11:08:38 +0100\n"
+			"Subject: [PATCH] BRANCH_MARKER: work\n"
+			"\n"
+			"---\n"
+			" Next/work | 1 +\n"
+			" 1 file changed, 1 insertion(+)\n"
+			" create mode 100644 Next/work\n"
+			"\n"
+			"diff --git a/Next/work b/Next/work\n"
+			"new file mode 100644\n"
+			"index 000000000000..587be6b4c3f9\n"
+			"--- /dev/null\n"
+			"+++ b/Next/work\n"
+			"@@ -0,0 +1 @@\n"
+			"+x\n"
+			"-- \n"
+			"2.53.0");
+		auto diff = Diff::createFromBuffer(patch);
+		assert(diff);
+		auto found = false;
+		SlGit::Diff::ForEachCB cb = {
+			.file = [&found](const git_diff_delta &delta, float) {
+				std::cerr << "Diff::ForEachCB2: " << delta.new_file.path << ' ' <<
+					delta.status << '\n';
+				if (std::string_view(delta.old_file.path) == "Next/work" &&
+						delta.status == GIT_DELTA_ADDED)
+					found = true;
+				return 0;
+			},
+		};
+
+		assert(!diff->forEach(cb));
+		assert(found);
+	}
+	{
+		static constinit std::string_view patch(
+			"diff --git a/a.txt b/a.txt\n"
+			"index 0123456789ab..ab0123456789 100644\n"
+			"--- a/a.txt\n"
+			"+++ b/a.txt\n"
+			"@@ -100,7 +100,7 @@ some fun\n"
+			" 	Some context\n"
+			" context1\n"
+			" More context\n"
+			"-removed line\n"
+			"+added line\n"
+			" context2\n"
+			" context3\n"
+			" Another context\n");
+		auto diff = Diff::createFromBuffer(patch);
+		if (!diff)
+			std::cerr << Repo::lastError() << '\n';
+		assert(diff);
+		auto found = false;
+		auto lines = 0U;
+		SlGit::Diff::ForEachCB cb = {
+			.file = [&found](const git_diff_delta &delta, float) {
+				std::cerr << "Diff::ForEachCB2: " << delta.new_file.path << ' ' <<
+					delta.status << '\n';
+				if (std::string_view(delta.old_file.path) == "a.txt" &&
+						delta.status == GIT_DELTA_MODIFIED)
+					found = true;
+				return 0;
+			},
+			.line = [&lines](const git_diff_delta &, const git_diff_hunk &,
+					const git_diff_line &line) {
+				std::string_view content(line.content, line.content_len);
+				switch (line.origin) {
+				case GIT_DIFF_LINE_CONTEXT:
+					assert(content.find("context") != content.npos);
+					lines++;
+					break;
+				case GIT_DIFF_LINE_ADDITION:
+					assert(content == "added line\n");
+					lines++;
+					break;
+				case GIT_DIFF_LINE_DELETION:
+					assert(content == "removed line\n");
+					lines++;
+					break;
+				}
+
+				return 0;
+			},
+		};
+
+		assert(!diff->forEach(cb));
+		assert(found);
+		assert(lines == 8);
+	}
+}
+
 void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	      const SlGit::Commit &bCommit, const SlGit::Signature &me)
 {
@@ -424,6 +522,7 @@ int main()
 	auto [ bCommit, bFile, bContent ] = createBCommit(repo, aCommit, me);
 	testOperator(aCommit, bCommit);
 	testDiff(repo, aCommit, bCommit);
+	testDiffBuffer();
 	testTags(repo, aCommit, bCommit, me);
 	testRevparse(repo, aCommit, bCommit, bFile);
 	testRemote(repo);

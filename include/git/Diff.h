@@ -46,6 +46,9 @@ public:
 
 	Diff() = delete;
 
+	/// @brief Create a new Diff from \p buffer
+	static std::optional<Diff> createFromBuffer(std::string_view buffer) noexcept;
+
 	/// @brief Get count of deltas in this Diff
 	size_t numDeltas() const noexcept { return git_diff_num_deltas(diff()); }
 	/// @brief Get count of deltas with the \p type (\c GIT_DELTA_ADDED, ...)

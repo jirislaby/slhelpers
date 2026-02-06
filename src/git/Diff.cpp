@@ -13,6 +13,11 @@ void SlHelpers::Deleter<git_diff>::operator()(git_diff *idx) const
 	git_diff_free(idx);
 }
 
+std::optional<Diff> Diff::createFromBuffer(std::string_view buffer) noexcept
+{
+	return Repo::MakeGit<Diff>(git_diff_from_buffer, buffer.data(), buffer.length());
+}
+
 int Diff::forEach(const ForEachCB &forEachCB) const
 {
 	return Repo::setLastError(git_diff_foreach(diff(), forEachCB.file ? fileCB : nullptr,
