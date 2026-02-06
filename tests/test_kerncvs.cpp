@@ -5,6 +5,7 @@
 #include <set>
 
 #include "kerncvs/Branches.h"
+#include "kerncvs/Patch.h"
 #include "kerncvs/PatchesAuthors.h"
 #include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
@@ -88,6 +89,43 @@ void testBranches()
 		assert(set.find("SLE12-SP5") != set.end());
 		assert(set.find("scripts") != set.end());
 	}
+}
+
+void testPatch()
+{
+	static constinit std::string_view header[] = {
+		"Some header",
+		"Another header"
+	};
+	static constinit std::string_view hunks(
+			"--- a/a.txt\n"
+			"+++ b/a.txt\n"
+			"@@ -100,5 +100,5 @@ some fun\n"
+			" context1\n"
+			" More context\n"
+			"-removed line\n"
+			"+added line\n"
+			" context2\n"
+			" context3\n"
+			"--- a/b.txt\n"
+			"+++ b/c.txt\n");
+
+	std::stringstream ss;
+	for (const auto &e: header)
+		ss << e << '\n';
+	ss << "---\n" << hunks;
+
+	auto p = Patch::create(ss);
+	assert(p);
+
+	assert(p->header().size() == std::size(header));
+	for (auto i = 0U; i < std::size(header); ++i)
+		assert(p->header()[i] == header[i]);
+
+	assert(p->paths().size() == 3);
+	assert(p->paths().contains("a.txt"));
+	assert(p->paths().contains("b.txt"));
+	assert(p->paths().contains("c.txt"));
 }
 
 void testRPMConfig()
@@ -243,6 +281,7 @@ void testProcessPatch()
 int main()
 {
 	testBranches();
+	testPatch();
 	testRPMConfig();
 	testSupportedConf();
 	testProcessPatch();
