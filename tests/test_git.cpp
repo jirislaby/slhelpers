@@ -27,7 +27,7 @@ void testHelpers()
 	}
 }
 
-static SlGit::Repo testRepoInit()
+SlGit::Repo testRepoInit()
 {
 	auto gitDir = THelpers::getTmpDir("testgitdir");
 
@@ -43,7 +43,7 @@ static SlGit::Repo testRepoInit()
 	return repo;
 }
 
-static SlGit::Repo testRepoClone(const SlGit::Repo &repo)
+SlGit::Repo testRepoClone(const SlGit::Repo &repo)
 {
 	auto gitDir2 = THelpers::getTmpDir("testgitdir2");
 	std::cout << __func__ << ": gitDir2=" << gitDir2 << '\n';
@@ -55,7 +55,7 @@ static SlGit::Repo testRepoClone(const SlGit::Repo &repo)
 	return std::move(*repo2);
 }
 
-static SlGit::Signature testSignature()
+SlGit::Signature testSignature()
 {
 	static const std::string name("Jiri Slaby");
 	static const std::string email("jirislaby@gmail.com");
@@ -66,7 +66,7 @@ static SlGit::Signature testSignature()
 	return std::move(*me);
 }
 
-static std::tuple<SlGit::Commit, std::filesystem::path, std::string>
+std::tuple<SlGit::Commit, std::filesystem::path, std::string>
 createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
 {
 	auto aTb = repo.treeBuilderCreate();
@@ -103,7 +103,7 @@ createACommit(const SlGit::Repo &repo, const SlGit::Signature &me)
 	return { std::move(aCommit), aFile, aContent };
 }
 
-static std::tuple<SlGit::Commit, std::filesystem::path, std::string>
+std::tuple<SlGit::Commit, std::filesystem::path, std::string>
 createBCommit(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit::Signature &me)
 {
 	auto aTree = *aCommit.tree();
@@ -137,7 +137,7 @@ createBCommit(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit
 	return { std::move(bCommit), bFile, bContent };
 }
 
-static void testRefs(const SlGit::Repo &repo, const SlGit::Commit &aCommit)
+void testRefs(const SlGit::Repo &repo, const SlGit::Commit &aCommit)
 {
 	auto ref = repo.refDWIM("aRef2");
 	assert(ref);
@@ -148,7 +148,7 @@ static void testRefs(const SlGit::Repo &repo, const SlGit::Commit &aCommit)
 	assert(!ref);
 }
 
-static void testOperator(const SlGit::Commit &aCommit, const SlGit::Commit &bCommit)
+void testOperator(const SlGit::Commit &aCommit, const SlGit::Commit &bCommit)
 {
 	assert(aCommit == aCommit);
 	assert(bCommit == bCommit);
@@ -156,8 +156,7 @@ static void testOperator(const SlGit::Commit &aCommit, const SlGit::Commit &bCom
 	assert(aCommit != bCommit);
 }
 
-static void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
-		     const SlGit::Commit &bCommit)
+void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit, const SlGit::Commit &bCommit)
 {
 	auto diff = repo.diff(aCommit, bCommit);
 	assert(diff);
@@ -209,8 +208,8 @@ static void testDiff(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	}
 }
 
-static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
-		     const SlGit::Commit &bCommit, const SlGit::Signature &me)
+void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+	      const SlGit::Commit &bCommit, const SlGit::Signature &me)
 {
 	auto tag = repo.tagCreate("aTag", aCommit, me, "a tag for aCommit");
 	assert(tag);
@@ -227,8 +226,8 @@ static void testTags(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	assert(tag->targetIdStr() == bCommit.tree()->idStr());
 }
 
-static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
-			 const SlGit::Commit &bCommit, const std::filesystem::path &bFile)
+void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+		  const SlGit::Commit &bCommit, const std::filesystem::path &bFile)
 {
 	auto commit = repo.commitRevparseSingle("HEAD");
 	assert(commit);
@@ -254,7 +253,7 @@ static void testRevparse(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	assert(blob->idStr() == bCommit.tree()->treeEntryByPath(bFile)->idStr());
 }
 
-static void testRemote(const SlGit::Repo &repo)
+void testRemote(const SlGit::Repo &repo)
 {
 	static const std::string url = "https://localhost";
 	auto remote1 = repo.remoteCreate("origin", url);
@@ -269,8 +268,8 @@ static void testRemote(const SlGit::Repo &repo)
 	assert(!remote2);
 }
 
-static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
-			const SlGit::Commit &bCommit)
+void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+		 const SlGit::Commit &bCommit)
 {
 	auto revWalk = repo.revWalkCreate();
 	assert(revWalk);
@@ -288,9 +287,9 @@ static void testRevWalk(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	assert(repo.lastErrno() == GIT_ITEROVER);
 }
 
-static void testCatFile(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
-			const std::filesystem::path &aFile, const std::string &aContent,
-			const std::filesystem::path &bFile, const std::string &bContent)
+void testCatFile(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
+		 const std::filesystem::path &aFile, const std::string &aContent,
+		 const std::filesystem::path &bFile, const std::string &bContent)
 {
 	auto aContentRead = aCommit.catFile(aFile);
 	assert(aContentRead);
@@ -304,9 +303,9 @@ static void testCatFile(const SlGit::Repo &repo, const SlGit::Commit &aCommit,
 	assert(bContent == *bContentRead);
 }
 
-static void testFilesOnFS(const SlGit::Repo &repo, const std::filesystem::path &aFile,
-			  const std::string &aContent,
-			  const std::filesystem::path &bFile)
+void testFilesOnFS(const SlGit::Repo &repo, const std::filesystem::path &aFile,
+		   const std::string &aContent,
+		   const std::filesystem::path &bFile)
 {
 	auto gitDir = repo.workDir();
 
@@ -322,7 +321,7 @@ static void testFilesOnFS(const SlGit::Repo &repo, const std::filesystem::path &
 	assert(line == aContent);
 }
 
-static void testCheckout(const SlGit::Repo &repo2, const SlGit::Commit &aCommit)
+void testCheckout(const SlGit::Repo &repo2, const SlGit::Commit &aCommit)
 {
 	auto r = repo2.refDWIM("origin/aRef2");
 	assert(r);
@@ -334,7 +333,7 @@ static void testCheckout(const SlGit::Repo &repo2, const SlGit::Commit &aCommit)
 	assert(head == aCommit);
 }
 
-static void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
+void testFetch(const SlGit::Repo &repo2, const SlGit::Commit &bCommit)
 {
 	auto remote = repo2.remoteLookup("origin");
 	assert(remote);
