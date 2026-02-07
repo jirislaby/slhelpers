@@ -202,18 +202,13 @@ public:
 			return std::hash<std::string_view>{}(sv);
 		}
 
-		/**
-		 * @brief Hash string_view \p sv
-		 * @param sv String to hash
-		 * @return Hash of \p sv.
-		 */
+		/// @brief Hash \p charp
+		size_t operator()(const char *charp) const noexcept { return hash(charp); }
+
+		/// @brief Hash string_view \p sv
 		size_t operator()(std::string_view sv) const noexcept { return hash(sv); }
 
-		/**
-		 * @brief Hash string \p s
-		 * @param s String to hash
-		 * @return Hash of \p s.
-		 */
+		/// @brief Hash string \p s
 		size_t operator()(const std::string &s) const noexcept { return hash(s); }
 	};
 

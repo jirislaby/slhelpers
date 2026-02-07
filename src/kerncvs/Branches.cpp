@@ -23,6 +23,20 @@ std::optional<Branches::BranchesList> Branches::getBuildBranches()
 	return branchesOpt->filter(BUILD, EXCLUDED);
 }
 
+std::chrono::year_month_day Branches::parseDate(std::string_view date)
+{
+	if (date.length() != 10 || date[4] != '-' || date[7] != '-')
+		return {};
+
+	auto year = SlHelpers::String::toNum(date.substr(0, 4));
+	auto month =  SlHelpers::String::toNum(date.substr(5, 2));
+	auto day =  SlHelpers::String::toNum(date.substr(8, 2));
+	if (!year || !month || !day)
+		return {};
+
+	return { std::chrono::year(*year), std::chrono::month(*month), std::chrono::day(*day) };
+}
+
 Branches Branches::create(std::string_view branchesConf) noexcept
 {
 	BranchesMap branches;
@@ -43,7 +57,8 @@ Branches Branches::create(std::string_view branchesConf) noexcept
 		BranchProps bp{};
 		bp.isExcluded = isExcluded(name);
 		for (auto i = 1U; i < split.size(); ++i) {
-			static constexpr const std::string_view mergeStr("merge:");
+			static constinit const std::string_view mergeStr("merge:");
+			static constinit const std::string_view eolStr("eol:");
 			auto cur = split[i];
 			if (cur == "build")
 				bp.isBuild = true;
@@ -54,6 +69,9 @@ Branches Branches::create(std::string_view branchesConf) noexcept
 				if (!cur.empty() && cur.front() == '-')
 					cur.remove_prefix(1);
 				bp.merges.emplace_back(cur);
+			} else if (cur.starts_with(eolStr)) {
+				cur.remove_prefix(eolStr.size());
+				bp.eol = parseDate(cur);
 			}
 		}
 

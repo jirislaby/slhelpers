@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -26,6 +27,9 @@ struct BranchProps {
 	bool isPublish;
 	/// @brief One of master, stable, vanilla, or similar branches
 	bool isExcluded;
+
+	/// @brief End of life for the branch
+	std::chrono::year_month_day eol;
 
 	/// @brief What immediate branches this branch merges
 	BranchesList merges;
@@ -90,13 +94,18 @@ public:
 	 */
 	BranchesList filter(unsigned include = ANY, unsigned exclude = EXCLUDED) const;
 
+	/// @brief Return BranchProps for \p branch
+	const BranchProps &props(std::string_view branch) const {
+		return m_map.find(branch)->second;
+	}
+
 	/**
 	 * @brief Immediate branches that the specified \p branch merges
 	 * @param branch Branch to find children of
 	 * @return BranchesList of branches merged into \p branch.
 	 */
 	const BranchesList &merges(std::string_view branch) const {
-		return m_map.find(branch)->second.merges;
+		return props(branch).merges;
 	}
 	/**
 	 * @brief Closure of branches that the specified \p branch merges
@@ -124,6 +133,7 @@ private:
 
 	BranchesMap m_map;
 
+	static std::chrono::year_month_day parseDate(std::string_view date);
 	static bool isExcluded(std::string_view branch);
 };
 

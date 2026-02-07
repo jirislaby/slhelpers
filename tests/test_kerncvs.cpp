@@ -37,7 +37,7 @@ void testBranches()
 		"stable:             build publish	merge:scripts merge:-master\n"
 		"SL-16.0-AZURE:      build publish	merge:SL-16.0\n"
 		"SL-16.0:            build publish	merge:scripts\n"
-		"SLE12-SP5:          build		merge:scripts\n"
+		"SLE12-SP5:          build		merge:scripts eol:2030-10-31\n"
 		"SLE12-SP5-RT:       build		merge:-SLE12-SP5\n"
 		"SLE12-SP4-LTSS:\n"
 		"cve/linux-5.3-LTSS:      build	merge:scripts\n"
@@ -82,12 +82,16 @@ void testBranches()
 		assert(set.find("scripts") != set.end());
 		assert(set.find("master") != set.end());
 	}
-
 	{
 		const auto set = branches.mergesClosure("SLE12-SP5-RT");
 		assert(set.size() == 2);
 		assert(set.find("SLE12-SP5") != set.end());
 		assert(set.find("scripts") != set.end());
+	}
+	{
+		using namespace std::chrono_literals;
+		std::cerr << "eol=" << branches.props("SLE12-SP5").eol << "\n";
+		assert(branches.props("SLE12-SP5").eol == 2030y/10/31);
 	}
 }
 
