@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <charconv>
 #include <cstring>
 #include <cctype>
 #include <optional>
@@ -58,6 +59,17 @@ public:
 	static_assert(std::string_view::npos == std::string::npos);
 
 	String() = delete;
+
+	/// @brief Convert \p str to a number
+	template <typename I = unsigned>
+	requires std::is_integral_v<I>
+	static std::optional<I> toNum(std::string_view str, int base = 10) noexcept
+	{
+		I num;
+		if (std::from_chars(str.data(), str.data() + str.size(), num, base).ec != std::errc())
+			return std::nullopt;
+		return num;
+	}
 
 	/**
 	 * @brief Like string::find() but ignoring case

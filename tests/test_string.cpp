@@ -9,6 +9,38 @@ using namespace SlHelpers;
 
 namespace {
 
+void testToNum()
+{
+	assert(!String::toNum(""));
+	assert(!String::toNum("-1"));
+	{
+		auto val = String::toNum<int>("-1");
+		assert(val);
+		assert(*val == -1);
+	}
+	{
+		auto val = String::toNum("0");
+		assert(val);
+		assert(*val == 0);
+	}
+	{
+		auto val = String::toNum("11", 16);
+		assert(val);
+		assert(*val == 17);
+	}
+	{
+		auto val = String::toNum("4294967295");
+		assert(val);
+		assert(*val == 4294967295);
+	}
+	assert(!String::toNum("4294967296"));
+	{
+		auto val = String::toNum<unsigned long>("4294967296");
+		assert(val);
+		assert(*val == 4294967296UL);
+	}
+}
+
 void testSplit()
 {
 	static const constexpr std::string_view toSplit("  \t first second    third\t\tfourth  # ignore ");
@@ -126,6 +158,7 @@ void testGetLine()
 
 int main()
 {
+	testToNum();
 	testSplit();
 	testIsHex();
 	testTrim();
