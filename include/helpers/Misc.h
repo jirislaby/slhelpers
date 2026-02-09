@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <charconv>
 #include <chrono>
 #include <cstddef>
 #include <iomanip>
@@ -27,10 +26,11 @@ struct Version {
 
 	/// @brief Convert \p version into a number
 	static unsigned versionPart(std::string_view version, bool rc = false) noexcept {
-		const auto off = rc && version.starts_with("rc") ? 2U : 0U;
-		unsigned int verPart = 0;
-		std::from_chars(version.data() + off, version.data() + version.size(), verPart);
-		return verPart;
+		if (rc && version.starts_with("rc"))
+			version.remove_prefix(2);
+		if (const auto verPart = String::toNum(version))
+			return *verPart;
+		return 0;
 	}
 
 	/**
