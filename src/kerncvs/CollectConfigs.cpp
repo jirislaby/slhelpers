@@ -81,7 +81,7 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 		if (end == std::string::npos) {
 			std::cerr << __func__ << "value of config cannot be identified in: " <<
 				     line << '\n';
-			return -1;
+			return false;
 		}
 		std::string config(line.substr(0, end));
 		ConfigValue value = WithValue;
