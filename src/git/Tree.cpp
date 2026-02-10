@@ -39,7 +39,7 @@ bool Tree::walk(const WalkCallback &CB, const git_treewalk_mode &mode) const
 std::optional<TreeEntry> Tree::treeEntryByPath(const std::string &path) const noexcept
 {
 	git_tree_entry *TE;
-	if (git_tree_entry_bypath(&TE, tree(), path.c_str()))
+	if (Repo::setLastError(git_tree_entry_bypath(&TE, tree(), path.c_str())))
 		return std::nullopt;
 	return TreeEntry(TE);
 }
