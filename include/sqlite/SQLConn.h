@@ -80,6 +80,13 @@ private:
 class SQLConn {
 	friend class Select;
 public:
+	virtual ~SQLConn() = default;
+
+	/// @brief Move constructor
+	SQLConn(SQLConn &&) = default;
+	/// @brief Move assignment
+	SQLConn &operator=(SQLConn &&) = default;
+
 	/**
 	 * @brief Open a database connection (openDB() + createDB() + prepDB())
 	 * @param dbFile Path to the database
