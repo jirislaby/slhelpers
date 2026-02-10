@@ -10,7 +10,7 @@
 
 using namespace SlKernCVS;
 
-bool CollectConfigs::collectConfigs(const SlGit::Commit &commit)
+bool CollectConfigs::collectConfigs(const SlGit::Commit &commit) noexcept
 {
 	auto tree = commit.tree();
 
@@ -35,7 +35,7 @@ bool CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 }
 
 bool CollectConfigs::processFlavor(const std::string &arch, const std::string &flavor,
-				   const SlGit::TreeEntry &treeEntry)
+				   const SlGit::TreeEntry &treeEntry) noexcept
 {
 	auto config = treeEntry.catFile(repo);
 	if (!config)
@@ -45,7 +45,7 @@ bool CollectConfigs::processFlavor(const std::string &arch, const std::string &f
 }
 
 bool CollectConfigs::processConfigFile(const std::string &arch, const std::string &flavor,
-				       std::string_view configFile)
+				       std::string_view configFile) noexcept
 {
 	if (!insertArchFlavor(arch, flavor))
 		return false;
@@ -59,7 +59,7 @@ bool CollectConfigs::processConfigFile(const std::string &arch, const std::strin
 }
 
 bool CollectConfigs::processConfig(const std::string &arch, const std::string &flavor,
-				   std::string_view line)
+				   std::string_view line) noexcept
 {
 	static constexpr const std::string_view commented("# CONFIG_");
 

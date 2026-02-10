@@ -48,15 +48,15 @@ public:
 	 * @param commit The commit to walk
 	 * @return true on success.
 	 */
-	bool collectConfigs(const SlGit::Commit &commit);
+	bool collectConfigs(const SlGit::Commit &commit) noexcept;
 
 private:
 	bool processFlavor(const std::string &arch, const std::string &flavor,
-			   const SlGit::TreeEntry &treeEntry);
+			   const SlGit::TreeEntry &treeEntry) noexcept;
 	bool processConfigFile(const std::string &arch, const std::string &flavor,
-			       std::string_view configFile);
+			       std::string_view configFile) noexcept;
 	bool processConfig(const std::string &arch, const std::string &flavor,
-			   std::string_view line);
+			   std::string_view line) noexcept;
 	const SlGit::Repo &repo;
 	const InsertArchFlavor insertArchFlavor;
 	const InsertConfig insertConfig;
