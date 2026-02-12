@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "../git/Repo.h"
+#include "../git/Tree.h"
 #include "../helpers/String.h"
 
 namespace SlKernCVS {
@@ -39,13 +40,21 @@ public:
 		}
 	}
 
+	/// @brief Create a new RPMConfig from the \p tree
+	static std::optional<RPMConfig> create(const SlGit::Tree &tree) noexcept {
+		if (const auto config = tree.catFile("rpm/config.sh"))
+			return RPMConfig(*config);
+
+		return std::nullopt;
+	}
+
 	/// @brief Create a new RPMConfig from the \p branch in the \p repo
 	static std::optional<RPMConfig> create(const SlGit::Repo &repo,
 					       const std::string &branch) noexcept {
-		const auto config = repo.catFile("origin/" + branch, "rpm/config.sh");
-		if (!config)
-			return std::nullopt;
-		return RPMConfig(*config);
+		if (const auto config = repo.catFile("origin/" + branch, "rpm/config.sh"))
+			return RPMConfig(*config);
+
+		return std::nullopt;
 	}
 
 	/// @brief Test whether @p key exists in the config
