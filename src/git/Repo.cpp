@@ -54,7 +54,7 @@ bool Repo::update(const std::filesystem::path &path, const std::string &remote)
 	if (!remoteOpt)
 		return false;
 
-	if (remoteOpt->fetchRefspecs())
+	if (!remoteOpt->fetchRefspecs())
 		return false;
 
 	const auto stats = remoteOpt->stats();
