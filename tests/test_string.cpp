@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <cassert>
+#include <cstdint>
 #include <sstream>
 
 #include "helpers/String.h"
@@ -35,7 +36,7 @@ void testToNum()
 	}
 	assert(!String::toNum("4294967296"));
 	{
-		auto val = String::toNum<unsigned long>("4294967296");
+		auto val = String::toNum<uint64_t>("4294967296");
 		assert(val);
 		assert(*val == 4294967296UL);
 	}
