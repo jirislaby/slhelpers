@@ -6,6 +6,7 @@
 #include <charconv>
 #include <cstring>
 #include <cctype>
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -176,26 +177,43 @@ public:
 	}
 
 	/**
+	 * @brief Join \p iterable into \p out using separator \p sep, calling \p output
+	 * @param out Output stream
+	 * @param iterable Input container
+	 * @param output Called for every member; it should output the member to \p out
+	 * @param sep Separator
+	 */
+	template <std::ranges::input_range Range, typename Output>
+	requires requires(std::ostream &out, Output output,
+			  std::ranges::range_reference_t<Range> e) {
+		std::invoke(output, out, e);
+	}
+	static void join(std::ostream &out, Range &&iterable, Output output,
+			 std::string_view sep = ", ") {
+		bool first = true;
+		for (auto &&e: iterable) {
+			if (!first)
+			    out << sep;
+			first = false;
+
+			std::invoke(output, out, e);
+		}
+	}
+
+	/**
 	 * @brief Join \p iterable into \p out using separator \p sep and quoting \p quote
 	 * @param out Output stream
 	 * @param iterable Input container
 	 * @param sep Separator
 	 * @param quote Quoting string, it is put before and after each value in \p iterable
 	 */
-	template <typename T>
-	static constexpr void join(std::ostream &out, const T &iterable,
-				   std::string_view sep = ", ",
-				   std::string_view quote = "") noexcept {
-		bool first = true;
-		for (const auto &e: iterable) {
-			if (!first)
-			    out << sep;
-			first = false;
-
-			out << quote << e << quote;
-		}
+	template <std::ranges::input_range Range>
+	static void join(std::ostream &out, Range &&iterable, std::string_view sep = ", ",
+			 std::string_view quote = "") {
+		join(out, std::forward<Range>(iterable),
+		     [quote](auto &out, const auto &x) { out << quote << x << quote; },
+		     sep);
 	}
-
 
 	/**
 	 * @brief Hash for string and string_view to be used in hashing containers

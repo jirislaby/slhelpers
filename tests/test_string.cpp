@@ -124,6 +124,12 @@ void testJoin()
 		String::join(ss, std::vector<std::string_view>({"a", "b", "c"}), ",", "x");
 		assert(ss.str() == "xax,xbx,xcx");
 	}
+	{
+		std::ostringstream ss;
+		String::join(ss, std::vector<std::string_view>({"Xa", "Xb", "Xc"}),
+			     [](auto &out, const auto &x) { out << 'Y' << x.substr(1); } );
+		assert(ss.str() == "Ya, Yb, Yc");
+	}
 }
 
 void testGetLine()
