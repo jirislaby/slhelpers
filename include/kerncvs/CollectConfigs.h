@@ -28,9 +28,9 @@ public:
 	};
 
 	/// @brief A callback invoked for arch and flavor
-	using InsertArchFlavor = std::function<int (const std::string &, const std::string &)>;
+	using InsertArchFlavor = std::function<bool (const std::string &, const std::string &)>;
 	/// @brief A callback invoked for arch, flavor, config, and its value
-	using InsertConfig = std::function<int (const std::string &, const std::string &,
+	using InsertConfig = std::function<bool (const std::string &, const std::string &,
 		const std::string &, const ConfigValue &)>;
 
 	/**
@@ -39,9 +39,10 @@ public:
 	 * @param insertArchFlavor Callback to invoke for an arch and flavor
 	 * @param insertConfig Callback to invoke for a config
 	 */
-	CollectConfigs(const SlGit::Repo &repo, const InsertArchFlavor &insertArchFlavor,
-		       const InsertConfig &insertConfig) : repo(repo),
-		insertArchFlavor(insertArchFlavor), insertConfig(insertConfig) {}
+	CollectConfigs(const SlGit::Repo &repo, InsertArchFlavor insertArchFlavor,
+		       InsertConfig insertConfig) : repo(repo),
+		insertArchFlavor(std::move(insertArchFlavor)),
+		insertConfig(std::move(insertConfig)) {}
 
 	/**
 	 * @brief The real work function of this class
