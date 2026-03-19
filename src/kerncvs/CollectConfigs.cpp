@@ -28,7 +28,10 @@ bool CollectConfigs::collectConfigs(const SlGit::Commit &commit) noexcept
 				const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
-		if (!processFlavor(root.substr(0, root.size() - 1), entry.name(), entry))
+		auto flavor = entry.name();
+		if (flavor == "vanilla")
+			return 0;
+		if (!processFlavor(root.substr(0, root.size() - 1), flavor, entry))
 			return -1;
 		return 0;
 	});
