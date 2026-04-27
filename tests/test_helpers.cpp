@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <cassert>
+#include <filesystem>
 
 #include "helpers/Color.h"
 #include "helpers/Exception.h"
@@ -283,14 +284,29 @@ void testPtrStore()
 void testPushD()
 {
 	const auto orig = std::filesystem::current_path();
+	std::error_code ec;
 	{
-		std::error_code ec;
 		PushD p1("/", ec);
 		assert(!ec);
 		assert(std::filesystem::current_path() == "/");
 		PushD p2("/tmp", ec);
 		assert(!ec);
 		assert(std::filesystem::current_path() == "/tmp");
+	}
+	{
+		PushD p("/non_existant", ec);
+		assert(ec);
+		assert(std::filesystem::current_path() == orig);
+	}
+	{
+		bool ex = false;
+		try {
+			PushD p("/non_existant");
+		} catch (const std::filesystem::filesystem_error &) {
+			ex = true;
+		}
+		assert(ex);
+		assert(std::filesystem::current_path() == orig);
 	}
 	assert(std::filesystem::current_path() == orig);
 }
