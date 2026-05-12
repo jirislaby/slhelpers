@@ -9,3 +9,5 @@ subdir('git') # needs helpers
 
 subdir('cves') # needs git
 subdir('kerncvs') # needs curl & git & pcre2
+
+subdir('pybind')

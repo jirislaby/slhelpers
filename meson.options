@@ -1,0 +1,1 @@
+option('python_versions', type: 'array', value: ['python3'], description: 'Python interpreters to build bindings for')

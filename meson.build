@@ -15,6 +15,15 @@ pkg = import('pkgconfig')
 global_inc = include_directories('include')
 public_headers = []
 
+python_installations = []
+pybind11 = dependency('pybind11', required: false)
+if pybind11.found()
+  python_import = import('python')
+  foreach python : get_option('python_versions')
+    python_installations += python_import.find_installation(python)
+  endforeach
+endif
+
 subdir('src')
 
 subdir('include')
