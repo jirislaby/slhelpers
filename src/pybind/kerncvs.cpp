@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <pybind11/detail/common.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/chrono.h>
 #include <pybind11/stl.h>
 
+#include "kerncvs/Branches.h"
 #include "kerncvs/SupportedConf.h"
 
 namespace py = pybind11;
@@ -13,7 +16,6 @@ PYBIND11_MODULE(slkerncvs, m)
 	m.doc() = "SlKernCVS – supported for files from kerncvs";
 
 	py::class_<SupportedConf> suppConf(m, "SupportedConf");
-
 	py::enum_<SupportedConf::SupportState>(suppConf, "SupportState")
 		.value("NonPresent",           SupportedConf::SupportState::NonPresent)
 		.value("Unsupported",          SupportedConf::SupportState::Unsupported)
@@ -24,7 +26,6 @@ PYBIND11_MODULE(slkerncvs, m)
 		.value("ExternallySupported",  SupportedConf::SupportState::ExternallySupported)
 		.value("KMPSupported",         SupportedConf::SupportState::KMPSupported)
 		.export_values();
-
 	suppConf
 		.def(py::init([](const std::string &conf) {
 			      return SupportedConf(conf);
@@ -37,5 +38,49 @@ PYBIND11_MODULE(slkerncvs, m)
 		     "Find supported state of module")
 		.def("__repr__", [](const SupportedConf &) {
 		     return "<SupportedConf>";
+		     });
+
+	py::class_<BranchProps> branchProps(m, "BranchProps");
+	branchProps
+		.def_readonly("is_build", &BranchProps::isBuild)
+		.def_readonly("is_publish", &BranchProps::isPublish)
+		.def_readonly("is_excluded", &BranchProps::isExcluded)
+		.def_readonly("eol", &BranchProps::eol)
+		.def_readonly("merges", &BranchProps::merges)
+		.def("__repr__", [](const BranchProps &props) {
+		     std::stringstream ss;
+		     ss << "<BranchProps is_build=" << props.isBuild <<
+			     " is_publish=" << props.isPublish <<
+			     " is_excluded=" << props.isExcluded <<
+			     " eol=" << props.eol <<
+			     " merges=" << props.merges.size() << ">";
+		     return ss.str();
+		     });
+
+	py::class_<Branches> branches(m, "Branches");
+	py::enum_<Branches::Filter>(branches, "Filter")
+		.value("Build", Branches::Filter::BUILD)
+		.value("Publish", Branches::Filter::PUBLISH)
+		.value("Excluded", Branches::Filter::EXCLUDED)
+		.value("Any", Branches::Filter::ANY)
+		.export_values();
+	branches
+		.def_static("create", py::overload_cast<>(&Branches::create),
+			    "Download branches.conf and parse it into Branches")
+		.def("map", &Branches::map, "Obtain whole branch map")
+		.def("filter", &Branches::filter, py::arg("include") = Branches::ANY,
+		     py::arg("exclude") = Branches::EXCLUDED,
+		     "Obtain BranchesList according to a filter specified by include and exclude")
+		.def("props", &Branches::props, py::arg("branch"), "Return BranchProps for branch")
+		.def("merges", &Branches::merges, py::arg("branch"),
+		     "Immediate branches that the specified branch merges")
+		.def("merges_closure", &Branches::mergesClosure, py::arg("branch"),
+		     "Closure of branches that the specified branch merges")
+		.def_static("get_build_branches", py::overload_cast<>(&Branches::getBuildBranches),
+			    "Download branches.conf and convert it to a list of branches which are built")
+		.def("__repr__", [](const Branches &branches) {
+		     std::stringstream ss;
+		     ss << "<Branches " << branches.map().size() << " branches>";
+		     return ss.str();
 		     });
 }
