@@ -2,11 +2,12 @@
 
 #include <pybind11/detail/common.h>
 #include <pybind11/pybind11.h>
-#include <pybind11/chrono.h>
 #include <pybind11/stl.h>
 
 #include "kerncvs/Branches.h"
 #include "kerncvs/SupportedConf.h"
+
+#include "pybindSupp.h"
 
 namespace py = pybind11;
 using namespace SlKernCVS;
