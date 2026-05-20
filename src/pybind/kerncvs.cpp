@@ -10,7 +10,7 @@
 #include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
 
-#include "pybindSupp.h"
+#include "pybindSupp.h" // IWYU pragma: keep
 
 namespace py = pybind11;
 using namespace SlKernCVS;
