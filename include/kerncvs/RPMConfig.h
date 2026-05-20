@@ -69,6 +69,11 @@ public:
 		return std::cref(it->second);
 	}
 
+	/// @brief Find @p key in the config and return its value if found (or throw)
+	const std::string &getEx(const std::string &key) const {
+		return m_config.at(key);
+	}
+
 	/// @brief Find @p key in the config and return its value
 	const auto &operator[](std::string_view key) const noexcept {
 		return m_config.find(key)->second;

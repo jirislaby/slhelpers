@@ -5,6 +5,7 @@
 #include <pybind11/stl.h>
 
 #include "kerncvs/Branches.h"
+#include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
 
 #include "pybindSupp.h"
@@ -15,6 +16,18 @@ using namespace SlKernCVS;
 PYBIND11_MODULE(slkerncvs, m)
 {
 	m.doc() = "SlKernCVS – supported for files from kerncvs";
+
+	py::class_<RPMConfig> rpmConf(m, "RPMConfig");
+	rpmConf.def(py::init([](const std::string &config) {
+			      return RPMConfig(config);
+			      }),
+		    py::arg("config"), "Parses rpm/config.sh")
+		.def("__contains__", &RPMConfig::contains, py::arg("key"))
+		.def("__getitem__", &RPMConfig::getEx, py::arg("key"),
+		     py::return_value_policy::reference_internal)
+		.def("__repr__", [](const RPMConfig &) {
+		     return "<RPMConfig>";
+		     });
 
 	py::class_<SupportedConf> suppConf(m, "SupportedConf");
 	py::enum_<SupportedConf::SupportState>(suppConf, "SupportState")
