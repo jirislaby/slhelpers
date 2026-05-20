@@ -68,12 +68,15 @@ PYBIND11_MODULE(slkerncvs, m)
 	branches
 		.def_static("create", py::overload_cast<>(&Branches::create),
 			    "Download branches.conf and parse it into Branches")
-		.def("map", &Branches::map, "Obtain whole branch map")
+		.def("map", &Branches::map, py::return_value_policy::reference_internal,
+		     "Obtain whole branch map")
 		.def("filter", &Branches::filter, py::arg("include") = Branches::ANY,
 		     py::arg("exclude") = Branches::EXCLUDED,
 		     "Obtain BranchesList according to a filter specified by include and exclude")
-		.def("props", &Branches::props, py::arg("branch"), "Return BranchProps for branch")
+		.def("props", &Branches::props, py::arg("branch"),
+		     py::return_value_policy::reference_internal, "Return BranchProps for branch")
 		.def("merges", &Branches::merges, py::arg("branch"),
+		     py::return_value_policy::reference_internal,
 		     "Immediate branches that the specified branch merges")
 		.def("merges_closure", &Branches::mergesClosure, py::arg("branch"),
 		     "Closure of branches that the specified branch merges")
