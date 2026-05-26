@@ -28,7 +28,8 @@ public:
 	using InsertUser = std::function<bool (const std::string &email)>;
 	/// @brief A callback invoked for e-mail, file, and counts of git-fixes and real changes
 	using InsertUFMap = std::function<bool (const std::string &email,
-		const std::filesystem::path &file, unsigned gitFixes, unsigned realFixes)>;
+						std::filesystem::path &&file,
+						unsigned gitFixes, unsigned realFixes)>;
 
 	/**
 	 * @brief PatchesAuthors constructor

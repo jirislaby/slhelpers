@@ -129,7 +129,8 @@ bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUse
 		for (const auto &pairSrc : pair.second) {
 			std::filesystem::path path(pairSrc.first);
 
-			if (!insertUFMap(email, path, pairSrc.second, realMap.at(pairSrc.first)))
+			if (!insertUFMap(email, std::move(path), pairSrc.second,
+					 realMap.at(pairSrc.first)))
 				return false;
 		}
 	}

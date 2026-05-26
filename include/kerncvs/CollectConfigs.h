@@ -28,10 +28,11 @@ public:
 	};
 
 	/// @brief A callback invoked for arch and flavor
-	using InsertArchFlavor = std::function<bool (const std::string &, const std::string &)>;
+	using InsertArchFlavor = std::function<bool (const std::string &arch,
+						     const std::string &flavor)>;
 	/// @brief A callback invoked for arch, flavor, config, and its value
-	using InsertConfig = std::function<bool (const std::string &, const std::string &,
-		const std::string &, const ConfigValue &)>;
+	using InsertConfig = std::function<bool (const std::string &arch, const std::string &flavor,
+						 std::string &&config, const ConfigValue &value)>;
 
 	/**
 	 * @brief CollectConfigs constructor
