@@ -2,8 +2,10 @@
 
 #pragma once
 
-#include <functional>
 #include <string>
+#include <unordered_map>
+
+#include "../helpers/String.h"
 
 namespace SlGit {
 class Commit;
@@ -27,23 +29,21 @@ public:
 		WithValue = 'v',
 	};
 
-	/// @brief A callback invoked for arch and flavor
-	using InsertArchFlavor = std::function<bool (const std::string &arch,
-						     const std::string &flavor)>;
-	/// @brief A callback invoked for arch, flavor, config, and its value
-	using InsertConfig = std::function<bool (const std::string &arch, const std::string &flavor,
-						 std::string &&config, const ConfigValue &value)>;
+	/// @brief Map of config name to config value
+	using ConfigMap = std::unordered_map<std::string, ConfigValue, SlHelpers::String::Hash,
+	      SlHelpers::String::Eq>;
+	/// @brief Map of flavor name to config map
+	using FlavorMap = std::unordered_map<std::string, ConfigMap, SlHelpers::String::Hash,
+	      SlHelpers::String::Eq>;
+	/// @brief Map of arch name to flavor map
+	using ArchMap = std::unordered_map<std::string, FlavorMap, SlHelpers::String::Hash,
+	      SlHelpers::String::Eq>;
 
 	/**
 	 * @brief CollectConfigs constructor
 	 * @param repo KernCVS repository to search in
-	 * @param insertArchFlavor Callback to invoke for an arch and flavor
-	 * @param insertConfig Callback to invoke for a config
 	 */
-	CollectConfigs(const SlGit::Repo &repo, InsertArchFlavor insertArchFlavor,
-		       InsertConfig insertConfig) : repo(repo),
-		insertArchFlavor(std::move(insertArchFlavor)),
-		insertConfig(std::move(insertConfig)) {}
+	CollectConfigs(const SlGit::Repo &repo) : repo(repo) {}
 
 	/**
 	 * @brief The real work function of this class
@@ -52,16 +52,26 @@ public:
 	 */
 	bool collectConfigs(const SlGit::Commit &commit) noexcept;
 
+	/// @brief Get the config map for a given \p arch, \p flavor
+	const auto &getConfigMap(const std::string &arch, const std::string &flavor) const {
+		return m_archs.at(arch).at(flavor);
+	}
+
+	/// @brief Get the config value for a given \p arch, \p flavor and \p config
+	auto getConfig(const std::string &arch, const std::string &flavor,
+		       const std::string &config) const {
+		return m_archs.at(arch).at(flavor).at(config);
+	}
+
 private:
-	bool processFlavor(const std::string &arch, const std::string &flavor,
-			   const SlGit::TreeEntry &treeEntry) noexcept;
-	bool processConfigFile(const std::string &arch, const std::string &flavor,
-			       std::string_view configFile) noexcept;
-	bool processConfig(const std::string &arch, const std::string &flavor,
-			   std::string_view line) noexcept;
+	bool processFlavor(std::string &&arch, std::string &&flavor,
+			   const SlGit::TreeEntry &treeEntry);
+	bool processConfigFile(std::string &&arch, std::string &&flavor,
+			       std::string_view configFile);
+	bool processConfig(ConfigMap &map, std::string_view line);
 	const SlGit::Repo &repo;
-	const InsertArchFlavor insertArchFlavor;
-	const InsertConfig insertConfig;
+
+	ArchMap m_archs;
 };
 
 }

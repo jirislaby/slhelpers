@@ -31,38 +31,35 @@ bool CollectConfigs::collectConfigs(const SlGit::Commit &commit) noexcept
 		auto flavor = entry.name();
 		if (flavor == "vanilla")
 			return 0;
-		if (!processFlavor(root.substr(0, root.size() - 1), flavor, entry))
+		if (!processFlavor(root.substr(0, root.size() - 1), std::move(flavor), entry))
 			return -1;
 		return 0;
 	});
 }
 
-bool CollectConfigs::processFlavor(const std::string &arch, const std::string &flavor,
-				   const SlGit::TreeEntry &treeEntry) noexcept
+bool CollectConfigs::processFlavor(std::string &&arch, std::string &&flavor,
+				   const SlGit::TreeEntry &treeEntry)
 {
 	auto config = treeEntry.catFile(repo);
 	if (!config)
 		return false;
 
-	return processConfigFile(arch, flavor, *config);
+	return processConfigFile(std::move(arch), std::move(flavor), *config);
 }
 
-bool CollectConfigs::processConfigFile(const std::string &arch, const std::string &flavor,
-				       std::string_view configFile) noexcept
+bool CollectConfigs::processConfigFile(std::string &&arch, std::string &&flavor,
+				       std::string_view configFile)
 {
-	if (!insertArchFlavor(arch, flavor))
-		return false;
-
 	SlHelpers::GetLine gl(configFile);
+	auto &map = m_archs[std::move(arch)][std::move(flavor)];
 	while (auto line = gl.get())
-		if (!processConfig(arch, flavor, *line))
+		if (!processConfig(map, *line))
 			return false;
 
 	return true;
 }
 
-bool CollectConfigs::processConfig(const std::string &arch, const std::string &flavor,
-				   std::string_view line) noexcept
+bool CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
 {
 	static constexpr const std::string_view commented("# CONFIG_");
 
@@ -77,7 +74,7 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 
 		std::string config(line.substr(2, end - 2));
 
-		return insertConfig(arch, flavor, std::move(config), Disabled);
+		map.emplace(std::move(config), Disabled);
 	}
 	if (line.starts_with("CONFIG_")) {
 		const auto end = line.find('=');
@@ -92,7 +89,7 @@ bool CollectConfigs::processConfig(const std::string &arch, const std::string &f
 			value = BuiltIn;
 		else if (line[end + 1] == 'm')
 			value = Module;
-		return insertConfig(arch, flavor, std::move(config), value);
+		map.emplace(std::move(config), value);
 	}
 
 	return true;
