@@ -7,6 +7,7 @@
 #include <pybind11/stl.h>
 
 #include "kerncvs/Branches.h"
+#include "kerncvs/CollectConfigs.h"
 #include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
 
@@ -71,6 +72,30 @@ PYBIND11_MODULE(slkerncvs, m)
 		     std::stringstream ss;
 		     ss << "<Branches branches#=" << branches.map().size() << '>';
 		     return ss.str();
+		     });
+
+	// ============= CollectConfigs =============
+	py::class_<CollectConfigs> CC(m, "CollectConfigs");
+	py::enum_<CollectConfigs::ConfigValue>(CC, "ConfigValue")
+		.value("Disabled", CollectConfigs::ConfigValue::Disabled)
+		.value("BuiltIn", CollectConfigs::ConfigValue::BuiltIn)
+		.value("Module", CollectConfigs::ConfigValue::Module)
+		.value("WithValue", CollectConfigs::ConfigValue::WithValue)
+		.export_values();
+	CC.def(py::init([](const std::string &repoPath, const std::string &rev) {
+			auto ret = CollectConfigs::create(repoPath, rev);
+			return ret;
+		}), "Parse configs into CollectConfigs")
+		.def("get_config_map", &CollectConfigs::getConfigMap, py::arg("arch"),
+		     py::arg("flavor"),
+		     py::return_value_policy::reference_internal,
+		     "Obtain whole configs map")
+		.def("get_config", &CollectConfigs::getConfig, py::arg("arch"), py::arg("flavor"),
+		     py::arg("config"),
+		     py::return_value_policy::reference_internal,
+		     "Obtain config for a branch")
+		.def("__repr__", [](const CollectConfigs &) {
+		     return "<CollectConfigs>";
 		     });
 
 	// ============= RPMConfig =============
