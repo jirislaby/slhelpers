@@ -1,18 +1,63 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <cassert>
+#include <filesystem>
 #include <iostream>
 #include <set>
 
+#include "git/Commit.h"
+#include "git/Repo.h"
+#include "helpers/Color.h"
+#include "helpers/Misc.h"
+
 #include "kerncvs/Branches.h"
+#include "kerncvs/CollectConfigs.h"
 #include "kerncvs/Patch.h"
 #include "kerncvs/PatchesAuthors.h"
 #include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
 
 using namespace SlKernCVS;
+using Clr = SlHelpers::Color;
 
 namespace {
+
+void testCollectConfigs()
+{
+	auto kgit = SlHelpers::Env::get<std::filesystem::path>("KSOURCE_GIT");
+	if (!kgit) {
+		Clr(std::cerr, Clr::YELLOW) << "KSOURCE_GIT not set, skipping testCollectConfigs";
+		return;
+	}
+
+	auto repo = SlGit::Repo::open(*kgit);
+	assert(repo);
+	auto stable = repo->commitRevparseSingle("origin/stable");
+	assert(stable);
+
+	CollectConfigs configs(*repo);
+	assert(configs.collectConfigs(*stable));
+
+	assert(configs.getConfig("x86_64", "default", "CONFIG_NODES_SHIFT") ==
+	       CollectConfigs::WithValue);
+
+	try {
+		configs.getConfig("x86_64", "default", "CONFIG_NON_EXISTANT");
+		assert(false);
+	} catch (const std::out_of_range &) {
+	}
+
+	{
+		auto map = configs.getConfigMap("x86_64", "default");
+		assert(!map.contains("CONFIG_NON_EXISTANT"));
+		assert(map.contains("CONFIG_HIGHMEM"));
+		assert(map.contains("CONFIG_X86_64"));
+		assert(map.contains("CONFIG_X86_MSR"));
+		assert(map["CONFIG_HIGHMEM"] == CollectConfigs::Disabled);
+		assert(map["CONFIG_X86_64"] == CollectConfigs::BuiltIn);
+		assert(map["CONFIG_X86_MSR"] == CollectConfigs::Module);
+	}
+}
 
 void checkBuildSet(const std::set<std::string> &set)
 {
@@ -284,6 +329,7 @@ void testProcessPatch()
 
 int main()
 {
+	testCollectConfigs();
 	testBranches();
 	testPatch();
 	testRPMConfig();
