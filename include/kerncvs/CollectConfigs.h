@@ -41,15 +41,9 @@ public:
 
 	/**
 	 * @brief CollectConfigs constructor
-	 * @param repo KernCVS repository to search in
+	 * @param commit The commit in the KernCVS repository to walk
 	 */
-	CollectConfigs(const SlGit::Repo &repo) : repo(repo) {}
-
-	/**
-	 * @brief The real work function of this class
-	 * @param commit The commit to walk
-	 */
-	void collectConfigs(const SlGit::Commit &commit);
+	CollectConfigs(const SlGit::Commit &commit);
 
 	/// @brief Get the config map for a given \p arch, \p flavor
 	const auto &getConfigMap(const std::string &arch, const std::string &flavor) const {
@@ -63,12 +57,11 @@ public:
 	}
 
 private:
-	void processFlavor(std::string &&arch, std::string &&flavor,
+	void processFlavor(const SlGit::Repo &repo, std::string &&arch, std::string &&flavor,
 			   const SlGit::TreeEntry &treeEntry);
 	void processConfigFile(std::string &&arch, std::string &&flavor,
 			       std::string_view configFile);
 	void processConfig(ConfigMap &map, std::string_view line);
-	const SlGit::Repo &repo;
 
 	ArchMap m_archs;
 };

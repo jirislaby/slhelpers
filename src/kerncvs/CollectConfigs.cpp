@@ -14,8 +14,9 @@ using SlHelpers::raise;
 
 using namespace SlKernCVS;
 
-void CollectConfigs::collectConfigs(const SlGit::Commit &commit)
+CollectConfigs::CollectConfigs(const SlGit::Commit &commit)
 {
+	auto &repo = commit.repo();
 	auto tree = commit.tree();
 
 	auto configTreeEntry = tree->treeEntryByPath("config/");
@@ -30,10 +31,9 @@ void CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 		RunEx("config/ not found in commit ") << std::quoted(commit.idStr()) << ": " <<
 			repo.lastError() << raise;
 
-
 	std::string err;
 
-	auto ret = configTree->walk([this, &err](const std::string &root,
+	auto ret = configTree->walk([this, &repo, &err](const std::string &root,
 				const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
@@ -41,7 +41,8 @@ void CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 		if (flavor == "vanilla")
 			return 0;
 		try {
-			processFlavor(root.substr(0, root.size() - 1), std::move(flavor), entry);
+			processFlavor(repo, root.substr(0, root.size() - 1), std::move(flavor),
+				      entry);
 		} catch (const std::runtime_error &e) {
 			err = e.what();
 			return -1;
@@ -57,8 +58,8 @@ void CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 			std::quoted(commit.idStr()) << ": " << repo.lastError() << raise;
 }
 
-void CollectConfigs::processFlavor(std::string &&arch, std::string &&flavor,
-				   const SlGit::TreeEntry &treeEntry)
+void CollectConfigs::processFlavor(const SlGit::Repo &repo, std::string &&arch,
+				   std::string &&flavor, const SlGit::TreeEntry &treeEntry)
 {
 	auto config = treeEntry.catFile(repo);
 	if (!config)

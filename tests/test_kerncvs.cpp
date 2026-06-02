@@ -35,8 +35,7 @@ void testCollectConfigs()
 	auto stable = repo->commitRevparseSingle("origin/stable");
 	assert(stable);
 
-	CollectConfigs configs(*repo);
-	configs.collectConfigs(*stable);
+	CollectConfigs configs(*stable);
 
 	assert(configs.getConfig("x86_64", "default", "CONFIG_NODES_SHIFT") ==
 	       CollectConfigs::WithValue);
