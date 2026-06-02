@@ -5,8 +5,6 @@
 #include <iostream>
 #include <set>
 
-#include "git/Commit.h"
-#include "git/Repo.h"
 #include "helpers/Color.h"
 #include "helpers/Misc.h"
 
@@ -30,12 +28,7 @@ void testCollectConfigs()
 		return;
 	}
 
-	auto repo = SlGit::Repo::open(*kgit);
-	assert(repo);
-	auto stable = repo->commitRevparseSingle("origin/stable");
-	assert(stable);
-
-	CollectConfigs configs(*stable);
+	auto configs = CollectConfigs::create(*kgit, "origin/stable");
 
 	assert(configs.getConfig("x86_64", "default", "CONFIG_NODES_SHIFT") ==
 	       CollectConfigs::WithValue);

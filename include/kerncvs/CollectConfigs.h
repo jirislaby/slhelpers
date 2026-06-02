@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 
@@ -44,6 +45,24 @@ public:
 	 * @param commit The commit in the KernCVS repository to walk
 	 */
 	CollectConfigs(const SlGit::Commit &commit);
+
+	/// @brief Deleted copy constructor
+	CollectConfigs(const CollectConfigs &) = delete;
+	/// @brief Deleted copy assignment operator
+	CollectConfigs &operator=(const CollectConfigs &) = delete;
+
+	/// @brief Defaulted move constructor
+	CollectConfigs(CollectConfigs &&) = default;
+	/// @brief Defaulted move assignment operator
+	CollectConfigs &operator=(CollectConfigs &&) = default;
+
+	/**
+	 * @brief Create a CollectConfigs from the \p repoPath and \p rev
+	 * @param repoPath Path to the KernCVS repository
+	 * @param rev The revision in the KernCVS repository to walk
+	 */
+	static CollectConfigs create(const std::filesystem::path &repoPath,
+				     const std::string &rev);
 
 	/// @brief Get the config map for a given \p arch, \p flavor
 	const auto &getConfigMap(const std::string &arch, const std::string &flavor) const {

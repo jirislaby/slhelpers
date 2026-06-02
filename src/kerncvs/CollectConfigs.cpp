@@ -14,6 +14,22 @@ using SlHelpers::raise;
 
 using namespace SlKernCVS;
 
+CollectConfigs CollectConfigs::create(const std::filesystem::path &repoPath,
+				      const std::string &rev)
+{
+	auto repo = SlGit::Repo::open(repoPath);
+	if (!repo)
+		RunEx("Failed to open repository at ") << repoPath << ": " <<
+			repo->lastError() << raise;
+
+	auto commit = repo->commitRevparseSingle(rev);
+	if (!commit)
+		RunEx("Failed to find commit for revision ") << std::quoted(rev) << ": " <<
+			repo->lastError() << raise;
+
+	return CollectConfigs(*commit);
+}
+
 CollectConfigs::CollectConfigs(const SlGit::Commit &commit)
 {
 	auto &repo = commit.repo();
