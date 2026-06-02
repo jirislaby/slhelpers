@@ -48,9 +48,8 @@ public:
 	/**
 	 * @brief The real work function of this class
 	 * @param commit The commit to walk
-	 * @return true on success.
 	 */
-	bool collectConfigs(const SlGit::Commit &commit) noexcept;
+	void collectConfigs(const SlGit::Commit &commit);
 
 	/// @brief Get the config map for a given \p arch, \p flavor
 	const auto &getConfigMap(const std::string &arch, const std::string &flavor) const {
@@ -64,11 +63,11 @@ public:
 	}
 
 private:
-	bool processFlavor(std::string &&arch, std::string &&flavor,
+	void processFlavor(std::string &&arch, std::string &&flavor,
 			   const SlGit::TreeEntry &treeEntry);
-	bool processConfigFile(std::string &&arch, std::string &&flavor,
+	void processConfigFile(std::string &&arch, std::string &&flavor,
 			       std::string_view configFile);
-	bool processConfig(ConfigMap &map, std::string_view line);
+	void processConfig(ConfigMap &map, std::string_view line);
 	const SlGit::Repo &repo;
 
 	ArchMap m_archs;

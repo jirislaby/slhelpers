@@ -36,7 +36,7 @@ void testCollectConfigs()
 	assert(stable);
 
 	CollectConfigs configs(*repo);
-	assert(configs.collectConfigs(*stable));
+	configs.collectConfigs(*stable);
 
 	assert(configs.getConfig("x86_64", "default", "CONFIG_NODES_SHIFT") ==
 	       CollectConfigs::WithValue);

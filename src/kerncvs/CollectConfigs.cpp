@@ -1,76 +1,91 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <iostream>
+#include <iomanip>
 
 #include "git/Commit.h"
 #include "git/Repo.h"
 #include "git/Tree.h"
 #include "helpers/String.h"
+#include "helpers/Exception.h"
 #include "kerncvs/CollectConfigs.h"
+
+using RunEx = SlHelpers::RuntimeException;
+using SlHelpers::raise;
 
 using namespace SlKernCVS;
 
-bool CollectConfigs::collectConfigs(const SlGit::Commit &commit) noexcept
+void CollectConfigs::collectConfigs(const SlGit::Commit &commit)
 {
 	auto tree = commit.tree();
 
 	auto configTreeEntry = tree->treeEntryByPath("config/");
 	if (!configTreeEntry)
-		return false;
+		RunEx("config/ not found in commit ") << std::quoted(commit.idStr()) << ": " <<
+			repo.lastError() << raise;
 	if (configTreeEntry->type() != GIT_OBJECT_TREE)
-		return false;
+		RunEx("config/ is not a tree in commit ") << std::quoted(commit.idStr()) << raise;
 
 	auto configTree = repo.treeLookup(*configTreeEntry);
 	if (!configTree)
-		return false;
+		RunEx("config/ not found in commit ") << std::quoted(commit.idStr()) << ": " <<
+			repo.lastError() << raise;
 
-	return configTree->walk([this](const std::string &root,
+
+	std::string err;
+
+	auto ret = configTree->walk([this, &err](const std::string &root,
 				const SlGit::TreeEntry &entry) -> int {
 		if (entry.type() != GIT_OBJECT_BLOB)
 			return 0;
 		auto flavor = entry.name();
 		if (flavor == "vanilla")
 			return 0;
-		if (!processFlavor(root.substr(0, root.size() - 1), std::move(flavor), entry))
+		try {
+			processFlavor(root.substr(0, root.size() - 1), std::move(flavor), entry);
+		} catch (const std::runtime_error &e) {
+			err = e.what();
 			return -1;
+		}
 		return 0;
 	});
+
+	if (!err.empty())
+		RunEx(err).raise();
+
+	if (!ret)
+		RunEx("Error while walking config/ tree in commit ") <<
+			std::quoted(commit.idStr()) << ": " << repo.lastError() << raise;
 }
 
-bool CollectConfigs::processFlavor(std::string &&arch, std::string &&flavor,
+void CollectConfigs::processFlavor(std::string &&arch, std::string &&flavor,
 				   const SlGit::TreeEntry &treeEntry)
 {
 	auto config = treeEntry.catFile(repo);
 	if (!config)
-		return false;
+		RunEx("Failed to read config file for \"") << arch << '/' << flavor << '/' <<
+			treeEntry.name() << "\": " << repo.lastError() << raise;
 
-	return processConfigFile(std::move(arch), std::move(flavor), *config);
+	processConfigFile(std::move(arch), std::move(flavor), *config);
 }
 
-bool CollectConfigs::processConfigFile(std::string &&arch, std::string &&flavor,
+void CollectConfigs::processConfigFile(std::string &&arch, std::string &&flavor,
 				       std::string_view configFile)
 {
 	SlHelpers::GetLine gl(configFile);
 	auto &map = m_archs[std::move(arch)][std::move(flavor)];
 	while (auto line = gl.get())
-		if (!processConfig(map, *line))
-			return false;
-
-	return true;
+		processConfig(map, *line);
 }
 
-bool CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
+void CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
 {
 	static constexpr const std::string_view commented("# CONFIG_");
 
 	if (line.starts_with(commented)) {
 		const auto end = line.find(" is not set");
-		if (end == std::string::npos) {
-			std::cerr << __func__ <<
-				     "commented config without proper 'is not set' in: " <<
-				     line << '\n';
-			return false;
-		}
+		if (end == std::string::npos)
+			RunEx(__func__) << ": commented config without proper 'is not set' in: " <<
+				std::quoted(line) << raise;
 
 		std::string config(line.substr(2, end - 2));
 
@@ -78,11 +93,10 @@ bool CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
 	}
 	if (line.starts_with("CONFIG_")) {
 		const auto end = line.find('=');
-		if (end == std::string::npos) {
-			std::cerr << __func__ << "value of config cannot be identified in: " <<
-				     line << '\n';
-			return false;
-		}
+		if (end == std::string::npos)
+			RunEx(__func__) << ": value of config cannot be identified in: " <<
+				     line << raise;
+
 		std::string config(line.substr(0, end));
 		ConfigValue value = WithValue;
 		if (line[end + 1] == 'y')
@@ -91,6 +105,4 @@ bool CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
 			value = Module;
 		map.emplace(std::move(config), value);
 	}
-
-	return true;
 }
