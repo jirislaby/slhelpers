@@ -23,7 +23,7 @@ using ObjectStore = SlHelpers::PtrStore<git_object,
 std::variant<std::monostate, Commit, Tree, Blob> Tag::peel() const noexcept
 {
 	ObjectStore obj;
-	if (git_tag_peel(obj.ptr(), tag()))
+	if (Repo::setLastError(git_tag_peel(obj.ptr(), tag())))
 		return std::monostate();
 	switch (git_object_type(*obj)) {
 	case GIT_OBJECT_COMMIT:

@@ -32,7 +32,7 @@ void SlHelpers::Deleter<git_signature>::operator()(git_signature *sig) const
 std::optional<Reference> Reference::resolve() const noexcept
 {
 	git_reference *out;
-	if (git_reference_resolve(&out, ref()))
+	if (Repo::setLastError(git_reference_resolve(&out, ref())))
 		return std::nullopt;
 	return Reference(out);
 }

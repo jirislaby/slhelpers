@@ -262,9 +262,11 @@ public:
 private:
 	explicit Repo(GitTy *repo) noexcept : m_repo(repo) {}
 
+	friend class Commit;
 	friend class Diff;
 	friend class Index;
 	friend class PathSpec;
+	friend class Reference;
 	friend class Remote;
 	friend class RevWalk;
 	friend class Signature;

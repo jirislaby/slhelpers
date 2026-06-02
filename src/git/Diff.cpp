@@ -29,14 +29,14 @@ int Diff::forEach(const ForEachCB &forEachCB) const
 
 int Diff::print(git_diff_format_t format, const PrintCB &printCB) const
 {
-	return git_diff_print(diff(), format, Diff::printCB,
-			      const_cast<void *>(static_cast<const void *>(&printCB)));
+	return Repo::setLastError(git_diff_print(diff(), format, Diff::printCB,
+					 const_cast<void *>(static_cast<const void *>(&printCB))));
 }
 
 std::optional<Buf> Diff::toBuf(git_diff_format_t format) const noexcept
 {
 	Buf buf;
-	if (git_diff_to_buf(&buf.buf(), diff(), format))
+	if (Repo::setLastError(git_diff_to_buf(&buf.buf(), diff(), format)))
 		return std::nullopt;
 	return buf;
 }

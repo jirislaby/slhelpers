@@ -24,7 +24,7 @@ void SlHelpers::Deleter<git_index_iterator>::operator()(git_index_iterator *it) 
 std::optional<Index> Index::open(const std::filesystem::path &path) noexcept
 {
 	git_index *index;
-	if (git_index_open(&index, path.c_str()))
+	if (Repo::setLastError(git_index_open(&index, path.c_str())))
 		return std::nullopt;
 	return Index(index);
 }
@@ -32,7 +32,7 @@ std::optional<Index> Index::open(const std::filesystem::path &path) noexcept
 std::optional<Index> Index::create() noexcept
 {
 	git_index *index;
-	if (git_index_new(&index))
+	if (Repo::setLastError(git_index_new(&index)))
 		return std::nullopt;
 	return Index(index);
 }
@@ -45,7 +45,7 @@ bool Index::readTree(const Tree &tree) const noexcept
 std::optional<Tree> Index::writeTree(const Repo &repo) const noexcept
 {
 	git_oid oid;
-	if (git_index_write_tree(&oid, index()))
+	if (Repo::setLastError(git_index_write_tree(&oid, index())))
 		return std::nullopt;
 	return repo.treeLookup(oid);
 }
@@ -53,20 +53,23 @@ std::optional<Tree> Index::writeTree(const Repo &repo) const noexcept
 int Index::addAll(const std::vector<std::string> &paths, unsigned int flags,
 		  const MatchCB *cb) const
 {
-	return git_index_add_all(index(), StrArray(paths), flags, cb ? matchCB : nullptr,
-				 const_cast<void *>(static_cast<const void *>(&cb)));
+	return Repo::setLastError(git_index_add_all(index(), StrArray(paths), flags,
+						    cb ? matchCB : nullptr,
+					    const_cast<void *>(static_cast<const void *>(&cb))));
 }
 
 int Index::removeAll(const std::vector<std::string> &paths, const MatchCB *cb) const
 {
-	return git_index_remove_all(index(), StrArray(paths), cb ? matchCB : nullptr,
-				    const_cast<void *>(static_cast<const void *>(&cb)));
+	return Repo::setLastError(git_index_remove_all(index(), StrArray(paths),
+						       cb ? matchCB : nullptr,
+					    const_cast<void *>(static_cast<const void *>(&cb))));
 }
 
 int Index::updateAll(const std::vector<std::string> &paths, const MatchCB *cb) const
 {
-	return git_index_update_all(index(), StrArray(paths), cb ? matchCB : nullptr,
-				    const_cast<void *>(static_cast<const void *>(&cb)));
+	return Repo::setLastError(git_index_update_all(index(), StrArray(paths),
+						       cb ? matchCB : nullptr,
+					       const_cast<void *>(static_cast<const void *>(&cb))));
 }
 
 IndexIterator Index::cbegin() const noexcept
