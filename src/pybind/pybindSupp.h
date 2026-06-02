@@ -8,8 +8,11 @@
 
 namespace pybind11::detail {
 
+/// @brief Casts a std::chrono::year_month_day to a Python datetime.date object.
 template <> struct type_caster<std::chrono::year_month_day> {
+	/// @brief The necessary boilerplate for casting std::chrono::year_month_day to Python.
 	PYBIND11_TYPE_CASTER(std::chrono::year_month_day, _("datetime.date"));
+	/// @brief Casts a std::chrono::year_month_day to a Python datetime.date object.
 	static handle cast(std::chrono::year_month_day ymd, return_value_policy, handle) {
 		return pybind11::module_::import("datetime").attr("date")(
 									  int(ymd.year()),
