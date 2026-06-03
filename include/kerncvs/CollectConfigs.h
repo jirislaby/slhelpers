@@ -64,6 +64,16 @@ public:
 	static CollectConfigs create(const std::filesystem::path &repoPath,
 				     const std::string &rev);
 
+	/// @brief Get the arch map
+	const auto &getArchMap() const {
+		return m_archs;
+	}
+
+	/// @brief Get the flavor map for a given \p arch
+	const auto &getFlavorMap(const std::string &arch) const {
+		return m_archs.at(arch);
+	}
+
 	/// @brief Get the config map for a given \p arch, \p flavor
 	const auto &getConfigMap(const std::string &arch, const std::string &flavor) const {
 		return m_archs.at(arch).at(flavor);

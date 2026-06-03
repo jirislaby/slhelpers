@@ -86,16 +86,22 @@ PYBIND11_MODULE(slkerncvs, m)
 			auto ret = CollectConfigs::create(repoPath, rev);
 			return ret;
 		}), "Parse configs into CollectConfigs")
+		.def("get_arch_map", &CollectConfigs::getArchMap,
+		     py::return_value_policy::reference_internal,
+		     "Obtain arch->flavor->config map")
+		.def("get_flavor_map", &CollectConfigs::getFlavorMap, py::arg("arch"),
+		     py::return_value_policy::reference_internal,
+		     "Obtain flavor->config map for an arch")
 		.def("get_config_map", &CollectConfigs::getConfigMap, py::arg("arch"),
 		     py::arg("flavor"),
 		     py::return_value_policy::reference_internal,
-		     "Obtain whole configs map")
+		     "Obtain config map for an arch and flavor")
 		.def("get_config", &CollectConfigs::getConfig, py::arg("arch"), py::arg("flavor"),
 		     py::arg("config"),
 		     py::return_value_policy::reference_internal,
 		     "Obtain config for a branch")
-		.def("__repr__", [](const CollectConfigs &) {
-		     return "<CollectConfigs>";
+		.def("__repr__", [](const CollectConfigs &cc) {
+		     return "<CollectConfigs arch#=" + std::to_string(cc.getArchMap().size()) + '>';
 		     });
 
 	// ============= RPMConfig =============
