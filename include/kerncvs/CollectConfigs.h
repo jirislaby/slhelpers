@@ -85,6 +85,16 @@ public:
 		return m_archs.at(arch).at(flavor).at(config);
 	}
 
+	/// @brief Get the archs iterator
+	auto begin() const {
+		return m_archs.begin();
+	}
+
+	/// @brief Get the archs end iterator
+	auto end() const {
+		return m_archs.end();
+	}
+
 private:
 	void processFlavor(const SlGit::Repo &repo, std::string &&arch, std::string &&flavor,
 			   const SlGit::TreeEntry &treeEntry);
