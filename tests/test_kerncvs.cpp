@@ -225,6 +225,15 @@ void testSupportedConf()
 		"+external       arch/powerpc/platforms/powernv/opal-prd\n"
 	};
 
+	assert(SupportedConf::getName(SupportedConf::NonPresent) == "NonPresent");
+
+	{
+		SupportedConf::SupportStateRange range;
+
+		assert(range.begin() != range.end());
+		assert(*range.begin() == SupportedConf::NonPresent);
+	}
+
 	const SupportedConf supp { supportedConf };
 
 	assert(supp.supportState("non_existing") == SupportedConf::NonPresent);
