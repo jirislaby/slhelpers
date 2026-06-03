@@ -2,6 +2,7 @@
 
 public_headers += [
   'helpers/Color.h',
+  'helpers/Enum.h',
   'helpers/Exception.h',
   'helpers/HomeDir.h',
   'helpers/LastError.h',
