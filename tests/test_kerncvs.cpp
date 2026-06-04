@@ -225,30 +225,34 @@ void testSupportedConf()
 		"+external       arch/powerpc/platforms/powernv/opal-prd\n"
 	};
 
-	assert(SupportedConf::getName(SupportedConf::NonPresent) == "NonPresent");
+	assert(getName(SupportState::NonPresent) == "NonPresent");
 
 	{
-		SupportedConf::SupportStateRange range;
+		SupportStateRange range;
 
 		assert(range.begin() != range.end());
-		assert(*range.begin() == SupportedConf::NonPresent);
+		assert(*range.begin() == SupportState::NonPresent);
+		auto cnt = 0U;
+		for (const auto &_: range)
+			cnt++;
+		assert(cnt == 8);
 	}
 
 	const SupportedConf supp { supportedConf };
 
-	assert(supp.supportState("non_existing") == SupportedConf::NonPresent);
+	assert(supp.supportState("non_existing") == SupportState::NonPresent);
 
 	assert(supp.supportState("drivers/input/joystick/something.ko") ==
-	       SupportedConf::Unsupported);
-	assert(supp.supportState("drivers/mtd/spi-nor/spi-nor") == SupportedConf::Unspecified);
-	assert(supp.supportState("drivers/mtd/something_else") == SupportedConf::Unsupported);
+	       SupportState::Unsupported);
+	assert(supp.supportState("drivers/mtd/spi-nor/spi-nor") == SupportState::Unspecified);
+	assert(supp.supportState("drivers/mtd/something_else") == SupportState::Unsupported);
 	assert(supp.supportState("drivers/usb/typec/altmodes/typec_displayport") ==
-	       SupportedConf::Unsupported);
-	assert(supp.supportState("fs/ocfs2/ocfs2_stackglue") == SupportedConf::KMPSupported);
-	assert(supp.supportState("drivers/net/ethernet/8390/8390") == SupportedConf::BaseSupported);
-	assert(supp.supportState("drivers/ata/ahci_imx") == SupportedConf::UnsupportedOptional);
+	       SupportState::Unsupported);
+	assert(supp.supportState("fs/ocfs2/ocfs2_stackglue") == SupportState::KMPSupported);
+	assert(supp.supportState("drivers/net/ethernet/8390/8390") == SupportState::BaseSupported);
+	assert(supp.supportState("drivers/ata/ahci_imx") == SupportState::UnsupportedOptional);
 	assert(supp.supportState("arch/powerpc/platforms/powernv/opal-prd") ==
-	       SupportedConf::ExternallySupported);
+	       SupportState::ExternallySupported);
 }
 
 std::string generatePatch(const std::string_view &ref, const std::string_view &ack,

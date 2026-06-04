@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -20,34 +21,35 @@ namespace SlKernCVS {
 	X(ExternallySupported, 3) \
 	X(KMPSupported, 4)
 
+	/// @brief Level of support for a module
+enum class SupportState {
+#define EXP(x, v) x = v,
+	SUPPORT_STATE(EXP)
+#undef EXP
+	First = NonPresent,
+	Last = KMPSupported,
+};
+
+/// @brief Get string representation of \p ss
+static constexpr std::string_view getName(SupportState ss) noexcept {
+	switch (ss) {
+#define EXP(x, v) case SupportState::x: return #x;
+	SUPPORT_STATE(EXP)
+#undef EXP
+	}
+	return "INVALID";
+}
+
+#undef SUPPORT_STATE
+
+/// @brief Range of SupportState
+using SupportStateRange = SlHelpers::EnumRange<SupportState>;
+
 /**
  * @brief Parses supported.conf and holds/retrieves the information
  */
 class SupportedConf {
 public:
-	/// @brief Level of support for a module
-	enum SupportState {
-#define EXP(x, v) x = v,
-		SUPPORT_STATE(EXP)
-#undef EXP
-		Count,
-	};
-
-	/// @brief Get string representation of \p ss
-	static constexpr std::string_view getName(SupportState ss) noexcept {
-		switch (ss) {
-#define EXP(x, v) case x: return #x;
-		SUPPORT_STATE(EXP)
-#undef EXP
-		case Count:
-			break;
-		}
-		return "INVALID";
-	}
-
-	/// @brief Range of SupportState
-	using SupportStateRange = SlHelpers::EnumRange<SupportState, NonPresent>;
-
 	SupportedConf() = delete;
 
 	/**

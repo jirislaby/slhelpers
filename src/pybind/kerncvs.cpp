@@ -121,15 +121,15 @@ PYBIND11_MODULE(slkerncvs, m)
 	// ============= SupportedConf =============
 
 	py::class_<SupportedConf> suppConf(m, "SupportedConf");
-	py::enum_<SupportedConf::SupportState>(suppConf, "SupportState")
-		.value("NonPresent",           SupportedConf::SupportState::NonPresent)
-		.value("Unsupported",          SupportedConf::SupportState::Unsupported)
-		.value("UnsupportedOptional",  SupportedConf::SupportState::UnsupportedOptional)
-		.value("Unspecified",          SupportedConf::SupportState::Unspecified)
-		.value("Supported",            SupportedConf::SupportState::Supported)
-		.value("BaseSupported",        SupportedConf::SupportState::BaseSupported)
-		.value("ExternallySupported",  SupportedConf::SupportState::ExternallySupported)
-		.value("KMPSupported",         SupportedConf::SupportState::KMPSupported)
+	py::enum_<SupportState>(suppConf, "SupportState")
+		.value("NonPresent",           SupportState::NonPresent)
+		.value("Unsupported",          SupportState::Unsupported)
+		.value("UnsupportedOptional",  SupportState::UnsupportedOptional)
+		.value("Unspecified",          SupportState::Unspecified)
+		.value("Supported",            SupportState::Supported)
+		.value("BaseSupported",        SupportState::BaseSupported)
+		.value("ExternallySupported",  SupportState::ExternallySupported)
+		.value("KMPSupported",         SupportState::KMPSupported)
 		.export_values();
 	suppConf
 		.def(py::init([](const std::string &conf) {

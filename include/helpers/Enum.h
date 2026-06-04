@@ -6,8 +6,8 @@
 
 namespace SlHelpers {
 
-/// @brief Helper class to iterate over enum values from 0 to Enum::Count - 1
-template <typename Enum, std::underlying_type_t<Enum> first = 0>
+/// @brief Helper class to iterate over enum values from Enum::First to Enum::Last
+template <typename Enum>
 class EnumRange {
 public:
 	/// @brief Type of the underlying enum values
@@ -34,9 +34,9 @@ public:
         };
 
 	/// @brief Returns an iterator to the beginning of the enum range
-        iterator begin() const { return { first }; }
+        iterator begin() const { return { static_cast<Underlying>(Enum::First) }; }
 	/// @brief Returns an iterator to the end of the enum range
-        iterator end() const { return { static_cast<Underlying>(Enum::Count) }; }
+        iterator end() const { return { static_cast<Underlying>(Enum::Last) + 1 }; }
 };
 
 }

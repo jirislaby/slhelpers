@@ -57,7 +57,7 @@ SupportedConf::SupportedConf(std::string_view conf)
 		parseLine(*line);
 }
 
-SupportedConf::SupportState SupportedConf::supportState(const std::string &module) const
+SupportState SupportedConf::supportState(const std::string &module) const
 {
 	for (const auto &e : entries)
 		if (!::fnmatch(e.first.c_str(), module.c_str(), FNM_NOESCAPE | FNM_PERIOD))
