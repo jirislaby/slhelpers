@@ -271,7 +271,7 @@ void SQLConn::dumpBinding(const Binding &binding) const noexcept
 		m_lastError << '\t' << b.first << '=';
 		if (std::holds_alternative<int>(b.second))
 			m_lastError << "I:" << std::get<int>(b.second);
-		if (std::holds_alternative<unsigned>(b.second))
+		else if (std::holds_alternative<unsigned>(b.second))
 			m_lastError << "U:" << std::get<unsigned>(b.second);
 		else if (std::holds_alternative<std::string>(b.second))
 			m_lastError << "T:" << std::get<std::string>(b.second);
