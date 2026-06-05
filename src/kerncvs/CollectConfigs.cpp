@@ -106,7 +106,7 @@ void CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
 
 		std::string config(line.substr(2, end - 2));
 
-		map.emplace(std::move(config), Disabled);
+		map.emplace(std::move(config), ConfigValue::Disabled);
 	}
 	if (line.starts_with("CONFIG_")) {
 		const auto end = line.find('=');
@@ -115,11 +115,11 @@ void CollectConfigs::processConfig(ConfigMap &map, std::string_view line)
 				     line << raise;
 
 		std::string config(line.substr(0, end));
-		ConfigValue value = WithValue;
+		auto value = ConfigValue::WithValue;
 		if (line[end + 1] == 'y')
-			value = BuiltIn;
+			value = ConfigValue::BuiltIn;
 		else if (line[end + 1] == 'm')
-			value = Module;
+			value = ConfigValue::Module;
 		map.emplace(std::move(config), value);
 	}
 }

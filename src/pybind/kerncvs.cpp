@@ -76,11 +76,11 @@ PYBIND11_MODULE(slkerncvs, m)
 
 	// ============= CollectConfigs =============
 	py::class_<CollectConfigs> CC(m, "CollectConfigs");
-	py::enum_<CollectConfigs::ConfigValue>(CC, "ConfigValue")
-		.value("Disabled", CollectConfigs::ConfigValue::Disabled)
-		.value("BuiltIn", CollectConfigs::ConfigValue::BuiltIn)
-		.value("Module", CollectConfigs::ConfigValue::Module)
-		.value("WithValue", CollectConfigs::ConfigValue::WithValue)
+	py::enum_<ConfigValue>(CC, "ConfigValue")
+		.value("Disabled", ConfigValue::Disabled)
+		.value("BuiltIn", ConfigValue::BuiltIn)
+		.value("Module", ConfigValue::Module)
+		.value("WithValue", ConfigValue::WithValue)
 		.export_values();
 	CC.def(py::init([](const std::string &repoPath, const std::string &rev) {
 			auto ret = CollectConfigs::create(repoPath, rev);

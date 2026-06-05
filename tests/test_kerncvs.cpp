@@ -31,7 +31,7 @@ void testCollectConfigs()
 	auto configs = CollectConfigs::create(*kgit, "origin/stable");
 
 	assert(configs.getConfig("x86_64", "default", "CONFIG_NODES_SHIFT") ==
-	       CollectConfigs::WithValue);
+	       ConfigValue::WithValue);
 
 	try {
 		configs.getConfig("x86_64", "default", "CONFIG_NON_EXISTANT");
@@ -45,9 +45,9 @@ void testCollectConfigs()
 		assert(map.contains("CONFIG_HIGHMEM"));
 		assert(map.contains("CONFIG_X86_64"));
 		assert(map.contains("CONFIG_X86_MSR"));
-		assert(map["CONFIG_HIGHMEM"] == CollectConfigs::Disabled);
-		assert(map["CONFIG_X86_64"] == CollectConfigs::BuiltIn);
-		assert(map["CONFIG_X86_MSR"] == CollectConfigs::Module);
+		assert(map["CONFIG_HIGHMEM"] == ConfigValue::Disabled);
+		assert(map["CONFIG_X86_64"] == ConfigValue::BuiltIn);
+		assert(map["CONFIG_X86_MSR"] == ConfigValue::Module);
 	}
 }
 

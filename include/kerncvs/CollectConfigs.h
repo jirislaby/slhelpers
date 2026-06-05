@@ -16,19 +16,20 @@ class TreeEntry;
 
 namespace SlKernCVS {
 
+/// @brief Value for a config
+enum class ConfigValue : char {
+	Disabled = 'n',
+	BuiltIn = 'y',
+	Module = 'm',
+	WithValue = 'v',
+};
+
 /**
  * @brief Class to walk the KernCVS repository and report arch, flavor and configs via callbacks
  * passed to the constructor.
  */
 class CollectConfigs {
 public:
-	/// @brief Value for a config
-	enum ConfigValue : char {
-		Disabled = 'n',
-		BuiltIn = 'y',
-		Module = 'm',
-		WithValue = 'v',
-	};
 
 	/// @brief Map of config name to config value
 	using ConfigMap = std::unordered_map<std::string, ConfigValue, SlHelpers::String::Hash,
