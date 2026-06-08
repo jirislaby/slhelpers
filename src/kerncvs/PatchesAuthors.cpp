@@ -79,9 +79,9 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		for (const auto &email : patchEmails) {
 			m_HoH[email][cfile]++;
 			if (gitFixes)
-				m_HoHReal[email].try_emplace(std::move(cfile), 0);
+				m_HoHReal[email].try_emplace(cfile, 0);
 			else
-				m_HoHReal[email][std::move(cfile)]++;
+				m_HoHReal[email][cfile]++;
 		}
 	}
 
