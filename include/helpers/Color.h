@@ -52,10 +52,12 @@ public:
 	explicit Color(std::ostream &os, enum C c = DEFAULT) noexcept : m_NL(true), m_os(os) {
 		if (!doColor(os))
 			return;
+		auto origFlags = m_os.setf(std::ios::dec, std::ios::basefield);
 		m_os << seqBegin;
 		if (c != DEFAULT)
 			m_os << BOLD << ';';
 		m_os << c << 'm';
+		m_os.flags(origFlags);
 	}
 
 	/**
@@ -78,10 +80,12 @@ public:
 		: m_NL(true), m_os(os) {
 		if (!doColor(os))
 			return;
+		auto origFlags = m_os.setf(std::ios::dec, std::ios::basefield);
 		m_os << seqBegin << BOLD << ';' << COL256 << ";2;" <<
 			toUnsigned(r) << ';' <<
 			toUnsigned(g) << ';' <<
 			toUnsigned(b) << 'm';
+		m_os.flags(origFlags);
 	}
 
 	~Color() {
