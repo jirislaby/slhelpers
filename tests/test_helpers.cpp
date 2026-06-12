@@ -46,7 +46,8 @@ void testColor()
 		std::ostringstream oss2;
 
 		static constexpr const std::string_view text("Test print in RED");
-		oss2 << Clr::seqBegin << Clr::RED << 'm' << text << Color::seqEnd << '\n';
+		oss2 << Clr::seqBegin << Clr::BOLD << ';' << Clr::RED << 'm' << text <<
+			Color::seqEnd << '\n';
 		Clr(oss, Clr::RED) << text;
 		std::cerr << oss.str();
 		assert(oss.str() == oss2.str());
@@ -56,8 +57,8 @@ void testColor()
 		std::ostringstream oss2;
 
 		static constexpr const std::string_view text("Test print in RGB(0, 255, 255)");
-		oss2 << Clr::seqBegin << Clr::COL256 << ";2;0;255;255m" << text <<
-			Color::seqEnd << '\n';
+		oss2 << Clr::seqBegin << Clr::BOLD << ';' << Clr::COL256 << ";2;0;255;255m" <<
+			text << Color::seqEnd << '\n';
 		Clr(oss, 0, 255, 255) << text;
 		std::cerr << oss.str();
 		assert(oss.str() == oss2.str());

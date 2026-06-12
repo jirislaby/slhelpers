@@ -19,6 +19,7 @@ class Color {
 public:
 	/// @brief Predefined colors
 	enum C : unsigned {
+		BOLD = 1,
 		BLACK = 30,
 		RED = 31,
 		GREEN = 32,
@@ -49,8 +50,12 @@ public:
 	 * @param c A color from C
 	 */
 	explicit Color(std::ostream &os, enum C c = DEFAULT) noexcept : m_NL(true), m_os(os) {
-		if (doColor(os))
-			m_os << seqBegin << c << 'm';
+		if (!doColor(os))
+			return;
+		m_os << seqBegin;
+		if (c != DEFAULT)
+			m_os << BOLD << ';';
+		m_os << c << 'm';
 	}
 
 	/**
@@ -73,7 +78,7 @@ public:
 		: m_NL(true), m_os(os) {
 		if (!doColor(os))
 			return;
-		m_os << seqBegin << COL256 << ";2;" <<
+		m_os << seqBegin << BOLD << ';' << COL256 << ";2;" <<
 			toUnsigned(r) << ';' <<
 			toUnsigned(g) << ';' <<
 			toUnsigned(b) << 'm';
@@ -136,7 +141,7 @@ private:
 	}
 
 	friend void testColor();
-	inline static std::string_view seqBegin = "\033[01;";
+	inline static std::string_view seqBegin = "\033[";
 	inline static std::string_view seqEnd = "\033[0m";
 	inline static signed char m_doColor[] = { -1, -1, 1 };
 	inline static bool m_forceColor = false;
