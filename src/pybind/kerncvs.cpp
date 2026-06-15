@@ -5,9 +5,11 @@
 #include <pybind11/detail/common.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl/filesystem.h>
 
 #include "kerncvs/Branches.h"
 #include "kerncvs/CollectConfigs.h"
+#include "kerncvs/Patch.h"
 #include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
 
@@ -75,6 +77,7 @@ PYBIND11_MODULE(slkerncvs, m)
 		     });
 
 	// ============= CollectConfigs =============
+
 	py::class_<CollectConfigs> CC(m, "CollectConfigs");
 	py::enum_<ConfigValue>(CC, "ConfigValue")
 		.value("Disabled", ConfigValue::Disabled)
@@ -102,6 +105,28 @@ PYBIND11_MODULE(slkerncvs, m)
 		     "Obtain config for a branch")
 		.def("__repr__", [](const CollectConfigs &cc) {
 		     return "<CollectConfigs arch#=" + std::to_string(cc.getArchMap().size()) + '>';
+		     });
+
+	// ============= Patch =============
+
+	py::class_<Patch> patch(m, "Patch");
+	patch.def(py::init([](const std::filesystem::path &path) {
+			      auto ret = Patch::create(path);
+			      if (!ret)
+				      throw std::runtime_error(Patch::lastError());
+			      return std::move(*ret);
+			      }),
+		    py::arg("path"), "Parse a patch file")
+		.def("header", &Patch::header, "Patch header lines as an array",
+		     py::return_value_policy::reference_internal)
+		.def("paths", &Patch::paths, "Paths the patch changes",
+		     py::return_value_policy::reference_internal)
+		.def("__repr__", [](const Patch &patch) {
+		     std::stringstream ss;
+		     ss << "<Patch header_lines#=" << patch.header().size() <<
+			      " paths#=" << patch.paths().size() <<
+			      '>';
+		     return ss.str();
 		     });
 
 	// ============= RPMConfig =============
