@@ -26,19 +26,19 @@ int SQLConn::busyHandler(void *, int count)
 	return 1;
 }
 
-bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noexcept
+bool SQLConn::openDB(const std::filesystem::path &dbFile, OpenFlags flags) noexcept
 {
 	sqlite3 *sql;
 	int openFlags = 0;
 
 	m_flags = flags;
 
-	if (flags & OpenFlags::READ_ONLY)
+	if (hasFlag(flags, OpenFlags::READ_ONLY))
 		openFlags |= SQLITE_OPEN_READONLY;
 	else
 		openFlags |= SQLITE_OPEN_READWRITE;
 
-	if (flags & OpenFlags::CREATE)
+	if (hasFlag(flags, OpenFlags::CREATE))
 		openFlags |= SQLITE_OPEN_CREATE;
 
 	auto ret = sqlite3_open_v2(dbFile.c_str(), &sql, openFlags, nullptr);
@@ -48,7 +48,7 @@ bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) no
 		return false;
 	}
 
-	if (!(flags & OpenFlags::NO_FOREIGN_KEY))
+	if (!hasFlag(flags, OpenFlags::NO_FOREIGN_KEY))
 		if (!exec("PRAGMA foreign_keys = ON;", "db PRAGMA failed"))
 			return false;
 
@@ -232,7 +232,7 @@ bool SQLConn::step(const SQLStmtHolder &ins, uint64_t *affected, bool *uniqueErr
 	if (uniqueError)
 		*uniqueError = uniqueErrorLoc;
 
-	if (uniqueErrorLoc && !(m_flags & OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
+	if (uniqueErrorLoc && !hasFlag(m_flags, OpenFlags::ERROR_ON_UNIQUE_CONSTRAINT)) {
 		if (affected)
 			*affected = 0;
 		return true;

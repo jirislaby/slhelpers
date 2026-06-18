@@ -8,6 +8,7 @@
 #include <variant>
 #include <vector>
 
+#include "../helpers/Enum.h"
 #include "../helpers/LastError.h"
 #include "SQLiteSmart.h"
 
@@ -16,12 +17,19 @@ namespace SlSqlite {
 /**
  * @brief Flags to be used for SQLConn::open()
  */
-enum OpenFlags : unsigned {
+enum class OpenFlags : unsigned {
+	NONE				= 0,
 	CREATE				= 1 << 0,
 	NO_FOREIGN_KEY			= 1 << 1,
 	ERROR_ON_UNIQUE_CONSTRAINT	= 1 << 2,
 	READ_ONLY			= 1 << 3,
 };
+
+} // namespace
+
+ENABLE_BITMASK_OPERATORS(SlSqlite::OpenFlags);
+
+namespace SlSqlite {
 
 /**
  * @brief Transaction types used for SQLConn::begin()
@@ -94,7 +102,7 @@ public:
 	 * @param flags Flags to use (like OpenFlags::CREATE)
 	 * @return true on success.
 	 */
-	bool open(const std::filesystem::path &dbFile, unsigned int flags = 0)
+	bool open(const std::filesystem::path &dbFile, OpenFlags flags = OpenFlags::NONE)
 	{
 		return openDB(dbFile, flags) && createDB() && prepDB();
 	}
@@ -105,7 +113,8 @@ public:
 	 * @param flags Flags to use (like OpenFlags::CREATE)
 	 * @return true on success.
 	 */
-	bool openDB(const std::filesystem::path &dbFile, unsigned int flags = 0) noexcept;
+	bool openDB(const std::filesystem::path &dbFile,
+		    OpenFlags flags = OpenFlags::NONE) noexcept;
 
 	/**
 	 * @brief Creates tables, views, triggers and such.
@@ -169,7 +178,7 @@ public:
 	int lastErrorCodeExt() const { return m_lastError.get<1>(); }
 
 protected:
-	SQLConn() : m_flags(0) {}
+	SQLConn() : m_flags(OpenFlags::NONE) {}
 
 	/// @brief Bind value (SQL's null, number, string)
 	using BindVal = std::variant<std::monostate, int, unsigned, std::string, std::string_view>;
@@ -253,7 +262,7 @@ protected:
 	/// @brief The DB connection
 	SQLHolder sqlHolder;
 	/// @brief OpenFlags
-	unsigned int m_flags;
+	OpenFlags m_flags;
 	/// @brief The last error + error code + extended error code
 	mutable LastError m_lastError;
 private:
