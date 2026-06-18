@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include "helpers/Color.h"
+#include "helpers/Enum.h"
 #include "helpers/Exception.h"
 #include "helpers/HomeDir.h"
 #include "helpers/LastError.h"
@@ -87,7 +88,40 @@ void testKeys()
 
 } // namespace
 
+enum class TestEnum : unsigned {
+	NONE	= 0,
+	VAL1	= 1 << 0,
+	VAL1a	= 1 << 0,
+	VAL2	= 1 << 1,
+	VAL3	= 1 << 2,
+};
+ENABLE_BITMASK_OPERATORS(TestEnum);
+
 namespace {
+
+void testEnum()
+{
+	static_assert((TestEnum::VAL1 & TestEnum::VAL1a) != TestEnum::NONE);
+	{
+		const constexpr auto flags = TestEnum::VAL1 | TestEnum::VAL2;
+		static_assert(hasFlag(flags, TestEnum::VAL1));
+		static_assert(hasFlag(flags, TestEnum::VAL2));
+		static_assert(!hasFlag(flags, TestEnum::VAL3));
+	}
+	{
+		auto flags = TestEnum::NONE;
+
+		flags |= TestEnum::VAL1;
+		assert(flags == TestEnum::VAL1);
+		flags |= TestEnum::VAL3;
+		assert(flags == (TestEnum::VAL1 | TestEnum::VAL3));
+		assert(hasFlag(flags, TestEnum::VAL1));
+		assert(hasFlag(flags, TestEnum::VAL3));
+
+		flags &= ~TestEnum::VAL1;
+		assert(flags == TestEnum::VAL3);
+	}
+}
 
 void testException()
 {
@@ -342,6 +376,7 @@ int main(int argc, char **argv)
 {
 	assert(argc > 1);
 	testColor();
+	testEnum();
 	testException();
 	testHomeDir();
 	testLastError();
