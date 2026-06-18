@@ -29,9 +29,14 @@ int SQLConn::busyHandler(void *, int count)
 bool SQLConn::openDB(const std::filesystem::path &dbFile, unsigned int flags) noexcept
 {
 	sqlite3 *sql;
-	int openFlags = SQLITE_OPEN_READWRITE;
+	int openFlags = 0;
 
 	m_flags = flags;
+
+	if (flags & OpenFlags::READ_ONLY)
+		openFlags |= SQLITE_OPEN_READONLY;
+	else
+		openFlags |= SQLITE_OPEN_READWRITE;
 
 	if (flags & OpenFlags::CREATE)
 		openFlags |= SQLITE_OPEN_CREATE;

@@ -20,6 +20,7 @@ enum OpenFlags : unsigned {
 	CREATE				= 1 << 0,
 	NO_FOREIGN_KEY			= 1 << 1,
 	ERROR_ON_UNIQUE_CONSTRAINT	= 1 << 2,
+	READ_ONLY			= 1 << 3,
 };
 
 /**
