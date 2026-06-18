@@ -14,29 +14,29 @@ public:
 	using Underlying = std::underlying_type_t<Enum>;
 
 	/// @brief Iterator class to iterate over enum values
-        struct iterator {
+	struct iterator {
 		/// @brief Current value of the iterator
-                Underlying v;
+		Underlying v;
 
 		/// @brief Dereference operator to get the current enum value
-                Enum operator*() const { return static_cast<Enum>(v); }
+		Enum operator*() const { return static_cast<Enum>(v); }
 
 		/// @brief Pre-increment operator to move to the next enum value
-                iterator &operator++() {
-                        ++v;
-                        return *this;
-                }
+		iterator &operator++() {
+			++v;
+			return *this;
+		}
 
 		/// @brief Equality operator to compare two iterators
-                bool operator==(const iterator &other) const { return v == other.v; }
+		bool operator==(const iterator &other) const { return v == other.v; }
 		/// @brief Inequality operator to compare two iterators
-                bool operator!=(const iterator &other) const { return v != other.v; }
-        };
+		bool operator!=(const iterator &other) const { return v != other.v; }
+	};
 
 	/// @brief Returns an iterator to the beginning of the enum range
-        iterator begin() const { return { static_cast<Underlying>(Enum::First) }; }
+	iterator begin() const { return { static_cast<Underlying>(Enum::First) }; }
 	/// @brief Returns an iterator to the end of the enum range
-        iterator end() const { return { static_cast<Underlying>(Enum::Last) + 1 }; }
+	iterator end() const { return { static_cast<Underlying>(Enum::Last) + 1 }; }
 };
 
 }
