@@ -88,7 +88,7 @@ PYBIND11_MODULE(slkerncvs, m)
 	CC.def(py::init([](const std::string &repoPath, const std::string &rev) {
 			auto ret = CollectConfigs::create(repoPath, rev);
 			return ret;
-		}), "Parse configs into CollectConfigs")
+		}), py::arg("repoPath"), py::arg("rev"), "Parse configs into CollectConfigs")
 		.def("get_arch_map", &CollectConfigs::getArchMap,
 		     py::return_value_policy::reference_internal,
 		     "Obtain arch->flavor->config map")
