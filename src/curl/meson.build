@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-curl_lib = dependency('libcurl')
-
 public_headers += [
     'curl/Curl.h',
 ]

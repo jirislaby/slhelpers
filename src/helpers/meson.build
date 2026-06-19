@@ -18,7 +18,6 @@ public_headers += [
   'helpers/Views.h',
 ]
 
-ssh_lib = dependency('libssh')
 slhelpers = library('slhelpers++', [
     'Process.cpp',
     'SSH.cpp',

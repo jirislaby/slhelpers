@@ -24,6 +24,12 @@ if pybind11.found()
   endforeach
 endif
 
+pcre2_lib = dependency('libpcre2-8')
+git2_lib = dependency('libgit2')
+curl_lib = dependency('libcurl')
+ssh_lib = dependency('libssh')
+sqlite3_lib = dependency('sqlite3')
+
 subdir('src')
 
 subdir('include')

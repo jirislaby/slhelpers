@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-git2_lib = dependency('libgit2')
 # libgit's *_INIT produce those
 cpp_args = [ '-Wno-missing-field-initializers' ]
 

@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-sqlite3_lib = dependency('sqlite3')
-
 public_headers += [
     'sqlite/SQLConn.h',
     'sqlite/SQLiteSmart.h',
