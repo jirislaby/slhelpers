@@ -3,6 +3,7 @@
 public_headers += [
   'kerncvs/Branches.h',
   'kerncvs/CollectConfigs.h',
+  'kerncvs/LDAP.h',
   'kerncvs/Maintainers.h',
   'kerncvs/Patch.h',
   'kerncvs/PatchesAuthors.h',
@@ -16,6 +17,7 @@ public_headers += [
 slkerncvs = library('slkerncvs++', [
     'Branches.cpp',
     'CollectConfigs.cpp',
+    'LDAP.cpp',
     'Maintainers.cpp',
     'Patch.cpp',
     'PatchesAuthors.cpp',
@@ -24,7 +26,7 @@ slkerncvs = library('slkerncvs++', [
     'SupportedConf.cpp',
   ],
   include_directories : global_inc,
-  dependencies: [ slcurl_lib, slgit_lib, slpcre2_lib ],
+  dependencies: [ INIReader_lib, libldapcpp_lib, slcurl_lib, slgit_lib, slpcre2_lib ],
   install: true,
   version: meson.project_version(),
 )

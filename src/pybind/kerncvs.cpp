@@ -9,6 +9,7 @@
 
 #include "kerncvs/Branches.h"
 #include "kerncvs/CollectConfigs.h"
+#include "kerncvs/LDAP.h"
 #include "kerncvs/Patch.h"
 #include "kerncvs/RPMConfig.h"
 #include "kerncvs/SupportedConf.h"
@@ -105,6 +106,23 @@ PYBIND11_MODULE(slkerncvs, m)
 		     "Obtain config for a branch")
 		.def("__repr__", [](const CollectConfigs &cc) {
 		     return "<CollectConfigs arch#=" + std::to_string(cc.getArchMap().size()) + '>';
+		     });
+
+	// ============= LDAP =============
+
+	py::class_<LDAPUsers> ldap(m, "LDAPUsers");
+	ldap.def(py::init([](const std::string &dn, const std::string &password) {
+			  return LDAPUsers(dn, password);
+			  }),
+		    py::arg("dn"), py::arg("password"),
+		    "Obtain LDAP users by binding to LDAP with the specified DN and password")
+		.def("users", &LDAPUsers::userSet, "Obtain users as a set",
+		     py::return_value_policy::reference_internal)
+		.def("__contains__", &LDAPUsers::contains, py::arg("key"))
+		.def("__repr__", [](const LDAPUsers &ldap) {
+		     std::stringstream ss;
+		     ss << "<LDAP users#=" << ldap.userSet().size() << '>';
+		     return ss.str();
 		     });
 
 	// ============= Patch =============

@@ -29,6 +29,8 @@ git2_lib = dependency('libgit2')
 curl_lib = dependency('libcurl')
 ssh_lib = dependency('libssh')
 sqlite3_lib = dependency('sqlite3')
+INIReader_lib = dependency('INIReader')
+libldapcpp_lib = meson.get_compiler('cpp').find_library('libldapcpp')
 
 subdir('src')
 
