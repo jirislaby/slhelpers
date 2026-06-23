@@ -255,8 +255,9 @@ void testSupportedConf()
 	       SupportState::ExternallySupported);
 }
 
-std::string generatePatch(const std::string_view &ref, const std::string_view &ack,
-			  const std::vector<std::string_view> &files)
+std::string generatePatch(std::string_view ref, std::string_view ack,
+			  const std::vector<std::string_view> &files,
+			  std::string_view subsys = {})
 {
 	std::ostringstream ss;
 	ss <<	"From ec50ec378e3fd83bde9b3d622ceac3509a60b6b5 Mon Sep 17 00:00:00 2001\n"
@@ -275,7 +276,10 @@ std::string generatePatch(const std::string_view &ref, const std::string_view &a
 		"Signed-off-by: Some Author <author@domain.org>\n"
 		"Message-id: <some_20250710_id@domain.org>\n"
 		"Signed-off-by: Some Signer <signer@domain.net>\n"
-		"Acked-by: Some User <" << ack << ">\n"
+		"Acked-by: Some User   \t<" << ack << ">";
+	if (!subsys.empty())
+		ss << "\t[" << subsys << ']';
+	ss << "\n"
 		"---\n";
 	for (const auto &file: files) {
 		ss <<	"--- a/" << file << "\n"
@@ -317,6 +321,13 @@ void testProcessPatch()
 	{
 		PatchesAuthors PA;
 		PA.processPatch(patch, generatePatch("bsc#123456", ack, {file}));
+		assert(PA.m_HoH[ack][file] == 1);
+		assert(PA.m_HoHReal[ack][file] == 1);
+	}
+	{
+		PatchesAuthors PA;
+
+		PA.processPatch(patch, generatePatch("bsc#123456", ack, {file}, "tty"));
 		assert(PA.m_HoH[ack][file] == 1);
 		assert(PA.m_HoHReal[ack][file] == 1);
 	}

@@ -1,51 +1,178 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 #include <iostream>
-#include <mutex>
 #include <set>
+#include <string_view>
 
 #include "git/Blob.h"
 #include "git/Commit.h"
 #include "git/Repo.h"
 #include "git/Tree.h"
 #include "helpers/String.h"
+#include "helpers/SUSE.h"
 #include "kerncvs/PatchesAuthors.h"
-#include "pcre2/PCRE2.h"
 
 using namespace SlKernCVS;
 
+constexpr std::string_view PatchesAuthors::parseEmail(std::string_view line, std::size_t atSignPos)
+{
+	auto start = line.find_last_of(" \t", atSignPos);
+	if (start == std::string_view::npos)
+		start = 0;
+	else
+		start++;
+
+	auto end = line.find_first_of(" \t", atSignPos);
+	if (end == std::string_view::npos)
+		end = line.size();
+
+	line = line.substr(start, end - start);
+
+	if (line.starts_with('<') && line.ends_with('>'))
+		line = line.substr(1, line.size() - 2);
+
+	return line;
+}
+
+constexpr std::optional<std::string_view> PatchesAuthors::isInterestingLine(std::string_view line)
+{
+	line = SlHelpers::String::trim(line);
+
+	constexpr const std::string_view interestingPrefixes[] = {
+		"From:",
+		"Cc:",
+		"Co-developed-by:",
+		"Acked:",
+		"Acked-by:",
+		"Modified-by:",
+		"Reviewed-by:",
+		"Reviewed-and-tested-by:",
+		"Signed-off-by:"
+	};
+
+	for (const auto &prefix: interestingPrefixes)
+		if (SlHelpers::String::iStartsWith(line, prefix)) {
+			line = SlHelpers::String::trim(line.substr(prefix.size()));
+
+			for (const auto &email: SlHelpers::SUSE::suseDomains) {
+				auto pos = SlHelpers::String::iFind(line, email);
+				if (pos != std::string_view::npos)
+					return parseEmail(line, pos);
+			}
+
+			break;
+		}
+
+	return std::nullopt;
+}
+
+constexpr bool PatchesAuthors::isGitFixes(std::string_view line)
+{
+	constexpr const std::string_view references("References:");
+	if (!SlHelpers::String::iStartsWith(line, references))
+		return false;
+
+	line.remove_prefix(references.size());
+
+	auto pos = SlHelpers::String::iFind(line, "stable-");
+	if (pos != std::string_view::npos && pos + 7 < line.size() &&
+	    std::isdigit(static_cast<unsigned char>(line[pos + 7])))
+		return true;
+
+	constexpr const std::string_view gitFixes[] = {
+		"git-fixes",
+		"git fixes",
+		"stable-fixes",
+		"stable fixes",
+		"bnc#1012628",
+		"bsc#1012628",
+		"bnc#1051510",
+		"bsc#1051510",
+		"bnc#1151927",
+		"bsc#1151927",
+		"bnc#1152489",
+		"bsc#1152489",
+	};
+
+	for (const auto &gf : gitFixes)
+		if (SlHelpers::String::iFind(line, gf) != std::string_view::npos)
+			return true;
+
+	return false;
+}
+
+constexpr bool PatchesAuthors::isReallyEmail(std::string_view line)
+{
+	if (line.starts_with('['))
+		return false;
+	if (line.ends_with(':'))
+		return false;
+
+	constexpr const std::string_view invalidStarts[] = {
+		"Debugged-by:",
+		"Evaluated-by:",
+		"Improvements-by:",
+		"Link:",
+		"Message-ID:",
+		"Patch-mainline:",
+		"Reported-and-tested-by:",
+		"Reported-by:",
+		"Return-path:",
+		"Suggested-by:",
+		"Tested-by:",
+	};
+
+	for (const auto &invalidStart: invalidStarts)
+		if (SlHelpers::String::iStartsWith(line, invalidStart))
+			return false;
+
+
+	constexpr const std::string_view invalidSubstrs[] = {
+		"lore.kernel",
+		"lkml.kernel",
+		"patchwork.ozlabs",
+		"thanks",
+	};
+
+	for (const auto &invalidSubstr: invalidSubstrs)
+		if (SlHelpers::String::iFind(line, invalidSubstr) != std::string_view::npos)
+			return false;
+
+	return true;
+}
+
+constexpr bool PatchesAuthors::isValidRef(std::string_view ref)
+{
+	constexpr const std::string_view validRefs[] = {
+		"FATE#",
+		"CVE-",
+		"jsc#",
+		"XSA-"
+	};
+
+	for (const auto &validRef : validRefs)
+		if (SlHelpers::String::iFind(ref, validRef) != std::string_view::npos)
+			return true;
+
+	return false;
+}
+
 int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::string &content)
 {
-	static SlPCRE2::PCRE2 REInteresting;
-	static SlPCRE2::PCRE2 REFalse;
-	static SlPCRE2::PCRE2 REGitFixes;
-	static SlPCRE2::PCRE2 REInvalRef;
-	static std::once_flag flag;
-
-	std::call_once(flag, [](){
-		REInteresting.compile("^\\s*(?:From|Cc|Co-developed-by|Acked|Acked-by|Modified-by|Reviewed-by|Reviewed-and-tested-by|Signed-off-by):.*[\\s<]([a-z0-9_.-]+\\@suse\\.[a-z]+)",
-				      PCRE2_CASELESS);
-		REFalse.compile("(?:lore|lkml)\\.kernel|patchwork\\.ozlabs|^\\[|^(?:Debugged-by|Evaluated-by|Improvements-by|Link|Message-ID|Patch-mainline|Reported-and-tested-by|Reported-by|Return-path|Suggested-by|Tested-by):|thanks|:$",
-				PCRE2_CASELESS);
-		REGitFixes.compile("^References:.*(?:(?:git|stable)[- ]fixes|stable-\\d|b[ns]c#(?:1012628|1051510|1151927|1152489))",
-				   PCRE2_CASELESS);
-		REInvalRef.compile("FATE#|CVE-|jsc#|XSA-", PCRE2_CASELESS);
-	});
-
 	std::set<std::string> patchEmails;
 	std::set<std::string> patchRefs;
 	bool gitFixes = false;
 	SlHelpers::GetLine gl(content);
 	while (auto lineOpt = gl.get()) {
 		auto line = *lineOpt;
-		auto m = REInteresting.match(line);
-		if (m > 1) {
-			patchEmails.emplace(REInteresting.matchByIdx(line, 1));
+		auto m = isInterestingLine(line);
+		if (m) {
+			patchEmails.emplace(*m);
 			continue;
 		}
 		if (line.starts_with("---"))
 			break;
-		if (REGitFixes.match(line) > 0) {
+		if (isGitFixes(line)) {
 			gitFixes = true;
 		} else if (dumpRefs) {
 			static constexpr const std::string_view references("References:");
@@ -56,13 +183,13 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		}
 
 		if (reportUnhandled && line.find("@suse.") != std::string::npos &&
-				REFalse.match(line) == PCRE2_ERROR_NOMATCH)
+		    isReallyEmail(line))
 			std::cerr << file << ": unhandled e-mail in '" << line << "'\n";
 	}
 
 	for (const auto &ref : patchRefs)
 		for (const auto &email : patchEmails)
-			if (REInvalRef.match(ref) == PCRE2_ERROR_NOMATCH)
+			if (!isValidRef(ref))
 				m_HoHRefs[email][ref]++;
 
 	while (auto lineOpt = gl.get()) {

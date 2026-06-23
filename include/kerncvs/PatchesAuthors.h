@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <optional>
 #include <string>
 
 namespace SlGit {
@@ -53,6 +54,12 @@ public:
 private:
 	PatchesAuthors() : repo(nullptr), dumpRefs(false), reportUnhandled(false) {}
 	friend void testProcessPatch();
+
+	static constexpr std::string_view parseEmail(std::string_view line, std::size_t atSignPos);
+	static constexpr std::optional<std::string_view> isInterestingLine(std::string_view line);
+	static constexpr bool isGitFixes(std::string_view line);
+	static constexpr bool isReallyEmail(std::string_view line);
+	static constexpr bool isValidRef(std::string_view ref);
 
 	int processPatch(const std::filesystem::path &file, const std::string &content);
 
