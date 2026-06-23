@@ -2,6 +2,7 @@
 
 #include <INIReader.h>
 #include <LDAPConnection.h>
+#include <utility>
 
 #include "curl/Curl.h"
 #include "helpers/Exception.h"
@@ -12,6 +13,32 @@ using RunEx = SlHelpers::RuntimeException;
 using SlHelpers::raise;
 
 using namespace SlKernCVS;
+
+void LDAPUsers::addUserMapCond(UserMap &userMap, std::string &&logname, std::string &&email)
+{
+	auto it = email.find('@');
+	if (it == std::string::npos)
+		return;
+
+	auto username = email.substr(0, it);
+	if (logname != username)
+		userMap.emplace(std::move(logname), std::move(username));
+}
+
+void LDAPUsers::walkSection(UserMap &userMap, const INIReader &reader, const std::string &section,
+			    bool lognameIsKey)
+{
+	for (auto &key: reader.Keys(section)) {
+		auto val = reader.Get(section, key, "");
+		if (val.empty())
+			continue;
+
+		if (lognameIsKey)
+			addUserMapCond(userMap, std::move(key), std::move(val));
+		else
+			addUserMapCond(userMap, std::move(val), std::move(key));
+	}
+}
 
 LDAPUsers::UserMap LDAPUsers::getMap()
 {
@@ -27,20 +54,8 @@ LDAPUsers::UserMap LDAPUsers::getMap()
 
 	UserMap userMap;
 
-	static const std::string section {"mail2logname"};
-	for (const auto &email: reader.Keys(section)) {
-		auto logname = reader.Get(section, email, "");
-		if (logname.empty())
-			continue;
-
-		auto it = email.find('@');
-		if (it == std::string::npos)
-			continue;
-
-		auto username = email.substr(0, it);
-		if (email != username)
-			userMap.emplace(std::move(logname), std::move(username));
-	}
+	walkSection(userMap, reader, "logname2mail", true);
+	walkSection(userMap, reader, "mail2logname", false);
 
 	return userMap;
 }

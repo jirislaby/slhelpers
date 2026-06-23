@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+class INIReader;
+
 namespace SlKernCVS {
 
 /// @brief Class to fetch LDAP users.
@@ -32,6 +34,9 @@ private:
 
 	UserSet m_userSet;
 
+	static void walkSection(UserMap &userMap, const INIReader &reader,
+				const std::string &section, bool lognameIsKey);
+	static void addUserMapCond(UserMap &userMap, std::string &&logname, std::string &&email);
 	UserMap getMap();
 	void buildSet(const std::string &dn, const std::string &password, const UserMap &userMap);
 
