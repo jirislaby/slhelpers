@@ -93,29 +93,6 @@ public:
 	}
 
 	/**
-	 * @brief Split a string into vector of strings, DO NOT USE THIS
-	 * @param str
-	 * @param delim
-	 * @param comment
-	 * @return
-	 */
-	[[deprecated]] static std::vector<std::string>
-	split(std::string str, const std::string &delim,
-	      const std::optional<char> &comment = std::nullopt) noexcept {
-		std::vector<std::string> res;
-
-		auto tok = ::strtok(str.data(), delim.c_str());
-		while (tok) {
-			if (comment && tok[0] == *comment)
-				break;
-			res.push_back(tok);
-			tok = ::strtok(nullptr, delim.c_str());
-		}
-
-		return res;
-	}
-
-	/**
 	 * @brief Split \p str by \p delim into a vector, ignoring everything after \p comment
 	 * @param str String to parse
 	 * @param delim Delimeter to split by
