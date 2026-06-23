@@ -96,10 +96,32 @@ void testIFind()
 	assert(String::iFind("abc", "ABC") == 0);
 	assert(String::iFind("abc", "abcd") == std::string_view::npos);
 	assert(String::iFind("abc", "x") == std::string_view::npos);
+	assert(String::iFind("ABC", "b") == 1);
 
 	assert(String::iFind(std::string_view("abc"), "b") == 1);
 	assert(String::iFind(std::string_view("abc"), std::string("b")) == 1);
 	assert(String::iFind(std::string_view("abc"), std::string_view("b")) == 1);
+}
+
+void testIStartsWith()
+{
+	assert(String::iStartsWith("", ""));
+	assert(String::iStartsWith("abc", ""));
+	assert(String::iStartsWith("abc", "a"));
+	assert(String::iStartsWith("abc", "A"));
+	assert(!String::iStartsWith("abc", "b"));
+	assert(!String::iStartsWith("abc", "B"));
+	assert(String::iStartsWith("abc", "abc"));
+	assert(String::iStartsWith("abc", "ABC"));
+	assert(!String::iStartsWith("abc", "abcd"));
+	assert(!String::iStartsWith("abc", "x"));
+	assert(String::iStartsWith("ABC", "a"));
+
+	assert(String::iStartsWith(std::string_view("abc"), "A"));
+	assert(!String::iStartsWith(std::string_view("abc"), "b"));
+	assert(String::iStartsWith(std::string_view("abc"), std::string("A")));
+	assert(!String::iStartsWith(std::string_view("abc"), std::string("b")));
+	assert(!String::iStartsWith(std::string_view("abc"), std::string_view("b")));
 }
 
 void testJoin()
@@ -170,6 +192,7 @@ int main()
 	testIsHex();
 	testTrim();
 	testIFind();
+	testIStartsWith();
 	testJoin();
 	testGetLine();
 

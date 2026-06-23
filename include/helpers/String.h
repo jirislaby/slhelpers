@@ -8,6 +8,7 @@
 #include <cctype>
 #include <functional>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -72,6 +73,11 @@ public:
 		return num;
 	}
 
+	/// @brief Compare two characters ignoring case
+	static bool constexpr iEqual(unsigned char a, unsigned char b) noexcept {
+		return std::tolower(a) == std::tolower(b);
+	}
+
 	/**
 	 * @brief Like string::find() but ignoring case
 	 * @param str string to search in
@@ -82,14 +88,39 @@ public:
 	iFind(std::string_view str, std::string_view sub) noexcept {
 		if (str.empty() && sub.empty())
 			return 0;
-		const auto it = std::search(str.begin(), str.end(), sub.begin(), sub.end(),
-				   [](char ch1, char ch2) {
-			return std::tolower(static_cast<unsigned char>(ch1)) ==
-					      std::tolower(static_cast<unsigned char>(ch2));
-		});
+		const auto it = std::search(str.begin(), str.end(), sub.begin(), sub.end(), iEqual);
 		if (it == str.end())
 			return npos;
 		return it - str.begin();
+	}
+
+	/**
+	 * @brief Like string::starts_with() but ignoring case
+	 * @param str string to search in
+	 * @param prefix string to search for
+	 * @return true if \p str starts with \p prefix, false otherwise
+	 */
+	static constexpr bool
+	iStartsWith(std::string_view str, std::string_view prefix) noexcept {
+		if (str.size() < prefix.size())
+			return false;
+
+		return std::ranges::equal(str | std::views::take(prefix.size()), prefix, iEqual);
+	}
+
+	/**
+	 * @brief Like string::ends_with() but ignoring case
+	 * @param str string to search in
+	 * @param suffix string to search for
+	 * @return true if \p str ends with \p suffix, false otherwise
+	 */
+	static constexpr bool
+	iEndsWith(std::string_view str, std::string_view suffix) noexcept {
+		if (str.size() < suffix.size())
+			return false;
+
+		return std::ranges::equal(str | std::views::drop(str.size() - suffix.size()),
+					  suffix, iEqual);
 	}
 
 	/**
