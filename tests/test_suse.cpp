@@ -13,6 +13,7 @@ void testSUSE()
 	assert(SUSE::isSUSEAddress("franta@suse.com"));
 	assert(SUSE::isSUSEAddress("franta@suse.cz"));
 	assert(SUSE::isSUSEAddress("franta@suse.de"));
+	assert(SUSE::isSUSEAddress("franta@SUSE.com"));
 	assert(!SUSE::isSUSEAddress("franta@domain.com"));
 }
 
