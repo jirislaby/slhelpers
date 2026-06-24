@@ -75,10 +75,10 @@ constexpr bool PatchesAuthors::isGitFixes(std::string_view line)
 		return true;
 
 	constexpr const std::string_view gitFixes[] = {
-		"git-fixes",
-		"git fixes",
-		"stable-fixes",
-		"stable fixes",
+		"git-fix",
+		"git fix",
+		"stable-fix",
+		"stable fix",
 		"bnc#1012628",
 		"bsc#1012628",
 		"bnc#1051510",
@@ -139,10 +139,16 @@ constexpr bool PatchesAuthors::isReallyEmail(std::string_view line)
 constexpr bool PatchesAuthors::isValidRef(std::string_view ref)
 {
 	constexpr const std::string_view validRefs[] = {
-		"FATE#",
+		"bnc#",
+		"boo#",
+		"bsc#",
 		"CVE-",
+		"FATE#",
 		"jsc#",
-		"XSA-"
+		"kabi",
+		"ltc#",
+		"poo#",
+		"XSA-",
 	};
 
 	for (const auto &validRef : validRefs)
