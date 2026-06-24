@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
 #include <iostream>
 #include <set>
 
+#include "git/Commit.h"
+#include "git/Repo.h"
 #include "helpers/Color.h"
 #include "helpers/Misc.h"
 
@@ -20,11 +23,10 @@ using Clr = SlHelpers::Color;
 
 namespace {
 
-void testCollectConfigs()
+void testCollectConfigs(const std::optional<std::filesystem::path> kgit)
 {
-	auto kgit = SlHelpers::Env::get<std::filesystem::path>("KSOURCE_GIT");
 	if (!kgit) {
-		Clr(std::cerr, Clr::YELLOW) << "KSOURCE_GIT not set, skipping testCollectConfigs";
+		Clr(std::cerr, Clr::YELLOW) << "KSOURCE_GIT not set, skipping " << __func__;
 		return;
 	}
 
@@ -167,6 +169,44 @@ void testPatch()
 	assert(p->paths().contains("a.txt"));
 	assert(p->paths().contains("b.txt"));
 	assert(p->paths().contains("c.txt"));
+}
+
+bool pathStartsWith(const std::filesystem::path &path, const std::filesystem::path &prefix)
+{
+	auto [path_it, prefix_it] = std::ranges::mismatch(path, prefix);
+
+	return prefix_it == prefix.end();
+}
+
+void testPatchesAuthors(const std::optional<std::filesystem::path> kgit)
+{
+	if (!kgit) {
+		Clr(std::cerr, Clr::YELLOW) << "KSOURCE_GIT not set, skipping " << __func__;
+		return;
+	}
+
+	auto repo = SlGit::Repo::open(*kgit);
+	assert(repo);
+
+	auto SL16_0 = repo->commitRevparseSingle("origin/SL-16.0");
+	assert(SL16_0);
+
+	auto hasJslaby = false;
+	auto hasTiwai = false;
+	PatchesAuthors PA{*repo, false, false};
+	PA.processAuthors(*SL16_0, [](const std::string &/*email*/) {
+		return true;
+	}, [&hasJslaby, &hasTiwai](const std::string &email, std::filesystem::path &&file,
+	      unsigned /*gitFixes*/, unsigned /*realFixes*/) {
+		if (email.starts_with("jslaby@") && pathStartsWith(file, "drivers/tty"))
+			hasJslaby = true;
+		if (email.starts_with("tiwai@") && pathStartsWith(file, "sound"))
+			hasTiwai = true;
+		return true;
+	});
+
+	assert(hasJslaby);
+	assert(hasTiwai);
 }
 
 void testRPMConfig()
@@ -345,11 +385,15 @@ void testProcessPatch()
 
 int main()
 {
-	testCollectConfigs();
+	auto kgit = SlHelpers::Env::get<std::filesystem::path>("KSOURCE_GIT");
+
 	testBranches();
+	testCollectConfigs(kgit);
 	testPatch();
+	testPatchesAuthors(kgit);
 	testRPMConfig();
 	testSupportedConf();
+
 	testProcessPatch();
 
 	return 0;
