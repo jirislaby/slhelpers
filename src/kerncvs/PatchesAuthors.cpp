@@ -68,12 +68,6 @@ constexpr std::optional<std::string_view> PatchesAuthors::isInterestingLine(std:
 
 constexpr bool PatchesAuthors::isGitFixes(std::string_view line)
 {
-	constexpr const std::string_view references("References:");
-	if (!SlHelpers::String::iStartsWith(line, references))
-		return false;
-
-	line.remove_prefix(references.size());
-
 	auto pos = SlHelpers::String::iFind(line, "stable-");
 	if (pos != std::string_view::npos && pos + 7 < line.size() &&
 	    std::isdigit(static_cast<unsigned char>(line[pos + 7])))
@@ -172,14 +166,17 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		}
 		if (line.starts_with("---"))
 			break;
-		if (isGitFixes(line)) {
-			gitFixes = true;
-		} else if (dumpRefs) {
-			static constexpr const std::string_view references("References:");
-			if (line.starts_with(references))
-				for (const auto &ref: SlHelpers::String::splitSV(line.substr(references.size()),
-									" \t,;"))
+
+		constexpr const std::string_view references("References:");
+		if (SlHelpers::String::iStartsWith(line, references)) {
+			line.remove_prefix(references.size());
+
+			if (isGitFixes(line)) {
+				gitFixes = true;
+			} else if (dumpRefs) {
+				for (const auto &ref: SlHelpers::String::splitSV(line, " \t,;"))
 					patchRefs.emplace(ref);
+			}
 		}
 
 		if (reportUnhandled && line.find("@suse.") != std::string::npos &&
