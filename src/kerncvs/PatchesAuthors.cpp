@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <iomanip>
 #include <iostream>
 #include <set>
 #include <string_view>
@@ -238,9 +239,9 @@ bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUse
 
 	for (const auto &pair : m_HoHRefs)
 		for (const auto &refPair : pair.second)
-			if (refPair.second > 100) {
+			if (refPair.second) {
 				std::cout << std::setw(30) << pair.first <<
-					     std::setw(40) << refPair.first <<
+					     std::setw(40) << std::quoted(refPair.first) <<
 					     std::setw(5) << refPair.second << '\n';
 			}
 
