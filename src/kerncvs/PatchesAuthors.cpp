@@ -281,25 +281,21 @@ bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUse
 	    }))
 		return false;
 
-	for (const auto &pair : m_HoHRefs)
-		for (const auto &refPair : pair.second)
-			if (refPair.second) {
-				std::cout << std::setw(30) << pair.first <<
-					     std::setw(40) << std::quoted(refPair.first) <<
-					     std::setw(5) << refPair.second << '\n';
+	for (const auto &[email, map]: m_HoHRefs)
+		for (const auto &[ref, count]: map)
+			if (count) {
+				std::cout << std::setw(30) << email <<
+					     std::setw(40) << std::quoted(ref) <<
+					     std::setw(5) << count << '\n';
 			}
 
-	for (const auto &pair : m_HoH) {
-		const auto &email = pair.first;
-		const auto &realMap = m_HoHReal.at(email);
+	for (const auto &[email, map]: m_HoH) {
 		if (!insertUser(email))
 			return false;
 
-		for (const auto &pairSrc : pair.second) {
-			std::filesystem::path path(pairSrc.first);
-
-			if (!insertUFMap(email, std::move(path), pairSrc.second,
-					 realMap.at(pairSrc.first)))
+		const auto &realMap = m_HoHReal.at(email);
+		for (const auto &[path, count]: map) {
+			if (!insertUFMap(email, path, count, realMap.at(path)))
 				return false;
 		}
 	}
