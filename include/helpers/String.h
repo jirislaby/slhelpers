@@ -148,7 +148,7 @@ public:
 			end = str.find_first_of(delim, start);
 			const auto len = (end == npos) ? (str.length() - start) : (end - start);
 			auto token = str.substr(start, len);
-			if (comment && !token.empty() && token[0] == *comment)
+			if (comment && token.starts_with(*comment))
 				break;
 
 			res.push_back(token);
