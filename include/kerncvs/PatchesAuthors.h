@@ -7,6 +7,8 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace SlGit {
 class Commit;
@@ -60,6 +62,10 @@ private:
 	static constexpr bool isGitFixes(std::string_view line);
 	static constexpr bool isReallyEmail(std::string_view line);
 	static constexpr bool isValidRef(std::string_view ref);
+	void storeParens(const char *&parenStart, std::string_view ref,
+			 const std::vector<std::string> &patchEmails);
+	bool consumeParens(std::string_view ref, const char *&parenStart,
+			   const std::vector<std::string> &patchEmails);
 
 	int processPatch(const std::filesystem::path &file, const std::string &content);
 

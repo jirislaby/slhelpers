@@ -160,6 +160,34 @@ constexpr bool PatchesAuthors::isValidRef(std::string_view ref)
 	return false;
 }
 
+void PatchesAuthors::storeParens(const char *&parenStart, std::string_view ref,
+				 const std::vector<std::string> &patchEmails)
+{
+	const std::string::size_type fullRefLen = ref.data() - parenStart + ref.size();
+	std::string fullRef{parenStart, fullRefLen};
+
+	for (const auto &email: patchEmails)
+		m_HoHRefs[email][fullRef]++;
+
+	parenStart = nullptr;
+}
+
+bool PatchesAuthors::consumeParens(std::string_view ref, const char *&parenStart,
+				   const std::vector<std::string> &patchEmails)
+{
+	if (ref.starts_with('('))
+		parenStart = ref.data();
+
+	if (parenStart) {
+		if (ref.find(')') != std::string_view::npos)
+			storeParens(parenStart, ref, patchEmails);
+
+		return true;
+	}
+
+	return false;
+}
+
 int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::string &content)
 {
 	std::vector<std::string> patchEmails;
@@ -193,10 +221,18 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 			std::cerr << file << ": unhandled e-mail in '" << line << "'\n";
 	}
 
-	for (const auto &ref : patchRefs)
+	const char *parenStart = nullptr;
+	for (const auto &ref : patchRefs) {
+		if (consumeParens(ref, parenStart, patchEmails))
+			continue;
+
 		for (const auto &email : patchEmails)
 			if (!isValidRef(ref))
 				m_HoHRefs[email][std::string(ref)]++;
+	}
+
+	if (parenStart)
+		storeParens(parenStart, patchRefs.back(), patchEmails);
 
 	while (auto lineOpt = gl.get()) {
 		auto line = *lineOpt;
