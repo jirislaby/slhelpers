@@ -2,8 +2,9 @@
 
 #include <iomanip>
 #include <iostream>
-#include <set>
+#include <string>
 #include <string_view>
+#include <vector>
 
 #include "git/Blob.h"
 #include "git/Commit.h"
@@ -161,15 +162,15 @@ constexpr bool PatchesAuthors::isValidRef(std::string_view ref)
 
 int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::string &content)
 {
-	std::set<std::string> patchEmails;
-	std::set<std::string> patchRefs;
+	std::vector<std::string> patchEmails;
+	std::vector<std::string_view> patchRefs;
 	bool gitFixes = false;
 	SlHelpers::GetLine gl(content);
 	while (auto lineOpt = gl.get()) {
 		auto line = *lineOpt;
 		auto m = isInterestingLine(line);
 		if (m) {
-			patchEmails.emplace(*m);
+			patchEmails.emplace_back(*m);
 			continue;
 		}
 		if (line.starts_with("---"))
@@ -182,8 +183,8 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 			if (isGitFixes(line)) {
 				gitFixes = true;
 			} else if (dumpRefs) {
-				for (const auto &ref: SlHelpers::String::splitSV(line, " \t,;"))
-					patchRefs.emplace(ref);
+				for (auto &ref: SlHelpers::String::splitSV(line, " \t,;"))
+					patchRefs.emplace_back(ref);
 			}
 		}
 
@@ -195,7 +196,7 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 	for (const auto &ref : patchRefs)
 		for (const auto &email : patchEmails)
 			if (!isValidRef(ref))
-				m_HoHRefs[email][ref]++;
+				m_HoHRefs[email][std::string(ref)]++;
 
 	while (auto lineOpt = gl.get()) {
 		auto line = *lineOpt;
