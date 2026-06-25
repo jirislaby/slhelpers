@@ -7,14 +7,19 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "../helpers/String.h"
+
 class INIReader;
 
 namespace SlKernCVS {
 
 /// @brief Class to fetch LDAP users.
 class LDAPUsers {
-	using UserSet = std::unordered_set<std::string>;
 public:
+	/// @brief Set of users.
+	using UserSet = std::unordered_set<std::string, SlHelpers::String::Hash,
+	      SlHelpers::String::Eq>;
+
 	LDAPUsers() = delete;
 	/**
 	 * @brief Construct a new LDAPUsers object.
