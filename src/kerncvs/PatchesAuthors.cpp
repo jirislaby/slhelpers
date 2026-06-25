@@ -144,6 +144,7 @@ constexpr bool PatchesAuthors::isValidRef(std::string_view ref)
 		"bsc#",
 		"CVE-",
 		"FATE#",
+		"https://",
 		"jsc#",
 		"kabi",
 		"ltc#",
