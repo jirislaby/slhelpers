@@ -167,7 +167,7 @@ void PatchesAuthors::storeParens(const char *&parenStart, std::string_view ref,
 	std::string fullRef{parenStart, fullRefLen};
 
 	for (const auto &email: patchEmails)
-		m_HoHRefs[email][fullRef]++;
+		m_emailRefCountMap[email][fullRef]++;
 
 	parenStart = nullptr;
 }
@@ -228,7 +228,7 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 
 		for (const auto &email : patchEmails)
 			if (!isValidRef(ref))
-				m_HoHRefs[email][std::string(ref)]++;
+				m_emailRefCountMap[email][std::string(ref)]++;
 	}
 
 	if (parenStart)
@@ -246,11 +246,9 @@ int PatchesAuthors::processPatch(const std::filesystem::path &file, const std::s
 		if (cfile.starts_with("/dev"))
 			std::cerr << __func__ << ": " << file << ": " << cfile << '\n';
 		for (const auto &email : patchEmails) {
-			m_HoH[email][cfile]++;
-			if (gitFixes)
-				m_HoHReal[email].try_emplace(cfile, 0);
-			else
-				m_HoHReal[email][cfile]++;
+			m_emailFileCountMap[email][cfile].fixes++;
+			if (!gitFixes)
+				m_emailFileCountMap[email][cfile].realFixes++;
 		}
 	}
 
@@ -281,7 +279,7 @@ bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUse
 	    }))
 		return false;
 
-	for (const auto &[email, map]: m_HoHRefs)
+	for (const auto &[email, map]: m_emailRefCountMap)
 		for (const auto &[ref, count]: map)
 			if (count) {
 				std::cout << std::setw(30) << email <<
@@ -289,13 +287,12 @@ bool PatchesAuthors::processAuthors(const SlGit::Commit &commit, const InsertUse
 					     std::setw(5) << count << '\n';
 			}
 
-	for (const auto &[email, map]: m_HoH) {
+	for (const auto &[email, map]: m_emailFileCountMap) {
 		if (!insertUser(email))
 			return false;
 
-		const auto &realMap = m_HoHReal.at(email);
 		for (const auto &[path, count]: map) {
-			if (!insertUFMap(email, path, count, realMap.at(path)))
+			if (!insertUFMap(email, path, count.fixes, count.realFixes))
 				return false;
 		}
 	}

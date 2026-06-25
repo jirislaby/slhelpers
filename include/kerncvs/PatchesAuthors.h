@@ -25,14 +25,12 @@ namespace SlKernCVS {
  */
 class PatchesAuthors {
 public:
-	/// @brief E-mail -> file -> count mapping
-	using Map = std::map<std::string, std::map<std::string, unsigned int>>;
 	/// @brief A callback invoked for e-mail
 	using InsertUser = std::function<bool (const std::string &email)>;
-	/// @brief A callback invoked for e-mail, file, and counts of git-fixes and real changes
+	/// @brief A callback invoked for e-mail, file, and counts of fixes and non-git-fixes
 	using InsertUFMap = std::function<bool (const std::string &email,
 						std::filesystem::path &&file,
-						unsigned gitFixes, unsigned realFixes)>;
+						unsigned fixes, unsigned realFixes)>;
 
 	/**
 	 * @brief PatchesAuthors constructor
@@ -54,6 +52,15 @@ public:
 	bool processAuthors(const SlGit::Commit &commit, const InsertUser &insertUser,
 			    const InsertUFMap &insertUFMap);
 private:
+	struct Counts {
+		unsigned fixes = 0;
+		unsigned realFixes = 0;
+	};
+	/// @brief E-mail -> file -> count mapping
+	using Map = std::map<std::string, std::map<std::string, Counts>>;
+	/// @brief E-mail -> reference -> count mapping
+	using RefMap = std::map<std::string, std::map<std::string, unsigned int>>;
+
 	PatchesAuthors() : repo(nullptr), dumpRefs(false), reportUnhandled(false) {}
 	friend void testProcessPatch();
 
@@ -72,9 +79,8 @@ private:
 	const SlGit::Repo *repo;
 	const bool dumpRefs;
 	const bool reportUnhandled;
-	Map m_HoH;
-	Map m_HoHReal;
-	Map m_HoHRefs;
+	Map m_emailFileCountMap;
+	RefMap m_emailRefCountMap;
 };
 
 }

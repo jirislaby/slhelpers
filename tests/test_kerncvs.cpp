@@ -343,41 +343,40 @@ void testProcessPatch()
 	{
 		PatchesAuthors PA;
 		PA.processPatch(patch, generatePatch("stable-fixes", "noone@nowhere.com", {file}));
-		assert(PA.m_HoH.size() == 0);
-		assert(PA.m_HoHReal[ack][file] == 0);
+		assert(PA.m_emailFileCountMap.size() == 0);
 	}
 	{
 		PatchesAuthors PA;
 		PA.processPatch(patch, generatePatch("stable-fixes", ack, {file}));
-		assert(PA.m_HoH[ack][file] == 1);
-		assert(PA.m_HoHReal[ack][file] == 0);
+		assert(PA.m_emailFileCountMap[ack][file].fixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file].realFixes == 0);
 	}
 	{
 		PatchesAuthors PA;
 		PA.processPatch(patch, generatePatch("git-fixes", ack, {file}));
-		assert(PA.m_HoH[ack][file] == 1);
-		assert(PA.m_HoHReal[ack][file] == 0);
+		assert(PA.m_emailFileCountMap[ack][file].fixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file].realFixes == 0);
 	}
 	{
 		PatchesAuthors PA;
 		PA.processPatch(patch, generatePatch("bsc#123456", ack, {file}));
-		assert(PA.m_HoH[ack][file] == 1);
-		assert(PA.m_HoHReal[ack][file] == 1);
+		assert(PA.m_emailFileCountMap[ack][file].fixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file].realFixes == 1);
 	}
 	{
 		PatchesAuthors PA;
 
 		PA.processPatch(patch, generatePatch("bsc#123456", ack, {file}, "tty"));
-		assert(PA.m_HoH[ack][file] == 1);
-		assert(PA.m_HoHReal[ack][file] == 1);
+		assert(PA.m_emailFileCountMap[ack][file].fixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file].realFixes == 1);
 	}
 	{
 		PatchesAuthors PA;
 		PA.processPatch(patch, generatePatch("bsc#123456", ack, {file, file2}));
-		assert(PA.m_HoH[ack][file] == 1);
-		assert(PA.m_HoHReal[ack][file] == 1);
-		assert(PA.m_HoH[ack][file2] == 1);
-		assert(PA.m_HoHReal[ack][file2] == 1);
+		assert(PA.m_emailFileCountMap[ack][file].fixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file].realFixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file2].fixes == 1);
+		assert(PA.m_emailFileCountMap[ack][file2].realFixes == 1);
 	}
 }
 
