@@ -116,8 +116,9 @@ PYBIND11_MODULE(slkerncvs, m)
 			  }),
 		    py::arg("dn"), py::arg("password"),
 		    "Obtain LDAP users by binding to LDAP with the specified DN and password")
-		.def("users", &LDAPUsers::userSet, "Obtain users as a set",
-		     py::return_value_policy::reference_internal)
+		.def("users",
+		     static_cast<const LDAPUsers::UserSet &(LDAPUsers::*)() const &>(&LDAPUsers::userSet),
+		     "Obtain users as a set", py::return_value_policy::reference_internal)
 		.def("__contains__", &LDAPUsers::contains, py::arg("key"))
 		.def("__repr__", [](const LDAPUsers &ldap) {
 		     std::stringstream ss;

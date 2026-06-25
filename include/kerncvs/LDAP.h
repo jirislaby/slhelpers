@@ -30,7 +30,10 @@ public:
 	LDAPUsers(const std::string &dn, const std::string &password);
 
 	/// @brief Get the set of users fetched from LDAP.
-	const UserSet &userSet() const { return m_userSet; }
+	const UserSet &userSet() const & { return m_userSet; }
+
+	/// @brief Get the set of users fetched from LDAP (rvalue).
+	UserSet userSet() && { return std::move(m_userSet); }
 
 	/// @brief Check if a user is in the set of users fetched from LDAP.
 	bool contains(const std::string &key) const noexcept { return m_userSet.contains(key); }
