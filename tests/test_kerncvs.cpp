@@ -273,7 +273,7 @@ void testSupportedConf()
 		assert(range.begin() != range.end());
 		assert(*range.begin() == SupportState::NonPresent);
 		auto cnt = 0U;
-		for (const auto &_: range)
+		for ([[maybe_unused]] const auto &_: range)
 			cnt++;
 		assert(cnt == 8);
 	}
