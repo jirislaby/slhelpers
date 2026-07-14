@@ -138,7 +138,9 @@ void testPatch()
 {
 	static constinit std::string_view header[] = {
 		"Some header",
-		"Another header"
+		"Another header",
+		" ---", // this shall not terminate the header thanks to the leading space
+		"Third header",
 	};
 	static constinit std::string_view hunks(
 			"--- a/a.txt\n"

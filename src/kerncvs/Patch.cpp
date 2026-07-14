@@ -26,7 +26,6 @@ std::optional<Patch> Patch::create(std::istream &is)
 	bool inHeader = true;
 
 	for (std::string line; std::getline(is, line); ) {
-		line.erase(0, line.find_first_not_of(" \t"));
 		if (inHeader) {
 			if (line.starts_with("---")) {
 				inHeader = false;
