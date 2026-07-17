@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
 
@@ -121,6 +122,44 @@ void testEnum()
 		flags &= ~TestEnum::VAL1;
 		assert(flags == TestEnum::VAL3);
 	}
+}
+
+enum class TestEnumRange : unsigned {
+	VAL1, First = VAL1,
+	VAL2,
+	VAL3, Last = VAL3,
+};
+
+void testEnumRange()
+{
+	{
+		unsigned i = 0;
+		for (const auto &e: EnumRange<TestEnumRange>()) {
+			assert(e == static_cast<TestEnumRange>(i));
+			i++;
+		}
+		assert(i == 3);
+	}
+	{
+		unsigned i = 1;
+		for (const auto &e: EnumRange<TestEnumRange>(TestEnumRange::VAL2,
+							     TestEnumRange::VAL3)) {
+			assert(e == static_cast<TestEnumRange>(i));
+			i++;
+		}
+		assert(i == 3);
+	}
+
+	assert(std::ranges::all_of(EnumRange<TestEnumRange>(),
+				   [](auto c) {
+				   return c == TestEnumRange::VAL1 ||
+				   	  c == TestEnumRange::VAL2 ||
+					  c == TestEnumRange::VAL3; }));
+	assert(std::ranges::any_of(EnumRange<TestEnumRange>(),
+				   [](auto c) { return c == TestEnumRange::VAL1; }));
+	assert(std::ranges::none_of(EnumRange<TestEnumRange>(TestEnumRange::VAL2,
+							     TestEnumRange::VAL3),
+				    [](auto c) { return c == TestEnumRange::VAL1; }));
 }
 
 void testException()
@@ -377,6 +416,7 @@ int main(int argc, char **argv)
 	assert(argc > 1);
 	testColor();
 	testEnum();
+	testEnumRange();
 	testException();
 	testHomeDir();
 	testLastError();

@@ -2,19 +2,36 @@
 
 #pragma once
 
+#include <iterator>
 #include <type_traits>
 
 namespace SlHelpers {
 
 /// @brief Helper class to iterate over enum values from Enum::First to Enum::Last
 template <typename Enum>
+requires std::is_enum_v<Enum>
 class EnumRange {
 public:
 	/// @brief Type of the underlying enum values
 	using Underlying = std::underlying_type_t<Enum>;
 
+	/// @brief Constructs an EnumRange from Enum::First to Enum::Last
+	EnumRange() requires requires { Enum::First; Enum::Last; }
+		: EnumRange(Enum::First, Enum::Last) {}
+
+	/// @brief Constructs an EnumRange from the specified \p first and \p last enum values
+	EnumRange(Enum first, Enum last)
+		: m_first(static_cast<Underlying>(first)),
+		  m_last(static_cast<Underlying>(last)) {}
+
 	/// @brief Iterator class to iterate over enum values
 	struct iterator {
+		using iterator_category	= std::forward_iterator_tag;
+		using difference_type	= std::ptrdiff_t;
+		using value_type	= Enum;
+		using reference		= Enum;
+		using pointer		= Enum *;
+
 		/// @brief Current value of the iterator
 		Underlying v;
 
@@ -27,16 +44,29 @@ public:
 			return *this;
 		}
 
+		/// @brief Post-increment operator to move to the next enum value
+		iterator operator++(int) {
+			iterator temp = *this;
+			++(*this);
+			return temp;
+		}
+
 		/// @brief Equality operator to compare two iterators
 		bool operator==(const iterator &other) const { return v == other.v; }
 		/// @brief Inequality operator to compare two iterators
 		bool operator!=(const iterator &other) const { return v != other.v; }
 	};
 
+	using value_type	= Enum;
+	using const_iterator	= iterator;
+
 	/// @brief Returns an iterator to the beginning of the enum range
-	iterator begin() const { return { static_cast<Underlying>(Enum::First) }; }
+	iterator begin() const { return { m_first }; }
 	/// @brief Returns an iterator to the end of the enum range
-	iterator end() const { return { static_cast<Underlying>(Enum::Last) + 1 }; }
+	iterator end() const { return { m_last + 1 }; }
+private:
+	Underlying m_first;
+	Underlying m_last;
 };
 
 template<typename E>
