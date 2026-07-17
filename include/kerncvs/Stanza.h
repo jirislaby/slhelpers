@@ -40,7 +40,7 @@ public:
 	 * @param email E-mail of a Person
 	 */
 	Stanza(std::string n, std::string name, std::string email)
-		: m_name(std::move(n)), m_maintainers{Person(Role::Maintainer, std::move(name),
+		: m_name(std::move(n)), m_maintainers{Person(RoleType::Maintainer, std::move(name),
 							     std::move(email))} { }
 
 	Stanza(const Stanza &) = delete;
@@ -67,7 +67,7 @@ public:
 	void add_maintainer_and_store(std::string_view maintainer,
 				      std::set<std::string> &suse_users,
 				      const TranslateEmail &translateEmail) {
-		if (auto m = Person::parsePerson(maintainer, Role::Maintainer)) {
+		if (auto m = Person::parsePerson(maintainer, RoleType::Maintainer)) {
 			suse_users.insert(m->userName());
 			// TODO
 			m->setEmail(translateEmail(m->email()));
@@ -87,7 +87,7 @@ public:
 	 */
 	void add_backporter(const std::string &name, std::string_view email,
 			    unsigned cnt, const TranslateEmail &translateEmail) {
-		m_maintainers.push_back(Person(Role::Maintainer, name,
+		m_maintainers.push_back(Person(RoleType::Maintainer, name,
 					       /*TODO*/ translateEmail(email), cnt));
 	}
 
@@ -100,7 +100,7 @@ public:
 	void add_maintainer_if(std::string_view maintainer,
 			       const std::set<std::string> &suse_users,
 			       const TranslateEmail &translateEmail) {
-		if (auto m = Person::parsePerson(maintainer, Role::Upstream)) {
+		if (auto m = Person::parsePerson(maintainer, RoleType::Upstream)) {
 			// TODO
 			m->setEmail(translateEmail(m->email()));
 			// END TODO

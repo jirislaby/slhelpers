@@ -62,25 +62,25 @@ void test_person()
 	static const std::string name("Some Maintainer");
 	static const std::string name2("Some Longer Longer Maintainer");
 	{
-		const auto p = Person::parsePerson("M: " + email, Role::Maintainer);
+		const auto p = Person::parsePerson("M: " + email, RoleType::Maintainer);
 		assert(p);
 		assert(p->name().empty());
 		assert(p->email() == email);
-		assert(p->role().role() == Role::Maintainer);
+		assert(p->role().role() == RoleType::Maintainer);
 		assert(p->role().toString() == "Maintainer");
 	}
 	{
 		const auto p = Person::parsePerson("M: " + name + " <" + email + '>',
-						   Role::Author);
+						   RoleType::Author);
 		assert(p);
 		assert(p->name() == name);
 		assert(p->email() == email);
-		assert(p->role().role() == Role::Author);
+		assert(p->role().role() == RoleType::Author);
 		assert(p->role().toString() == "Author");
 	}
 	{
 		auto p = Person::parsePerson("M: " + name2 + " <" + email + '>',
-						   Role::Author);
+						   RoleType::Author);
 		assert(p);
 		assert(p->name() == name2);
 		assert(p->email() == email);
@@ -90,10 +90,10 @@ void test_person()
 		assert(p->pretty([](const auto &e) { return "foo-" + e; }) ==
 		       name2 + " <foo-" + email2 + '>');
 	}
-	assert(!Person::parsePerson("M " + name + " <" + email + '>', Role::Maintainer));
-	assert(!Person::parsePerson("M: " + name + " <foo>", Role::Maintainer));
-	assert(!Person::parsePerson("M: " + name + " >" + email + '>', Role::Maintainer));
-	assert(!Person::parsePerson("M: " + name + " <" + email, Role::Maintainer));
+	assert(!Person::parsePerson("M " + name + " <" + email + '>', RoleType::Maintainer));
+	assert(!Person::parsePerson("M: " + name + " <foo>", RoleType::Maintainer));
+	assert(!Person::parsePerson("M: " + name + " >" + email + '>', RoleType::Maintainer));
+	assert(!Person::parsePerson("M: " + name + " <" + email, RoleType::Maintainer));
 }
 
 void test_stanza()

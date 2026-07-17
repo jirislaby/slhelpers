@@ -5,7 +5,28 @@
 #include <optional>
 #include <string>
 
+#include "../helpers/Enum.h"
+
 namespace SlKernCVS {
+
+/**
+ * @brief Actual roles
+ *
+ * Roles from FirstRole to LastRole are tried in parse(). The others have to be set
+ * manually as needed.
+ */
+enum class RoleType {
+	Author,		First = Author,
+	SignedOffBy,	FirstRole = SignedOffBy,
+	CoDevelopedBy,
+	SuggestedBy,
+	ReviewedBy,
+	AckedBy,	LastRole = AckedBy,
+	TestedBy,
+	ReportedBy,
+	Maintainer,
+	Upstream,	Last = Upstream,
+};
 
 /**
  * @brief Role of a Person
@@ -26,28 +47,8 @@ private:
 		"Maintainer",
 		"Upstream"
 	};
+	static_assert(static_cast<size_t>(RoleType::Last) + 1 == std::size(roleNames));
 public:
-	/**
-	 * @brief Actual roles
-	 *
-	 * Roles from FirstRole to LastRole are tried in parse(). The others have to be set
-	 * manually as needed.
-	 */
-	enum RoleType {
-		Author,
-		SignedOffBy, FirstRole = SignedOffBy,
-		CoDevelopedBy,
-		SuggestedBy,
-		ReviewedBy,
-		AckedBy, LastRole = AckedBy,
-		TestedBy,
-		ReportedBy,
-		Maintainer,
-		Upstream,
-		Last
-	};
-	static_assert(Last == std::size(roleNames));
-
 	Role() = delete;
 	/// @brief Construct new Role with role set by the \p index
 	Role(size_t index) : m_role(static_cast<RoleType>(index)) {}
@@ -150,8 +151,9 @@ public:
 	 */
 	static std::optional<Person> parse(std::string_view src)
 	{
-		for (std::size_t i = Role::FirstRole; i <= Role::LastRole; ++i) {
-			Role r(i);
+		SlHelpers::EnumRange<RoleType> range{RoleType::FirstRole, RoleType::LastRole};
+		for (auto I: range) {
+			Role r(I);
 			if (src.starts_with(r.toString()))
 				if (auto p = parsePerson(src, std::move(r)))
 					return p;
