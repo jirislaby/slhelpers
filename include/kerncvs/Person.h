@@ -118,6 +118,7 @@ public:
 	 * The e-mail is passed to \p translate() before passing to the output.
 	 */
 	template <typename T>
+	requires requires (T t, std::string s) { { t(s) } -> std::convertible_to<std::string>; }
 	std::string pretty(const T &translate, bool includeName = true) const {
 		if (includeName && !name().empty())
 			return name() + " <" + translate(email()) + ">";
