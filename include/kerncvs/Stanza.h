@@ -43,6 +43,9 @@ public:
 		: m_name(std::move(n)), m_maintainers{Person(Role::Maintainer, std::move(name),
 							     std::move(email))} { }
 
+	Stanza(const Stanza &) = delete;
+	Stanza(Stanza &&) = default;
+
 	/**
 	 * @brief Return weight of \p path in this Stanza
 	 * @param path A path to look for
