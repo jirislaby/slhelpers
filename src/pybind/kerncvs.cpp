@@ -7,11 +7,16 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl/filesystem.h>
 
+#include "helpers/Enum.h"
+
 #include "kerncvs/Branches.h"
 #include "kerncvs/CollectConfigs.h"
 #include "kerncvs/LDAP.h"
+#include "kerncvs/Maintainers.h"
 #include "kerncvs/Patch.h"
+#include "kerncvs/Person.h"
 #include "kerncvs/RPMConfig.h"
+#include "kerncvs/Stanza.h"
 #include "kerncvs/SupportedConf.h"
 
 #include "pybindSupp.h" // IWYU pragma: keep
@@ -123,6 +128,83 @@ PYBIND11_MODULE(slkerncvs, m)
 		.def("__repr__", [](const LDAPUsers &ldap) {
 		     std::stringstream ss;
 		     ss << "<LDAP users#=" << ldap.userSet().size() << '>';
+		     return ss.str();
+		     });
+
+	// ============= Maintainers =============
+	py::class_<Person> person(m, "Person");
+	auto e = py::enum_<RoleType>(person, "RoleType");
+	for (auto role: SlHelpers::EnumRange<RoleType>{}) {
+		std::string name { Role::toString(role) };
+		std::ranges::replace(name, '-', '_');
+		e.value(name.c_str(), role);
+	}
+
+	person.def("role", &Person::role, "Role of the Person")
+		.def("name", &Person::name, py::return_value_policy::reference_internal,
+		      "Name of the Person")
+		.def("user_name", &Person::userName,
+		     "User name of the Person")
+		.def("email", &Person::email, py::return_value_policy::reference_internal,
+		     "E-mail of the Person")
+		.def("__repr__", [](const Person &person) {
+		     std::stringstream ss;
+		     ss << "<Person role=\"" << person.role().toString() <<
+			      "\" name=\"" << person.pretty() << "\">";
+		     return ss.str();
+		     });
+
+	py::class_<Stanza> stanza(m, "Stanza");
+	stanza.def("name", &Stanza::name, py::return_value_policy::reference_internal,
+		     "Name of the Stanza")
+		.def("maintainers", &Stanza::maintainers,
+		     py::return_value_policy::reference_internal,
+		     "List of maintainers in the Stanza")
+		.def("empty", &Stanza::empty,
+		     "Check if the Stanza has no name, maintainers, and patterns")
+		.def("__getitem__", [](const Stanza &stanza, size_t index) {
+		     if (index >= stanza.maintainers().size())
+			     throw py::index_error();
+		     return stanza.maintainers()[index];
+		     }, py::return_value_policy::reference_internal)
+		.def("__repr__", [](const Stanza &stanza) {
+		     std::stringstream ss;
+		     ss << "<Stanza name=\"" << stanza.name() <<
+			      "\" maintainers#=" << stanza.maintainers().size() << '>';
+		     return ss.str();
+		     });
+
+	py::class_<Maintainers> maintainers(m, "Maintainers");
+	maintainers.def(py::init([](const std::filesystem::path &SUSE,
+				    const std::filesystem::path &linuxRepo,
+				    const std::string &origin) {
+			      return Maintainers(SUSE, linuxRepo, origin, [](auto email) {
+							 return std::string(email);
+						 });
+			      }),
+		    py::arg("SUSE"), py::arg("linuxRepo"), py::arg("origin") = "origin",
+		    "Parse SUSE's and Linux's MAINTAINERS files")
+		.def("find_best_match", &Maintainers::findBestMatch, py::arg("paths"),
+		     py::return_value_policy::reference_internal,
+		     "Find the best matched maintainer from the SUSE's MAINTAINERS file")
+		.def("find_best_match_upstream", &Maintainers::findBestMatchUpstream,
+		     py::arg("paths"),
+		     py::return_value_policy::reference_internal,
+		     "Find the best matched maintainer from the Linux's MAINTAINERS file")
+		.def("maintainers", &Maintainers::maintainers,
+		     py::return_value_policy::reference_internal,
+		     "Get all parsed SUSE maintainers")
+		.def("upstream_maintainers", &Maintainers::upstream_maintainers,
+		     py::return_value_policy::reference_internal,
+		     "Get all parsed Linux maintainers")
+		.def("suse_users", &Maintainers::suse_users,
+		     py::return_value_policy::reference_internal,
+		     "Get all met SUSE users")
+		.def("__repr__", [](const Maintainers &m) {
+		     std::stringstream ss;
+		     ss << "<Maintainers SUSE#=" << m.maintainers().size() <<
+			      " upstream#=" << m.upstream_maintainers().size() <<
+			      " SUSE_users#=" << m.suse_users().size() << '>';
 		     return ss.str();
 		     });
 
