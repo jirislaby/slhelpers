@@ -55,7 +55,7 @@ bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 {
 	auto linux_repo = SlGit::Repo::open(lsource);
 	if (!linux_repo) {
-		std::cerr << "Unable to open linux.git at " << lsource << " ;" <<
+		std::cerr << "Unable to open linux.git at " << lsource << "; " <<
 			     git_error_last()->message << '\n';
 		return false;
 	}
