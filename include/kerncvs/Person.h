@@ -59,9 +59,18 @@ public:
 	RoleType role() const { return m_role; }
 
 	/// @brief Convert Role to number/index
-	constexpr auto index() const { return static_cast<std::size_t>(m_role); }
+	static constexpr auto index(RoleType role) {
+		return static_cast<std::size_t>(role);
+	}
 	/// @brief Convert Role to string
-	constexpr const auto &toString() const { return roleNames[index()]; }
+	static constexpr auto toString(RoleType role) {
+		return roleNames[index(role)];
+	}
+
+	/// @brief Convert Role to number/index
+	constexpr auto index() const { return index(m_role); }
+	/// @brief Convert Role to string
+	constexpr auto toString() const { return toString(m_role); }
 private:
 	RoleType m_role;
 };
