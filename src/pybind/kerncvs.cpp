@@ -24,13 +24,12 @@
 namespace py = pybind11;
 using namespace SlKernCVS;
 
-PYBIND11_MODULE(slkerncvs, m)
+namespace {
+
+void doBranches(py::module_ &m)
 {
-	m.doc() = "SlKernCVS – Parse and query files from kerncvs";
-
-	// ============= Branches =============
-
 	py::class_<BranchProps> branchProps(m, "BranchProps");
+
 	branchProps
 		.def_readonly("is_build", &BranchProps::isBuild)
 		.def_readonly("is_publish", &BranchProps::isPublish)
@@ -54,14 +53,15 @@ PYBIND11_MODULE(slkerncvs, m)
 		.value("Excluded", Branches::Filter::EXCLUDED)
 		.value("Any", Branches::Filter::ANY)
 		.export_values();
+
 	branches
 		.def(py::init([]() {
-			    auto ret = Branches::create();
-			    if (!ret)
-				    throw std::runtime_error("Failed to download branches.conf");
-			    return std::move(*ret);
-			    }),
-			    "Download branches.conf and parse it into Branches")
+			auto ret = Branches::create();
+			if (!ret)
+				throw std::runtime_error("Failed to download branches.conf");
+			return std::move(*ret);
+			}),
+		     "Download branches.conf and parse it into Branches")
 		.def("map", &Branches::map, py::return_value_policy::reference_internal,
 		     "Obtain whole branch map")
 		.def("filter", &Branches::filter, py::arg("include") = Branches::ANY,
@@ -82,18 +82,22 @@ PYBIND11_MODULE(slkerncvs, m)
 		     return ss.str();
 		     });
 
-	// ============= CollectConfigs =============
+}
 
-	py::class_<CollectConfigs> CC(m, "CollectConfigs");
-	py::enum_<ConfigValue>(CC, "ConfigValue")
+void doCollectConfigs(py::module_ &m)
+{
+	py::class_<CollectConfigs> cc(m, "CollectConfigs");
+
+	py::enum_<ConfigValue>(cc, "ConfigValue")
 		.value("Disabled", ConfigValue::Disabled)
 		.value("BuiltIn", ConfigValue::BuiltIn)
 		.value("Module", ConfigValue::Module)
 		.value("WithValue", ConfigValue::WithValue)
 		.export_values();
-	CC.def(py::init([](const std::string &repoPath, const std::string &rev) {
-			auto ret = CollectConfigs::create(repoPath, rev);
-			return ret;
+
+	cc
+		.def(py::init([](const std::string &repoPath, const std::string &rev) {
+			return CollectConfigs::create(repoPath, rev);
 		}), py::arg("repoPath"), py::arg("rev"), "Parse configs into CollectConfigs")
 		.def("get_arch_map", &CollectConfigs::getArchMap,
 		     py::return_value_policy::reference_internal,
@@ -112,11 +116,13 @@ PYBIND11_MODULE(slkerncvs, m)
 		.def("__repr__", [](const CollectConfigs &cc) {
 		     return "<CollectConfigs arch#=" + std::to_string(cc.getArchMap().size()) + '>';
 		     });
+}
 
-	// ============= LDAP =============
-
+void doLDAP(py::module_ &m)
+{
 	py::class_<LDAPUsers> ldap(m, "LDAPUsers");
-	ldap.def(py::init([](const std::string &dn, const std::string &password) {
+	ldap
+		.def(py::init([](const std::string &dn, const std::string &password) {
 			  return LDAPUsers(dn, password);
 			  }),
 		    py::arg("dn"), py::arg("password"),
@@ -130,9 +136,12 @@ PYBIND11_MODULE(slkerncvs, m)
 		     ss << "<LDAP users#=" << ldap.userSet().size() << '>';
 		     return ss.str();
 		     });
+}
 
-	// ============= Maintainers =============
+void doMaintainers(py::module_ &m)
+{
 	py::class_<Person> person(m, "Person");
+
 	auto e = py::enum_<RoleType>(person, "RoleType");
 	for (auto role: SlHelpers::EnumRange<RoleType>{}) {
 		std::string name { Role::toString(role) };
@@ -140,7 +149,8 @@ PYBIND11_MODULE(slkerncvs, m)
 		e.value(name.c_str(), role);
 	}
 
-	person.def("role", &Person::role, "Role of the Person")
+	person
+		.def("role", &Person::role, "Role of the Person")
 		.def("name", &Person::name, py::return_value_policy::reference_internal,
 		      "Name of the Person")
 		.def("user_name", &Person::userName,
@@ -155,7 +165,8 @@ PYBIND11_MODULE(slkerncvs, m)
 		     });
 
 	py::class_<Stanza> stanza(m, "Stanza");
-	stanza.def("name", &Stanza::name, py::return_value_policy::reference_internal,
+	stanza
+		.def("name", &Stanza::name, py::return_value_policy::reference_internal,
 		     "Name of the Stanza")
 		.def("maintainers", &Stanza::maintainers,
 		     py::return_value_policy::reference_internal,
@@ -175,7 +186,8 @@ PYBIND11_MODULE(slkerncvs, m)
 		     });
 
 	py::class_<Maintainers> maintainers(m, "Maintainers");
-	maintainers.def(py::init([](const std::filesystem::path &SUSE,
+	maintainers
+		.def(py::init([](const std::filesystem::path &SUSE,
 				    const std::filesystem::path &linuxRepo,
 				    const std::string &origin) {
 			      return Maintainers(SUSE, linuxRepo, origin, [](auto email) {
@@ -207,11 +219,13 @@ PYBIND11_MODULE(slkerncvs, m)
 			      " SUSE_users#=" << m.suse_users().size() << '>';
 		     return ss.str();
 		     });
+}
 
-	// ============= Patch =============
-
+void doPatch(py::module_ &m)
+{
 	py::class_<Patch> patch(m, "Patch");
-	patch.def(py::init([](const std::filesystem::path &path) {
+	patch
+		.def(py::init([](const std::filesystem::path &path) {
 			      auto ret = Patch::create(path);
 			      if (!ret)
 				      throw std::runtime_error(Patch::lastError());
@@ -229,11 +243,13 @@ PYBIND11_MODULE(slkerncvs, m)
 			      '>';
 		     return ss.str();
 		     });
+}
 
-	// ============= RPMConfig =============
-
+void doRPMConfig(py::module_ &m)
+{
 	py::class_<RPMConfig> rpmConf(m, "RPMConfig");
-	rpmConf.def(py::init([](const std::string &config) {
+	rpmConf
+		.def(py::init([](const std::string &config) {
 			      return RPMConfig(config);
 			      }),
 		    py::arg("config"), "Parses rpm/config.sh")
@@ -243,9 +259,10 @@ PYBIND11_MODULE(slkerncvs, m)
 		.def("__repr__", [](const RPMConfig &) {
 		     return "<RPMConfig>";
 		     });
+}
 
-	// ============= SupportedConf =============
-
+void doSupportedConf(py::module_ &m)
+{
 	py::class_<SupportedConf> suppConf(m, "SupportedConf");
 	py::enum_<SupportState>(suppConf, "SupportState")
 		.value("NonPresent",           SupportState::NonPresent)
@@ -270,5 +287,19 @@ PYBIND11_MODULE(slkerncvs, m)
 		.def("__repr__", [](const SupportedConf &) {
 		     return "<SupportedConf>";
 		     });
+}
 
+} // namespace
+
+PYBIND11_MODULE(slkerncvs, m)
+{
+	m.doc() = "SlKernCVS – Parse and query files from kerncvs";
+
+	doBranches(m);
+	doCollectConfigs(m);
+	doLDAP(m);
+	doMaintainers(m);
+	doPatch(m);
+	doRPMConfig(m);
+	doSupportedConf(m);
 }
