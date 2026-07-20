@@ -1,22 +1,26 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <cstring>
 #include <fstream>
 
 #include "git/Repo.h"
+#include "helpers/Exception.h"
 #include "helpers/String.h"
 #include "kerncvs/Maintainers.h"
 
+using RunEx = SlHelpers::RuntimeException;
+using SlHelpers::raise;
+
 using namespace SlKernCVS;
 
-bool Maintainers::loadSUSE(const std::filesystem::path &filename,
+void Maintainers::loadSUSE(const std::filesystem::path &filename,
 			   const Stanza::TranslateEmail &translateEmail)
 {
 	std::ifstream file{filename};
 
-	if (!file.is_open()) {
-		std::cerr << "Unable to open MAINTAINERS file: " << filename << '\n';
-		return false;
-	}
+	if (!file.is_open())
+		RunEx("Unable to open MAINTAINERS file: ") << filename << ": " <<
+			strerror(errno) << raise;
 
 	Stanza st;
 	for (std::string line; getline(file, line);) {
@@ -42,30 +46,22 @@ bool Maintainers::loadSUSE(const std::filesystem::path &filename,
 	if (!st.empty())
 		m_maintainers.push_back(std::move(st));
 
-	if (m_maintainers.empty()) {
-		std::cerr << filename << " appears to be empty" << '\n';
-		return false;
-	}
-
-	return true;
+	if (m_maintainers.empty())
+		RunEx() << filename << " appears to be empty" << raise;
 }
 
-bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::string &origin,
+void Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::string &origin,
 			       const Stanza::TranslateEmail &translateEmail)
 {
 	auto linux_repo = SlGit::Repo::open(lsource);
-	if (!linux_repo) {
-		std::cerr << "Unable to open linux.git at " << lsource << "; " <<
-			     git_error_last()->message << '\n';
-		return false;
-	}
+	if (!linux_repo)
+		RunEx("Unable to open linux.git at ") << lsource << ": " <<
+			SlGit::Repo::lastError() << raise;
 
 	auto maintOpt = linux_repo->catFile(origin + "/master", "MAINTAINERS");
-	if (!maintOpt) {
-		std::cerr << "Unable to load linux.git tree for " << origin << "/master; " <<
-			     git_error_last()->message << '\n';
-		return false;
-	}
+	if (!maintOpt)
+		RunEx("Unable to load linux.git tree for ") << origin << "/master: " <<
+			     SlGit::Repo::lastError() << raise;
 
 	Stanza st;
 	bool skip = true;
@@ -115,11 +111,8 @@ bool Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 	}
 	if (!st.empty())
 		m_upstream_maintainers.push_back(std::move(st));
-	if (m_upstream_maintainers.empty()) {
-		std::cerr << "Upstream MAINTAINERS appears to be empty\n";
-		return false;
-	}
-	return true;
+	if (m_upstream_maintainers.empty())
+		RunEx("Upstream MAINTAINERS appears to be empty").raise();
 }
 
 const Stanza *Maintainers::findBestMatchInMaintainers(const MaintainersType &sl,

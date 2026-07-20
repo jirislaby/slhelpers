@@ -3,7 +3,6 @@
 #pragma once
 
 #include <filesystem>
-#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -28,22 +27,17 @@ public:
 	 * @param linuxRepo path to upstream linux repository (LINUX_GIT)
 	 * @param origin name of branch (of LINUX_GIT) to load upstream MAINTAINERS from
 	 * @param translateEmail a function translating emails (eg. to map login -> bugzilla)
-	 * @return Maintainers if load was successful, otherwise std::nullopt
 	 *
 	 * \p SUSE is usually fetched from kerncvs.
 	 */
-	static std::optional<Maintainers> load(const std::filesystem::path &SUSE,
-					       const std::filesystem::path &linuxRepo,
-					       const std::string &origin,
-					       const Stanza::TranslateEmail &translateEmail) {
-		Maintainers m;
+	Maintainers(const std::filesystem::path &SUSE,
+		    const std::filesystem::path &linuxRepo,
+		    const std::string &origin,
+		    const Stanza::TranslateEmail &translateEmail) {
+		loadSUSE(SUSE, translateEmail);
 
-		if (!m.loadSUSE(SUSE, translateEmail))
-			return std::nullopt;
-		if (!linuxRepo.empty() && !m.loadUpstream(linuxRepo, origin, translateEmail))
-			return std::nullopt;
-
-		return m;
+		if (!linuxRepo.empty())
+			loadUpstream(linuxRepo, origin, translateEmail);
 	}
 
 	/**
@@ -79,11 +73,9 @@ public:
 	 */
 	const std::set<std::string> &suse_users() const { return m_suse_users; }
 private:
-	Maintainers() {}
-
-	bool loadSUSE(const std::filesystem::path &filename,
+	void loadSUSE(const std::filesystem::path &filename,
 		      const Stanza::TranslateEmail &translateEmail);
-	bool loadUpstream(const std::filesystem::path &lsource, const std::string &origin,
+	void loadUpstream(const std::filesystem::path &lsource, const std::string &origin,
 			  const Stanza::TranslateEmail &translateEmail);
 
 	static const Stanza *findBestMatchInMaintainers(const MaintainersType &sl,
