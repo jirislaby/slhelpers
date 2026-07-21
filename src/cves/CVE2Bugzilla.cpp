@@ -48,21 +48,3 @@ CVE2Bugzilla::CVE2Bugzilla(const std::filesystem::path &cve2bugzilla)
 		m_bsc_cve_map.emplace(std::move(bug), cve_number);
 	}
 }
-
-std::string CVE2Bugzilla::get_bsc(std::string_view cve_number) const
-{
-	const auto it = m_cve_bsc_map.find(cve_number);
-	if (it != m_cve_bsc_map.cend())
-		return it->second;
-
-	return {};
-}
-
-std::string CVE2Bugzilla::get_cve(std::string_view bsc_number) const
-{
-	const auto it = m_bsc_cve_map.find(bsc_number);
-	if (it != m_bsc_cve_map.cend())
-		return it->second;
-
-	return {};
-}

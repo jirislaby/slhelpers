@@ -40,14 +40,29 @@ public:
 	 * @param cve_number CVE number
 	 * @return Bugzilla number or an empty string
 	 */
-	std::string get_bsc(std::string_view cve_number) const;
+	std::string get_bsc(std::string_view cve_number) const {
+		const auto it = m_cve_bsc_map.find(cve_number);
+		if (it != m_cve_bsc_map.cend())
+			return it->second;
+
+		return {};
+	}
+
 
 	/**
 	 * @brief Get CVE number for a bugzilla
 	 * @param bsc_number Bugzilla number
 	 * @return CVE number or an empty string
 	 */
-	std::string get_cve(std::string_view bsc_number) const;
+	std::string get_cve(std::string_view bsc_number) const
+	{
+		const auto it = m_bsc_cve_map.find(bsc_number);
+		if (it != m_bsc_cve_map.cend())
+			return it->second;
+
+		return {};
+	}
+
 private:
 	Map m_cve_bsc_map;
 	Map m_bsc_cve_map;
