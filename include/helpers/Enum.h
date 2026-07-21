@@ -26,10 +26,15 @@ public:
 
 	/// @brief Iterator class to iterate over enum values
 	struct iterator {
+		/// @brief Iterator category for the enum range
 		using iterator_category	= std::forward_iterator_tag;
+		/// @brief Difference type for the enum range
 		using difference_type	= std::ptrdiff_t;
+		/// @brief Value type for the enum range
 		using value_type	= Enum;
+		/// @brief Reference type for the enum range
 		using reference		= Enum;
+		/// @brief Pointer type for the enum range
 		using pointer		= Enum *;
 
 		/// @brief Current value of the iterator
@@ -57,7 +62,9 @@ public:
 		bool operator!=(const iterator &other) const { return v != other.v; }
 	};
 
+	/// @brief Type of the enum values in the range
 	using value_type	= Enum;
+	/// @brief Type of the iterator for the enum range
 	using const_iterator	= iterator;
 
 	/// @brief Returns an iterator to the beginning of the enum range

@@ -44,6 +44,7 @@ public:
 							     std::move(email))} { }
 
 	Stanza(const Stanza &) = delete;
+	/// @brief Move constructor
 	Stanza(Stanza &&) = default;
 
 	/**
