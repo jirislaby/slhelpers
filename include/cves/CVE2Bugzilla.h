@@ -3,7 +3,6 @@
 #pragma once
 
 #include <filesystem>
-#include <optional>
 #include <unordered_map>
 #include <string>
 
@@ -33,9 +32,8 @@ public:
 	/**
 	 * @brief Create a new CVE2Bugzilla map from \p cve2bugzilla
 	 * @param cve2bugzilla File to parse
-	 * @return CVE2Bugzilla or nullopt on failure
 	 */
-	static std::optional<CVE2Bugzilla> create(const std::filesystem::path &cve2bugzilla) noexcept;
+	CVE2Bugzilla(const std::filesystem::path &cve2bugzilla);
 
 	/**
 	 * @brief Get bugzilla number for a CVE
@@ -51,10 +49,6 @@ public:
 	 */
 	std::string get_cve(std::string_view bsc_number) const;
 private:
-	CVE2Bugzilla(Map cve_bsc_map, Map bsc_cve_map) :
-		m_cve_bsc_map(std::move(cve_bsc_map)),
-		m_bsc_cve_map(std::move(bsc_cve_map)) {}
-
 	Map m_cve_bsc_map;
 	Map m_bsc_cve_map;
 };

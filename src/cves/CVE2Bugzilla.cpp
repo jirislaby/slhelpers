@@ -1,25 +1,27 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
+#include "helpers/Exception.h"
 #include "helpers/String.h"
 
 #include "cves/CVE2Bugzilla.h"
 
+using RunEx = SlHelpers::RuntimeException;
+using SlHelpers::raise;
+
 using namespace SlCVEs;
 
-std::optional<CVE2Bugzilla> CVE2Bugzilla::create(const std::filesystem::path &cve2bugzilla) noexcept
+CVE2Bugzilla::CVE2Bugzilla(const std::filesystem::path &cve2bugzilla)
 {
 	std::ifstream file{cve2bugzilla};
 
-	if (!file.is_open()) {
-		std::cerr << "Unable to open cve2bugzilla.txt file: " << cve2bugzilla << '\n';
-		return std::nullopt;
-	}
+	if (!file.is_open())
+		RunEx("Unable to open cve2bugzilla.txt file: ") << cve2bugzilla << ": " <<
+			strerror(errno) << raise;
 
-	Map cve_bsc_map;
-	Map bsc_cve_map;
 	for (std::string lineS; getline(file, lineS);) {
 		std::string_view line(lineS);
 		if (line.find("EMBARGOED") != std::string::npos ||
@@ -42,11 +44,9 @@ std::optional<CVE2Bugzilla> CVE2Bugzilla::create(const std::filesystem::path &cv
 		}
 		std::string bug{"bsc#"};
 		bug += bsc_number;
-		cve_bsc_map.emplace(cve_number, bug);
-		bsc_cve_map.emplace(std::move(bug), cve_number);
+		m_cve_bsc_map.emplace(cve_number, bug);
+		m_bsc_cve_map.emplace(std::move(bug), cve_number);
 	}
-
-	return CVE2Bugzilla(std::move(cve_bsc_map), std::move(bsc_cve_map));
 }
 
 std::string CVE2Bugzilla::get_bsc(std::string_view cve_number) const
