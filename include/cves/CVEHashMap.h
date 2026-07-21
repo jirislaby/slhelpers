@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -37,11 +36,10 @@ public:
 	 * @param branch Branch of \p vsource to walk
 	 * @param year A specific year to walk or zero
 	 * @param rejected Walk published/ or rejected/
-	 * @return CVEHashMap or nullopt on failure
 	 */
-	static std::optional<CVEHashMap> create(const std::filesystem::path &vsource,
-						ShaSize shaSize, const std::string &branch,
-						unsigned year, bool rejected);
+	CVEHashMap(const std::filesystem::path &vsource,
+		   ShaSize shaSize, const std::string &branch,
+		   unsigned year, bool rejected);
 
 	/**
 	 * @brief Get CVE number for \p sha_commit
@@ -82,9 +80,6 @@ public:
 	}
 
 private:
-	CVEHashMap(CVEHashMapTy cveMap, SHAHashMapTy shaMap) :
-		m_cveHashMap(std::move(cveMap)), m_shaHashMap(std::move(shaMap)) {}
-
 	CVEHashMapTy m_cveHashMap;
 	SHAHashMapTy m_shaHashMap;
 };
