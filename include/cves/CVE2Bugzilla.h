@@ -22,6 +22,14 @@ public:
 
 	CVE2Bugzilla() = delete;
 
+	CVE2Bugzilla(const CVE2Bugzilla &) = delete;
+	CVE2Bugzilla &operator=(const CVE2Bugzilla &) = delete;
+
+	/// @brief Move constructor
+	CVE2Bugzilla(CVE2Bugzilla &&) = default;
+	/// @brief Move assignment operator
+	CVE2Bugzilla &operator=(CVE2Bugzilla &&) = default;
+
 	/**
 	 * @brief Create a new CVE2Bugzilla map from \p cve2bugzilla
 	 * @param cve2bugzilla File to parse
