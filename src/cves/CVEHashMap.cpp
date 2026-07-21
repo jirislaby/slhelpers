@@ -64,10 +64,10 @@ std::optional<CVEHashMap> CVEHashMap::create(const std::filesystem::path &vsourc
 				continue;
 			}
 			if (isShort)
-				shaMap.insert(std::make_pair(sha_hash.substr(0, 12), *cve_number));
+				shaMap.emplace(sha_hash.substr(0, 12), *cve_number);
 			else {
-				cveMap.insert(std::make_pair(*cve_number, sha_hash));
-				shaMap.insert(std::make_pair(std::move(sha_hash), *cve_number));
+				cveMap.emplace(*cve_number, sha_hash);
+				shaMap.emplace(std::move(sha_hash), *cve_number);
 			}
 		}
 		return 0;
