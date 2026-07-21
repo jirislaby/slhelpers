@@ -29,6 +29,14 @@ public:
 
 	CVEHashMap() = delete;
 
+	CVEHashMap(const CVEHashMap &) = delete;
+	CVEHashMap &operator=(const CVEHashMap &) = delete;
+
+	/// @brief Move constructor
+	CVEHashMap(CVEHashMap &&) = default;
+	/// @brief Move assignment operator
+	CVEHashMap &operator=(CVEHashMap &&) = default;
+
 	/**
 	 * @brief Create a new CVEHashMap
 	 * @param vsource Path to the vulns git repository
