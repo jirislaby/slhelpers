@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <sstream>
+#include <string>
 
 #include "helpers/String.h"
 
@@ -124,6 +125,71 @@ void testIStartsWith()
 	assert(!String::iStartsWith(std::string_view("abc"), std::string_view("b")));
 }
 
+void testEraseReplace()
+{
+	{
+		std::string s = "aabacadaeafa";
+		String::eraseAllOf(s, "a");
+		assert(s == "bcdef");
+	}
+	{
+		std::string s = "aabacadaeafa";
+		String::eraseAllOf(s, "ae");
+		assert(s == "bcdf");
+	}
+	{
+		std::string s;
+		String::eraseAllOf(s, "a");
+		assert(s.empty());
+	}
+	{
+		std::string s = "aaaaa";
+		String::eraseAllOf(s, "a");
+		assert(s.empty());
+	}
+	{
+		std::string s = "bbbbb";
+		String::eraseAllOf(s, "a");
+		assert(s == "bbbbb");
+	}
+
+	{
+		std::string s = "aabacadaeafa";
+		String::replaceAll(s, "a", "x");
+		assert(s == "xxbxcxdxexfx");
+	}
+	{
+		std::string s = "aabacadaeafa";
+		String::replaceAll(s, "a", "XY");
+		assert(s == "XYXYbXYcXYdXYeXYfXY");
+	}
+	{
+		std::string s = "aabacadaeafa";
+		String::replaceAll(s, "a", "");
+		assert(s == "bcdef");
+	}
+	{
+		std::string s = "bbbbb";
+		String::replaceAll(s, "a", "c");
+		assert(s == "bbbbb");
+	}
+	{
+		std::string s = "bbbbb";
+		String::replaceAll(s, "b", "");
+		assert(s.empty());
+	}
+	{
+		std::string s = "bbbbb";
+		String::replaceAll(s, "bb", "");
+		assert(s == "b");
+	}
+	{
+		std::string s = "bbbbb";
+		String::replaceAll(s, "bb", "b");
+		assert(s == "bbb");
+	}
+}
+
 void testJoin()
 {
 	{
@@ -193,6 +259,7 @@ int main()
 	testTrim();
 	testIFind();
 	testIStartsWith();
+	testEraseReplace();
 	testJoin();
 	testGetLine();
 

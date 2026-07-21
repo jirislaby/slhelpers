@@ -124,6 +124,29 @@ public:
 	}
 
 	/**
+	 * @brief Erase any of characters in \p what from \p s
+	 * @param s String to modify
+	 * @param what Characters to erase
+	 */
+	static void eraseAllOf(std::string &s, std::string_view what) {
+		std::erase_if(s, [what](char c) {
+			      return what.find(c) != std::string_view::npos;
+			      });
+	}
+
+	/**
+	 * @brief Replace all occurrences of \p from in \p s with \p to
+	 * @param s String to modify
+	 * @param from String to replace
+	 * @param to Replacement string
+	 */
+	static void replaceAll(std::string &s, std::string_view from, std::string_view to) {
+		for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos;
+		     pos += to.size())
+			s.replace(pos, from.size(), to);
+	}
+
+	/**
 	 * @brief Split \p str by \p delim into a vector, ignoring everything after \p comment
 	 * @param str String to parse
 	 * @param delim Delimeter to split by
