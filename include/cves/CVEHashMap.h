@@ -6,8 +6,11 @@
 #include <filesystem>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
+
+#include "../helpers/String.h"
 
 namespace SlCVEs {
 
@@ -17,9 +20,11 @@ namespace SlCVEs {
 class CVEHashMap {
 public:
 	/// @brief CVE -> upstream SHA mapping
-	using CVEHashMapTy = std::unordered_multimap<std::string, std::string>;
+	using CVEHashMapTy = std::unordered_multimap<std::string, std::string,
+	      SlHelpers::String::Hash, SlHelpers::String::Eq>;
 	/// @brief Upstream SHA -> CVE mapping
-	using SHAHashMapTy = std::unordered_map<std::string, std::string>;
+	using SHAHashMapTy = std::unordered_map<std::string, std::string,
+	      SlHelpers::String::Hash, SlHelpers::String::Eq>;
 
 	/// @brief Store Long or Short SHAs
 	enum struct ShaSize {
@@ -54,7 +59,7 @@ public:
 	 * @param sha_commit Upstream SHA
 	 * @return CVE number
 	 */
-	std::string get_cve(const std::string &sha_commit) const {
+	std::string_view get_cve(std::string_view sha_commit) const {
 		const auto it = m_shaHashMap.find(sha_commit);
 		if (it != m_shaHashMap.cend())
 			return it->second;
@@ -67,7 +72,7 @@ public:
 	 * @param cve_number CVE number
 	 * @return Vector of upstream SHAs (possibly empty)
 	 */
-	std::vector<std::string> get_shas(const std::string &cve_number) const { //requires (S == ShaSize::Long)
+	std::vector<std::string> get_shas(std::string_view cve_number) const { //requires (S == ShaSize::Long)
 		std::vector<std::string> ret;
 		const auto range = m_cveHashMap.equal_range(cve_number);
 		std::transform(range.first, range.second, std::back_inserter(ret),
