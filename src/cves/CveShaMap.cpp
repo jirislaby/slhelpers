@@ -7,6 +7,7 @@
 #include "git/Repo.h"
 #include "git/Tree.h"
 #include "helpers/Exception.h"
+#include "helpers/Misc.h"
 #include "helpers/String.h"
 
 #include "cves/CVE.h"
@@ -20,18 +21,24 @@ using namespace SlCVEs;
 CveShaMap::CveShaMap(const std::filesystem::path &vsource, ShaSize shaSize,
 		     const std::string &branch, unsigned year, bool rejected)
 {
-	if (vsource.empty())
-		RunEx("vsource is empty!").raise();
+	std::filesystem::path source = vsource;
 
-	const auto vulns_repo = SlGit::Repo::open(vsource);
+	if (source.empty()) {
+		auto envSource = SlHelpers::Env::get<std::filesystem::path>("VULNS_GIT");
+		if (!envSource)
+			RunEx("vsource is empty and VULNS_GIT not set!").raise();
+		source = *envSource;
+	}
+
+	const auto vulns_repo = SlGit::Repo::open(source);
 	if (!vulns_repo)
-		RunEx("Failed to open vulns repo at ") << vsource << ": " <<
+		RunEx("Failed to open vulns repo at ") << source << ": " <<
 			SlGit::Repo::lastError() << raise;
 
 	const auto commit = vulns_repo->commitRevparseSingle(branch);
 	if (!commit)
 		RunEx("Failed to find branch ") << branch << " in vulns repo at " <<
-			vsource << ": " << SlGit::Repo::lastError() << raise;
+			source << ": " << SlGit::Repo::lastError() << raise;
 
 	std::string cve_prefix = rejected ? "cve/rejected/" : "cve/published/";
 	if (year)
@@ -39,7 +46,7 @@ CveShaMap::CveShaMap(const std::filesystem::path &vsource, ShaSize shaSize,
 	const auto subTree = commit->tree()->treeEntryByPath(cve_prefix);
 	if (!subTree)
 		RunEx("Failed to find tree ") << cve_prefix << " in vulns repo at " <<
-			vsource << ": " << SlGit::Repo::lastError() << raise;
+			source << ": " << SlGit::Repo::lastError() << raise;
 
 	const bool isShort = shaSize == ShaSize::Short;
 

@@ -50,9 +50,11 @@ public:
 	 * @param year A specific year to walk or zero
 	 * @param rejected Walk published/ or rejected/
 	 */
-	CveShaMap(const std::filesystem::path &vsource,
-		  ShaSize shaSize, const std::string &branch,
-		  unsigned year, bool rejected);
+	CveShaMap(const std::filesystem::path &vsource = {},
+		  ShaSize shaSize = ShaSize::Long,
+		  const std::string &branch = "origin/master",
+		  unsigned year = 0,
+		  bool rejected = false);
 
 	/**
 	 * @brief Get CVE number for \p shaCommit
