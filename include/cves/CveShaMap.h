@@ -17,13 +17,13 @@ namespace SlCVEs {
 /**
  * @brief A map between CVE numbers and upstream SHAs
  */
-class CVEHashMap {
+class CveShaMap {
 public:
 	/// @brief CVE -> upstream SHA mapping
-	using CVEHashMapTy = std::unordered_multimap<std::string, std::string,
+	using CveShaMapTy = std::unordered_multimap<std::string, std::string,
 	      SlHelpers::String::Hash, SlHelpers::String::Eq>;
 	/// @brief Upstream SHA -> CVE mapping
-	using SHAHashMapTy = std::unordered_map<std::string, std::string,
+	using ShaCveMapTy = std::unordered_map<std::string, std::string,
 	      SlHelpers::String::Hash, SlHelpers::String::Eq>;
 
 	/// @brief Store Long or Short SHAs
@@ -32,49 +32,49 @@ public:
 		Short
 	};
 
-	CVEHashMap() = delete;
+	CveShaMap() = delete;
 
-	CVEHashMap(const CVEHashMap &) = delete;
-	CVEHashMap &operator=(const CVEHashMap &) = delete;
+	CveShaMap(const CveShaMap &) = delete;
+	CveShaMap &operator=(const CveShaMap &) = delete;
 
 	/// @brief Move constructor
-	CVEHashMap(CVEHashMap &&) = default;
+	CveShaMap(CveShaMap &&) = default;
 	/// @brief Move assignment operator
-	CVEHashMap &operator=(CVEHashMap &&) = default;
+	CveShaMap &operator=(CveShaMap &&) = default;
 
 	/**
-	 * @brief Create a new CVEHashMap
+	 * @brief Create a new CveShaMap
 	 * @param vsource Path to the vulns git repository
 	 * @param shaSize Long or Short
 	 * @param branch Branch of \p vsource to walk
 	 * @param year A specific year to walk or zero
 	 * @param rejected Walk published/ or rejected/
 	 */
-	CVEHashMap(const std::filesystem::path &vsource,
-		   ShaSize shaSize, const std::string &branch,
-		   unsigned year, bool rejected);
+	CveShaMap(const std::filesystem::path &vsource,
+		  ShaSize shaSize, const std::string &branch,
+		  unsigned year, bool rejected);
 
 	/**
-	 * @brief Get CVE number for \p sha_commit
-	 * @param sha_commit Upstream SHA
+	 * @brief Get CVE number for \p shaCommit
+	 * @param shaCommit Upstream SHA
 	 * @return CVE number
 	 */
-	std::string_view get_cve(std::string_view sha_commit) const {
-		const auto it = m_shaHashMap.find(sha_commit);
-		if (it != m_shaHashMap.cend())
+	std::string_view getCve(std::string_view shaCommit) const {
+		const auto it = m_shaCveMap.find(shaCommit);
+		if (it != m_shaCveMap.cend())
 			return it->second;
 
 		return {};
 	}
 
 	/**
-	 * @brief Get SHAs for \p cve_number
-	 * @param cve_number CVE number
+	 * @brief Get SHAs for \p cveNumber
+	 * @param cveNumber CVE number
 	 * @return Vector of upstream SHAs (possibly empty)
 	 */
-	std::vector<std::string> get_shas(std::string_view cve_number) const { //requires (S == ShaSize::Long)
+	std::vector<std::string> getShas(std::string_view cveNumber) const { //requires (S == ShaSize::Long)
 		std::vector<std::string> ret;
-		const auto range = m_cveHashMap.equal_range(cve_number);
+		const auto range = m_cveShaMap.equal_range(cveNumber);
 		std::transform(range.first, range.second, std::back_inserter(ret),
 			       [](const auto &p) { return p.second; });
 		return ret;
@@ -84,17 +84,17 @@ public:
 	 * @brief Get all stored CVE numbers
 	 * @return Set of CVE numbers
 	 */
-	std::set<std::string> get_all_cves() const { //requires (S == ShaSize::Long)
+	std::set<std::string> getAllCves() const { //requires (S == ShaSize::Long)
 		std::set<std::string> ret;
-		std::transform(m_cveHashMap.cbegin(), m_cveHashMap.cend(),
+		std::transform(m_cveShaMap.cbegin(), m_cveShaMap.cend(),
 			       std::inserter(ret, ret.end()),
 			       [](const auto &p) { return p.first; });
 		return ret;
 	}
 
 private:
-	CVEHashMapTy m_cveHashMap;
-	SHAHashMapTy m_shaHashMap;
+	CveShaMapTy m_cveShaMap;
+	ShaCveMapTy m_shaCveMap;
 };
 
 }

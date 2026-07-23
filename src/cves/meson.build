@@ -2,14 +2,14 @@
 
 public_headers += [
     'cves/CVE.h',
-    'cves/CVE2Bugzilla.h',
-    'cves/CVEHashMap.h',
+    'cves/CveBscMap.h',
+    'cves/CveShaMap.h',
 ]
 
 slcves = library('slcves++', [
     'CVE.cpp',
-    'CVE2Bugzilla.cpp',
-    'CVEHashMap.cpp',
+    'CveBscMap.cpp',
+    'CveShaMap.cpp',
   ],
   include_directories : global_inc,
   dependencies: [ slgit_lib ],

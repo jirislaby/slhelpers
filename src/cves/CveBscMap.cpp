@@ -7,14 +7,14 @@
 #include "helpers/Exception.h"
 #include "helpers/String.h"
 
-#include "cves/CVE2Bugzilla.h"
+#include "cves/CveBscMap.h"
 
 using RunEx = SlHelpers::RuntimeException;
 using SlHelpers::raise;
 
 using namespace SlCVEs;
 
-CVE2Bugzilla::CVE2Bugzilla(const std::filesystem::path &cve2bugzilla)
+CveBscMap::CveBscMap(const std::filesystem::path &cve2bugzilla)
 {
 	std::ifstream file{cve2bugzilla};
 
@@ -44,7 +44,7 @@ CVE2Bugzilla::CVE2Bugzilla(const std::filesystem::path &cve2bugzilla)
 		}
 		std::string bug{"bsc#"};
 		bug += bsc_number;
-		m_cve_bsc_map.emplace(cve_number, bug);
-		m_bsc_cve_map.emplace(std::move(bug), cve_number);
+		m_cveBscMap.emplace(cve_number, bug);
+		m_bscCveMap.emplace(std::move(bug), cve_number);
 	}
 }

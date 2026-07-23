@@ -10,15 +10,15 @@
 #include "helpers/String.h"
 
 #include "cves/CVE.h"
-#include "cves/CVEHashMap.h"
+#include "cves/CveShaMap.h"
 
 using RunEx = SlHelpers::RuntimeException;
 using SlHelpers::raise;
 
 using namespace SlCVEs;
 
-CVEHashMap::CVEHashMap(const std::filesystem::path &vsource, ShaSize shaSize,
-		       const std::string &branch, unsigned year, bool rejected)
+CveShaMap::CveShaMap(const std::filesystem::path &vsource, ShaSize shaSize,
+		     const std::string &branch, unsigned year, bool rejected)
 {
 	if (vsource.empty())
 		RunEx("vsource is empty!").raise();
@@ -67,10 +67,10 @@ CVEHashMap::CVEHashMap(const std::filesystem::path &vsource, ShaSize shaSize,
 				continue;
 			}
 			if (isShort)
-				m_shaHashMap.emplace(sha_hash.substr(0, 12), *cve_number);
+				m_shaCveMap.emplace(sha_hash.substr(0, 12), *cve_number);
 			else {
-				m_cveHashMap.emplace(*cve_number, sha_hash);
-				m_shaHashMap.emplace(std::move(sha_hash), *cve_number);
+				m_cveShaMap.emplace(*cve_number, sha_hash);
+				m_shaCveMap.emplace(std::move(sha_hash), *cve_number);
 			}
 		}
 		return 0;
