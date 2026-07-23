@@ -12,6 +12,8 @@ namespace SlCVEs {
  */
 class CVE {
 public:
+	CVE() = delete;
+
 	/**
 	 * @brief Try to parse \p sv as a CVE number and return it
 	 * @param sv String to parse
