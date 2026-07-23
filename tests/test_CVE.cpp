@@ -8,7 +8,7 @@ using namespace SlCVEs;
 
 namespace {
 
-void testCVEHashMap()
+void testCVE()
 {
 	assert(!CVE::getCVENumber("x"));
 	assert(CVE::getCVENumber("CVE-2025-1") == "CVE-2025-1");
@@ -20,7 +20,7 @@ void testCVEHashMap()
 
 int main()
 {
-	testCVEHashMap();
+	testCVE();
 
 	return 0;
 }
