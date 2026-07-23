@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
+#include <sstream>
 #include <utility>
 
 #include <pybind11/detail/common.h>
