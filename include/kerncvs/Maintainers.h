@@ -73,6 +73,8 @@ public:
 	 */
 	const std::set<std::string> &suse_users() const { return m_suse_users; }
 private:
+	void readSUSEStanza(std::ifstream &file, Stanza &st,
+			const Stanza::TranslateEmail &translateEmail);
 	void loadSUSE(const std::filesystem::path &filename,
 		      const Stanza::TranslateEmail &translateEmail);
 	void loadUpstream(const std::filesystem::path &lsource, const std::string &origin,

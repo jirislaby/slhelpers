@@ -13,6 +13,31 @@ using SlHelpers::raise;
 
 using namespace SlKernCVS;
 
+void Maintainers::readSUSEStanza(std::ifstream &file, Stanza &st,
+				 const Stanza::TranslateEmail &translateEmail)
+{
+	for (std::string line; getline(file, line);) {
+		auto lineSV = SlHelpers::String::trim(std::string_view(line));
+		if (lineSV.empty())
+			break;
+		if (lineSV.size() < 3)
+			continue;
+		auto colon = lineSV.find(':');
+		if (colon == std::string_view::npos)
+			continue;
+		auto lhs = lineSV.substr(0, colon);
+		auto rhs = SlHelpers::String::trim(lineSV.substr(colon + 1));
+		if (rhs.empty()) {
+			std::cerr << "Bad MAINTAINERS entry: " << lineSV << '\n';
+			continue;
+		}
+		if (lhs == "F")
+			st.add_pattern(std::string(rhs));
+		else if (lhs == "M")
+			st.add_maintainer_and_store(lineSV, m_suse_users, translateEmail);
+	}
+}
+
 void Maintainers::loadSUSE(const std::filesystem::path &filename,
 			   const Stanza::TranslateEmail &translateEmail)
 {
@@ -22,29 +47,16 @@ void Maintainers::loadSUSE(const std::filesystem::path &filename,
 		RunEx("Unable to open MAINTAINERS file: ") << filename << ": " <<
 			strerror(errno) << raise;
 
-	Stanza st;
 	for (std::string line; getline(file, line);) {
 		line = SlHelpers::String::trim(line);
-		if (line.size() < 2)
+		if (line.empty())
 			continue;
-		if (line[1] == ':') {
-			if (line[0] == 'M')
-				st.add_maintainer_and_store(line, m_suse_users, translateEmail);
-			else if (line[0] == 'F') {
-				const auto fpattern = SlHelpers::String::trim(line.substr(2));
-				if (fpattern.empty())
-					std::cerr <<  "MAINTAINERS entry: " << line << '\n';
-				else
-					st.add_pattern(fpattern);
-			}
-		} else {
-			if (!st.empty())
-				m_maintainers.push_back(std::move(st));
-			st.new_entry(std::move(line));
-		}
+		Stanza st(std::move(line));
+		readSUSEStanza(file, st, translateEmail);
+
+		if (!st.empty())
+			m_maintainers.emplace_back(std::move(st));
 	}
-	if (!st.empty())
-		m_maintainers.push_back(std::move(st));
 
 	if (m_maintainers.empty())
 		RunEx() << filename << " appears to be empty" << raise;
