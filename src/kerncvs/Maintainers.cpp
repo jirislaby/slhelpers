@@ -24,23 +24,23 @@ void Maintainers::loadSUSE(const std::filesystem::path &filename,
 
 	Stanza st;
 	for (std::string line; getline(file, line);) {
-		const auto tmp = SlHelpers::String::trim(line);
-		if (tmp.size() < 2)
+		line = SlHelpers::String::trim(line);
+		if (line.size() < 2)
 			continue;
-		if (tmp[1] == ':') {
-			if (tmp[0] == 'M')
-				st.add_maintainer_and_store(tmp, m_suse_users, translateEmail);
-			else if (tmp[0] == 'F') {
-				const auto fpattern = SlHelpers::String::trim(tmp.substr(2));
+		if (line[1] == ':') {
+			if (line[0] == 'M')
+				st.add_maintainer_and_store(line, m_suse_users, translateEmail);
+			else if (line[0] == 'F') {
+				const auto fpattern = SlHelpers::String::trim(line.substr(2));
 				if (fpattern.empty())
-					std::cerr <<  "MAINTAINERS entry: " << tmp << '\n';
+					std::cerr <<  "MAINTAINERS entry: " << line << '\n';
 				else
 					st.add_pattern(fpattern);
 			}
 		} else {
 			if (!st.empty())
 				m_maintainers.push_back(std::move(st));
-			st.new_entry(std::move(tmp));
+			st.new_entry(std::move(line));
 		}
 	}
 	if (!st.empty())
