@@ -7,6 +7,7 @@
 #include <iostream>
 #include <numeric>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "Pattern.h"
@@ -113,6 +114,14 @@ public:
 	}
 
 	/**
+	 * @brief Add \p comment to this Stanza
+	 * @param comment Comment to add
+	 */
+	void add_comment(std::string comment) {
+		m_comments.emplace_back(std::move(comment));
+	}
+
+	/**
 	 * @brief Add \p pattern to this Stanza
 	 * @param pattern Pattern to add
 	 * @return true on success.
@@ -136,11 +145,15 @@ public:
 	 */
 	const Maintainers &maintainers() const { return m_maintainers; }
 
+	/// @brief Get comment of this Stanza
+	auto &comments() const { return m_comments; }
+
 	/// @brief Get name/title of this Stanza
 	const std::string &name() const { return m_name; }
 private:
 	std::string m_name;
 	Maintainers m_maintainers;
+	std::vector<std::string> m_comments;
 	std::vector<Pattern> m_patterns;
 };
 

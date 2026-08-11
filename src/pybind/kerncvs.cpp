@@ -172,6 +172,8 @@ void doMaintainers(py::module_ &m)
 		.def("maintainers", &Stanza::maintainers,
 		     py::return_value_policy::reference_internal,
 		     "List of maintainers in the Stanza")
+		.def("comments", &Stanza::comments, py::return_value_policy::reference_internal,
+		     "List of comments in the Stanza")
 		.def("empty", &Stanza::empty,
 		     "Check if the Stanza has no name, maintainers, and patterns")
 		.def("__getitem__", [](const Stanza &stanza, size_t index) {
@@ -182,7 +184,8 @@ void doMaintainers(py::module_ &m)
 		.def("__repr__", [](const Stanza &stanza) {
 		     std::stringstream ss;
 		     ss << "<Stanza name=\"" << stanza.name() <<
-			      "\" maintainers#=" << stanza.maintainers().size() << '>';
+			     "\" comments#=" << stanza.comments().size() <<
+			     " maintainers#=" << stanza.maintainers().size() << '>';
 		     return ss.str();
 		     });
 

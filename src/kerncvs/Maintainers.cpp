@@ -31,7 +31,9 @@ void Maintainers::readSUSEStanza(std::ifstream &file, Stanza &st,
 			std::cerr << "Bad MAINTAINERS entry: " << lineSV << '\n';
 			continue;
 		}
-		if (lhs == "F")
+		if (lhs == "COMMENT")
+			st.add_comment(std::string(rhs));
+		else if (lhs == "F")
 			st.add_pattern(std::string(rhs));
 		else if (lhs == "M")
 			st.add_maintainer_and_store(lineSV, m_suse_users, translateEmail);
