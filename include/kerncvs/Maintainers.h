@@ -9,6 +9,10 @@
 
 #include "Stanza.h"
 
+namespace SlHelpers {
+class GetLine;
+}
+
 namespace SlKernCVS {
 
 /**
@@ -77,6 +81,9 @@ private:
 			const Stanza::TranslateEmail &translateEmail);
 	void loadSUSE(const std::filesystem::path &filename,
 		      const Stanza::TranslateEmail &translateEmail);
+	void skipIntroUpstream(SlHelpers::GetLine &gl);
+	void readUpstreamStanza(SlHelpers::GetLine &gl, Stanza &st,
+				const Stanza::TranslateEmail &translateEmail);
 	void loadUpstream(const std::filesystem::path &lsource, const std::string &origin,
 			  const Stanza::TranslateEmail &translateEmail);
 

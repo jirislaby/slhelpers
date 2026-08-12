@@ -62,6 +62,67 @@ void Maintainers::loadSUSE(const std::filesystem::path &filename,
 		RunEx() << filename << " appears to be empty" << raise;
 }
 
+void Maintainers::skipIntroUpstream(SlHelpers::GetLine &gl)
+{
+	while (auto lineOpt = gl.get())
+		if (lineOpt->starts_with("Maintainers List"))
+			break;
+
+	while (auto lineOpt = gl.get()) {
+		if (lineOpt->empty())
+			continue;
+		if (lineOpt->starts_with("----"))
+			continue;
+		if (lineOpt->starts_with(".. "))
+			continue;
+		if (lineOpt->starts_with("   "))
+			continue;
+
+		return;
+	}
+
+	RunEx("Upstream MAINTAINERS has no \"Maintainers List\"?").raise();
+}
+
+void Maintainers::readUpstreamStanza(SlHelpers::GetLine &gl, Stanza &st,
+				     const Stanza::TranslateEmail &translateEmail)
+{
+	while (auto lineOpt = gl.get()) {
+		auto line = *lineOpt;
+		if (line.size() < 3)
+			break;
+		if (line[1] != ':')
+			continue;
+
+		switch(line[0]) {
+		case 'L': // TODO?
+		case 'S':
+		case 'W':
+		case 'Q':
+		case 'B':
+		case 'C':
+		case 'P':
+		case 'T':
+		case 'X':
+		case 'N': // TODO, huh?
+		case 'K':
+			break;
+		case 'M':
+		case 'R':
+			st.add_maintainer_if(line, m_suse_users, translateEmail);
+			break;
+		case 'F':
+			auto fpattern = SlHelpers::String::trim(line.substr(2));
+			if (fpattern.empty())
+				std::cerr << "Bad upstream MAINTAINERS entry (pattern): " <<
+					line << '\n';
+			else
+				st.add_pattern(std::string(fpattern));
+			break;
+		}
+	}
+}
+
 void Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::string &origin,
 			       const Stanza::TranslateEmail &translateEmail)
 {
@@ -75,54 +136,24 @@ void Maintainers::loadUpstream(const std::filesystem::path &lsource, const std::
 		RunEx("Unable to load linux.git tree for ") << origin << "/master: " <<
 			     SlGit::Repo::lastError() << raise;
 
-	Stanza st;
-	bool skip = true;
 	SlHelpers::GetLine gl(*maintOpt);
+
+	skipIntroUpstream(gl);
+
 	while (auto lineOpt = gl.get()) {
 		auto line = *lineOpt;
-		if (skip) {
-			if (line.starts_with("Maintainers List"))
-				skip = false;
-			continue;
-		}
 		if (line == "THE REST")
 			break;
-		if (line.size() < 3 || std::strchr("\t .-", line[1]))
+		if (line.size() < 3)
 			continue;
-		if (line[1] == ':')
-			switch(line[0]) {
-			case 'L': // TODO?
-			case 'S':
-			case 'W':
-			case 'Q':
-			case 'B':
-			case 'C':
-			case 'P':
-			case 'T':
-			case 'X':
-			case 'N': // TODO, huh?
-			case 'K':
-				break;
-			case 'M':
-			case 'R':
-				st.add_maintainer_if(line, m_suse_users, translateEmail);
-				break;
-			case 'F':
-				std::string fpattern(SlHelpers::String::trim(line.substr(2)));
-				if (fpattern.empty())
-					std::cerr << "Upstream MAINTAINERS entry: " << line << '\n';
-				else
-					st.add_pattern(std::move(fpattern));
-				break;
-			}
-		else {
-			if (!st.empty())
-				m_upstream_maintainers.push_back(std::move(st));
-			st.new_entry(std::string("Upstream: ").append(line));
-		}
+
+		Stanza st(std::string("Upstream: ").append(line));
+		readUpstreamStanza(gl, st, translateEmail);
+
+		if (!st.empty())
+			m_upstream_maintainers.emplace_back(std::move(st));
 	}
-	if (!st.empty())
-		m_upstream_maintainers.push_back(std::move(st));
+
 	if (m_upstream_maintainers.empty())
 		RunEx("Upstream MAINTAINERS appears to be empty").raise();
 }

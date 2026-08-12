@@ -136,18 +136,6 @@ public:
 	 */
 	const Maintainers &maintainers() const { return m_maintainers; }
 
-	/**
-	 * @brief Reset Stanza and start from the beginning
-	 * @param n New name of Stanza
-	 *
-	 * Called while parsing MAINTAINERS and a new subsystem was parsed.
-	 */
-	void new_entry(std::string n) {
-		m_name = std::move(n);
-		m_maintainers.clear();
-		m_patterns.clear();
-	}
-
 	/// @brief Get name/title of this Stanza
 	const std::string &name() const { return m_name; }
 private:
