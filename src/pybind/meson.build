@@ -1,6 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 foreach py : python_installations
+  py.extension_module('slcurl',
+    'curl.cpp',
+    dependencies: [ slcurl_lib, pybind11 ],
+    install: true,
+    include_directories : global_inc,
+  )
   py.extension_module('slcves',
     'cves.cpp',
     dependencies: [ slcves_lib, pybind11 ],
