@@ -48,8 +48,8 @@ private:
 	UserMap getMap();
 	void buildSet(const std::string &dn, const std::string &password, const UserMap &userMap);
 
-	std::pair<std::string_view, bool>
-	getMappedUser(const UserMap &userMap, const std::string &user) const {
+	static std::pair<std::string_view, bool>
+	getMappedUser(const UserMap &userMap, const std::string &user) {
 		auto it = userMap.find(user);
 		if (it != userMap.end())
 			return { it->second, true };
