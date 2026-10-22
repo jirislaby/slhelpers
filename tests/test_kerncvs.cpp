@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <iostream>
 #include <set>
+#include <string_view>
 
 #include "git/Commit.h"
 #include "git/Repo.h"
@@ -13,6 +14,7 @@
 
 #include "kerncvs/Branches.h"
 #include "kerncvs/CollectConfigs.h"
+#include "kerncvs/LDAP.h"
 #include "kerncvs/Patch.h"
 #include "kerncvs/PatchesAuthors.h"
 #include "kerncvs/RPMConfig.h"
@@ -335,6 +337,94 @@ std::string generatePatch(std::string_view ref, std::string_view ack,
 
 namespace SlKernCVS {
 
+void testLDAP()
+{
+	static constexpr const std::string_view ini {
+		"[logname2obs]\n"
+		"; comment\n"
+		"; comment2\n"
+		"a = b\n"
+		"b = c.d\n"
+		"\n"
+		"[logname2mail]\n"
+		"; logname@suse.de assumed\n"
+		"lmuser = lm.user@suse.com\n"
+		"kernelbugs = kernel-bugs@suse.de\n"
+		"kpm = kernel-cvs@suse.de\n"
+		"  kss\t =   kernel-cvs@suse.de  \n"
+		"self = self@suse.de\n"
+		"noat = noatsign\n"
+		"\n"
+		"[mail2logname]\n"
+		"; part before @ assumed\n"
+		"mluser@suse.com = ml\n"
+		"ml2user@suse.com = ml2\n"
+		"id@suse.com = id\n"
+	};
+
+	{
+		auto map = SlKernCVS::LDAPUsers::parseMap(ini);
+		assert(!map.contains("a"));
+		assert(!map.contains("b"));
+		assert(!map.contains("c.d"));
+
+		assert(map["lmuser"] == "lm.user");
+		assert(map["kernelbugs"] == "kernel-bugs");
+		assert(map["kpm"] == "kernel-cvs");
+		assert(map["kss"] == "kernel-cvs");
+		assert(map["ml"] == "mluser");
+		assert(map["ml2"] == "ml2user");
+
+		// logname == username derived from email -> not added
+		assert(!map.contains("self"));
+		// email has no '@' -> not added
+		assert(!map.contains("noat"));
+		// logname == username derived from email (mail2logname direction) -> not added
+		assert(!map.contains("id"));
+	}
+
+	assert(SlKernCVS::LDAPUsers::parseMap("").empty());
+
+	// addUserMapCond() exercised directly
+	{
+		LDAPUsers::UserMap map;
+		LDAPUsers::addUserMapCond(map, "user", "no-at-sign");
+		assert(map.empty());
+
+		LDAPUsers::addUserMapCond(map, "same", "same@suse.de");
+		assert(map.empty());
+
+		LDAPUsers::addUserMapCond(map, "other", "diff@suse.de");
+		assert(map["other"] == "diff");
+	}
+
+	// malformed entries must be rejected
+	for (const auto badIni : { "[logname2mail]\nno-equal-sign\n",
+				   "[logname2mail]\n = emptykey@suse.de\n",
+				   "[logname2mail]\nemptyval = \n" }) {
+		bool threw = false;
+		try {
+			SlKernCVS::LDAPUsers::parseMap(badIni);
+		} catch (const std::runtime_error &) {
+			threw = true;
+		}
+		assert(threw);
+	}
+
+	// getMappedUser()
+	{
+		LDAPUsers::UserMap map { { "kpm", "kernel-cvs" } };
+
+		auto [mapped, found] = LDAPUsers::getMappedUser(map, "kpm");
+		assert(found);
+		assert(mapped == "kernel-cvs");
+
+		auto [unmapped, notFound] = LDAPUsers::getMappedUser(map, "unknown");
+		assert(!notFound);
+		assert(unmapped == "unknown");
+	}
+}
+
 void testProcessPatch()
 {
 	static constexpr std::string_view patch("some.patch");
@@ -395,6 +485,7 @@ int main()
 	testRPMConfig();
 	testSupportedConf();
 
+	testLDAP();
 	testProcessPatch();
 
 	return 0;

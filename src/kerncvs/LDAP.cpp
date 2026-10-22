@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
-#include <INIReader.h>
 #include <LDAPConnection.h>
-#include <utility>
+#include <iomanip>
+#include <string_view>
 
 #include "curl/Curl.h"
 #include "helpers/Exception.h"
+#include "helpers/String.h"
 
 #include "kerncvs/LDAP.h"
 
@@ -14,7 +15,7 @@ using SlHelpers::raise;
 
 using namespace SlKernCVS;
 
-void LDAPUsers::addUserMapCond(UserMap &userMap, std::string &&logname, std::string &&email)
+void LDAPUsers::addUserMapCond(UserMap &userMap, std::string_view logname, std::string_view email)
 {
 	auto it = email.find('@');
 	if (it == std::string::npos)
@@ -22,22 +23,53 @@ void LDAPUsers::addUserMapCond(UserMap &userMap, std::string &&logname, std::str
 
 	auto username = email.substr(0, it);
 	if (logname != username)
-		userMap.emplace(std::move(logname), std::move(username));
+		userMap.emplace(logname, username);
 }
 
-void LDAPUsers::walkSection(UserMap &userMap, const INIReader &reader, const std::string &section,
-			    bool lognameIsKey)
+LDAPUsers::UserMap LDAPUsers::parseMap(std::string_view mapData)
 {
-	for (auto &key: reader.Keys(section)) {
-		auto val = reader.Get(section, key, "");
-		if (val.empty())
+	UserMap userMap;
+	SlHelpers::GetLine gl(mapData);
+	bool interesting = false;
+	bool lognameIsKey;
+
+	while (auto line = gl.get()) {
+		line = SlHelpers::String::trim(*line);
+		if (line->empty())
 			continue;
 
-		if (lognameIsKey)
-			addUserMapCond(userMap, std::move(key), std::move(val));
-		else
-			addUserMapCond(userMap, std::move(val), std::move(key));
+		if (line->front() == ';')
+			continue;
+
+		if (line == "[logname2mail]" || line == "[mail2logname]") {
+			interesting = true;
+			lognameIsKey = (line == "[logname2mail]");
+			continue;
+		}
+
+		if (line->front() == '[' && line->back() == ']')
+			interesting = false;
+
+		if (!interesting)
+			continue;
+
+		auto it = line->find('=');
+		if (it != std::string_view::npos) {
+			auto key = SlHelpers::String::trim(line->substr(0, it));
+			auto val = SlHelpers::String::trim(line->substr(it + 1));
+			if (!key.empty() && !val.empty()) {
+				if (lognameIsKey)
+					addUserMapCond(userMap, key, val);
+				else
+					addUserMapCond(userMap, val, key);
+				continue;
+			}
+		}
+
+		RunEx("Invalid usermap.ini: ") << std::quoted(*line) << raise;
 	}
+
+	return userMap;
 }
 
 LDAPUsers::UserMap LDAPUsers::getMap()
@@ -47,17 +79,7 @@ LDAPUsers::UserMap LDAPUsers::getMap()
 		RunEx("Failed to download usermap.ini: ") << SlCurl::LibCurl::lastError() <<
 			raise;
 
-	INIReader reader(usermapINI->data(), usermapINI->size());
-	if (reader.ParseError())
-		RunEx("Failed to parse usermap.ini: ") << reader.ParseErrorMessage() <<
-			" (error=" << reader.ParseError() << ')' << raise;
-
-	UserMap userMap;
-
-	walkSection(userMap, reader, "logname2mail", true);
-	walkSection(userMap, reader, "mail2logname", false);
-
-	return userMap;
+	return parseMap(*usermapINI);
 }
 
 void LDAPUsers::buildSet(const std::string &dn, const std::string &password, const UserMap &userMap)

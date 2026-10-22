@@ -9,8 +9,6 @@
 
 #include "../helpers/String.h"
 
-class INIReader;
-
 namespace SlKernCVS {
 
 /// @brief Class to fetch LDAP users.
@@ -38,13 +36,15 @@ public:
 	/// @brief Check if a user is in the set of users fetched from LDAP.
 	bool contains(const std::string &key) const noexcept { return m_userSet.contains(key); }
 private:
+	friend void testLDAP();
+
 	using UserMap = std::unordered_map<std::string, std::string>;
 
 	UserSet m_userSet;
 
-	static void walkSection(UserMap &userMap, const INIReader &reader,
-				const std::string &section, bool lognameIsKey);
-	static void addUserMapCond(UserMap &userMap, std::string &&logname, std::string &&email);
+	static void addUserMapCond(UserMap &userMap, std::string_view logname,
+				   std::string_view email);
+	static UserMap parseMap(std::string_view mapData);
 	UserMap getMap();
 	void buildSet(const std::string &dn, const std::string &password, const UserMap &userMap);
 
