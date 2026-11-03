@@ -49,6 +49,7 @@ bool Process::spawn(const std::filesystem::path &program, const std::vector<std:
 	closePipe(1);
 	posix_spawn_file_actions_destroy(&actions);
 	if (ret) {
+		m_pid = -1;
 		closePipe(0);
 		setError(SpawnError, strerror(errno));
 		return false;
