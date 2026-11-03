@@ -65,9 +65,12 @@ struct CmpVersions {
 	{
 		const auto arr1 = Version::versionSplit(ver1);
 		const auto arr2 = Version::versionSplit(ver2);
+		const auto at = [](const auto &arr, size_t i) noexcept {
+			return i < arr.size() ? arr[i] : std::string_view{};
+		};
 		for (auto i = 0U; i < 2U; ++i) {
-			auto ver1 = Version::versionPart(arr1[i]);
-			auto ver2 = Version::versionPart(arr2[i]);
+			auto ver1 = Version::versionPart(at(arr1, i));
+			auto ver2 = Version::versionPart(at(arr2, i));
 			if (ver1 != ver2)
 				return ver1 < ver2;
 			const auto arr1Last = arr1.size() == i + 1;
@@ -78,7 +81,7 @@ struct CmpVersions {
 				return arr1Last;
 		}
 
-		return Version::versionPart(arr1[2], true) < Version::versionPart(arr2[2], true);
+		return Version::versionPart(at(arr1, 2), true) < Version::versionPart(at(arr2, 2), true);
 	}
 };
 
