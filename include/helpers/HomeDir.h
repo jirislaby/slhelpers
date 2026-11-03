@@ -27,9 +27,11 @@ public:
 			if (std::filesystem::exists(*homeDir))
 				return std::move(*homeDir);
 
-		std::filesystem::path dir = ::getpwuid(::getuid())->pw_dir;
-		if (std::filesystem::exists(dir))
-			return dir;
+		if (const auto pw = ::getpwuid(::getuid())) {
+			std::filesystem::path dir = pw->pw_dir;
+			if (std::filesystem::exists(dir))
+				return dir;
+		}
 
 		return {};
 	}
