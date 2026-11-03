@@ -24,11 +24,15 @@ public:
 	PtrStore &operator=(const PtrStore &) = delete;
 
 	/// @brief Move constructor
-	PtrStore(PtrStore &&other) noexcept : m_ptr(other.release()) {}
+	PtrStore(PtrStore &&other) noexcept
+		: m_ptr(other.release()), m_deleter(std::move(other.m_deleter)) {}
 	/// @brief Move assignment
 	PtrStore &operator=(PtrStore &&other) noexcept {
-		if (this != &other)
-			reset(other.release());
+		if (this != &other) {
+			free();
+			m_deleter = std::move(other.m_deleter);
+			m_ptr = other.release();
+		}
 		return *this;
 	}
 
