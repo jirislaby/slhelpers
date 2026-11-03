@@ -141,6 +141,9 @@ public:
 	 * @param to Replacement string
 	 */
 	static void replaceAll(std::string &s, std::string_view from, std::string_view to) {
+		if (from.empty())
+			return;
+
 		for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos;
 		     pos += to.size())
 			s.replace(pos, from.size(), to);
