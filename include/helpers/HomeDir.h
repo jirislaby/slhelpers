@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "Misc.h"
+
 namespace SlHelpers {
 
 /**
@@ -21,15 +23,11 @@ public:
 	 * @return $HOME or /etc/passwd home entry.
 	 */
 	static std::filesystem::path get() noexcept {
-		std::filesystem::path dir;
+		if (auto homeDir = Env::get<std::filesystem::path>("HOME"))
+			if (std::filesystem::exists(*homeDir))
+				return std::move(*homeDir);
 
-		if (const auto homeDir = std::getenv("HOME")) {
-			dir = homeDir;
-			if (std::filesystem::exists(dir))
-				return dir;
-		}
-
-		dir = ::getpwuid(::getuid())->pw_dir;
+		std::filesystem::path dir = ::getpwuid(::getuid())->pw_dir;
 		if (std::filesystem::exists(dir))
 			return dir;
 
@@ -41,14 +39,14 @@ public:
 	 * @return $XDG_CACHE_HOME or $HOME/.cache.
 	 */
 	static std::filesystem::path getCacheDir() noexcept {
-		if (const auto xdgCacheDir = std::getenv("XDG_CACHE_HOME"))
-			return xdgCacheDir;
+		if (auto xdgCacheDir = Env::get<std::filesystem::path>("XDG_CACHE_HOME"))
+			return std::move(*xdgCacheDir);
 
-		const auto home_dir = get();
-		if (home_dir.empty())
+		const auto homeDir = get();
+		if (homeDir.empty())
 			return {};
 
-		return std::filesystem::path(home_dir) / ".cache";
+		return homeDir / ".cache";
 	}
 
 	/**
