@@ -226,6 +226,10 @@ void testHomeDir()
 	setenv("XDG_CACHE_HOME", "/xdg_cache", true);
 	setenv("HOME", "/tmp/", true);
 	assert(HomeDir::getCacheDir() == "/xdg_cache");
+	setenv("XDG_CACHE_HOME", "", true);
+	assert(HomeDir::getCacheDir() == "/tmp/.cache");
+	setenv("XDG_CACHE_HOME", "relative", true);
+	assert(HomeDir::getCacheDir() == "/tmp/.cache");
 	unsetenv("XDG_CACHE_HOME");
 	assert(HomeDir::getCacheDir() == "/tmp/.cache");
 

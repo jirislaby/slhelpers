@@ -41,8 +41,10 @@ public:
 	 * @return $XDG_CACHE_HOME or $HOME/.cache.
 	 */
 	static std::filesystem::path getCacheDir() noexcept {
+		// XDG spec: empty or relative values are to be ignored
 		if (auto xdgCacheDir = Env::get<std::filesystem::path>("XDG_CACHE_HOME"))
-			return std::move(*xdgCacheDir);
+			if (xdgCacheDir->is_absolute())
+				return std::move(*xdgCacheDir);
 
 		const auto homeDir = get();
 		if (homeDir.empty())
