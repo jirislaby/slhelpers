@@ -207,7 +207,9 @@ public:
 	 * @return true if all characters are hex numbers
 	 */
 	static constexpr bool isHex(std::string_view s) noexcept {
-		return std::all_of(s.cbegin(), s.cend(), ::isxdigit);
+		return std::all_of(s.cbegin(), s.cend(), [](unsigned char c) {
+			return std::isxdigit(c);
+		});
 	}
 
 	/**

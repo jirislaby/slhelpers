@@ -72,6 +72,7 @@ void testIsHex()
 	assert(String::isHex("01234567890abcdefABCDEF"));
 	assert(!String::isHex("01234567890abcdefABCDEFG"));
 	assert(!String::isHex("x01234567890"));
+	assert(!String::isHex("0\xff"));
 }
 
 void testTrim()
