@@ -38,7 +38,11 @@ public:
 		origDir = std::filesystem::current_path();
 		std::filesystem::current_path(dir);
 	}
-	~PushD() { std::filesystem::current_path(origDir); }
+	~PushD() {
+		std::error_code ec;
+		if (!origDir.empty())
+			std::filesystem::current_path(origDir, ec);
+	}
 private:
 	std::filesystem::path origDir;
 };
