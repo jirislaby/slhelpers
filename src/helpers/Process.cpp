@@ -60,6 +60,11 @@ bool Process::spawn(const std::filesystem::path &program, const std::vector<std:
 
 bool Process::waitForFinished()
 {
+	if (m_pid < 0) {
+		setError(UnknownError, "No process running");
+		return false;
+	}
+
 	int stat;
 	auto ret = waitpid(m_pid, &stat, 0);
 	m_pid = -1;
@@ -89,6 +94,11 @@ bool Process::waitForFinished()
 
 bool Process::kill(int sig)
 {
+	if (m_pid < 0) {
+		setError(UnknownError, "No process running");
+		return false;
+	}
+
 	if (::kill(m_pid, sig) < 0) {
 		setError(UnknownError, strerror(errno));
 		return false;
