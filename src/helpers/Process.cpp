@@ -68,7 +68,10 @@ bool Process::waitForFinished()
 	}
 
 	int stat;
-	auto ret = waitpid(m_pid, &stat, 0);
+	pid_t ret;
+	do {
+		ret = waitpid(m_pid, &stat, 0);
+	} while (ret < 0 && errno == EINTR);
 	m_pid = -1;
 	m_signalled = false;
 	m_exitStatus = 0;
@@ -118,6 +121,8 @@ bool Process::readAll(std::string &out)
 	while (true) {
 		auto r = read(m_pipe[0], buf, sizeof(buf));
 		if (r < 0) {
+			if (errno == EINTR)
+				continue;
 			setError(ReadError, strerror(errno));
 			return false;
 		}
