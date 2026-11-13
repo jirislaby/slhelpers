@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sstream>
 
+#include <fcntl.h>
 #include <spawn.h>
 #include <unistd.h>
 
@@ -35,7 +36,7 @@ bool Process::spawn(const std::filesystem::path &program, const std::vector<std:
 	posix_spawn_file_actions_t actions;
 	posix_spawn_file_actions_init(&actions);
 	if (captureStdout) {
-		if (pipe(m_pipe)) {
+		if (pipe2(m_pipe, O_CLOEXEC)) {
 			setError(PipeError, strerror(errno));
 			posix_spawn_file_actions_destroy(&actions);
 			return false;
