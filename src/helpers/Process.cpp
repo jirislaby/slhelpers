@@ -51,7 +51,7 @@ bool Process::spawn(const std::filesystem::path &program, const std::vector<std:
 	if (ret) {
 		m_pid = -1;
 		closePipe(0);
-		setError(SpawnError, strerror(errno));
+		setError(SpawnError, strerror(ret));
 		return false;
 	}
 
