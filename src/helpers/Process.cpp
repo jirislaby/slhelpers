@@ -68,6 +68,8 @@ bool Process::waitForFinished()
 	int stat;
 	auto ret = waitpid(m_pid, &stat, 0);
 	m_pid = -1;
+	m_signalled = false;
+	m_exitStatus = 0;
 	closePipe(0);
 	closePipe(1);
 	if (ret < 0) {

@@ -302,6 +302,9 @@ void testProcess(const std::filesystem::path &crash)
 
 	assert(p.run(crash));
 	assert(p.signalled());
+
+	assert(p.run("/usr/bin/true"));
+	assert(!p.signalled());
 }
 
 void testPtrStore()
