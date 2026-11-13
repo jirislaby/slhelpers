@@ -67,6 +67,10 @@ bool Process::waitForFinished()
 		return false;
 	}
 
+	// a child blocked on writing to a full pipe would never exit otherwise
+	closePipe(0);
+	closePipe(1);
+
 	int stat;
 	pid_t ret;
 	do {
@@ -75,8 +79,6 @@ bool Process::waitForFinished()
 	m_pid = -1;
 	m_signalled = false;
 	m_exitStatus = 0;
-	closePipe(0);
-	closePipe(1);
 	if (ret < 0) {
 		setError(WaitPidError, strerror(errno));
 		return false;
